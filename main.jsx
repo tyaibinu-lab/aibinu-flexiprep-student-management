@@ -227,7 +227,11 @@ function App() {
         );
       }
 
-      setStudents(data.records || []);
+      const records = data.records || [];
+
+setStudents(records);
+
+return records;
 
     } catch (err) {
 
@@ -378,20 +382,24 @@ function App() {
       });
 
 
-      setSelected(student);
-
       setEditing(null);
 
-      setMessage(
-        "Student registered successfully!"
-      );
+setMessage(
+  "Student registered successfully!"
+);
 
-      setView("profile");
+setView("profile");
 
+/* Refresh from Airtable and get the complete record */
+const refreshedStudents = await loadStudents();
 
-      /* Refresh from Airtable */
+/* Select the Airtable record, including airtableId */
+const savedStudent =
+  refreshedStudents.find(item => item.id === id);
 
-      await loadStudents();
+if (savedStudent) {
+  setSelected(savedStudent);
+}
 
 
     } catch (err) {
