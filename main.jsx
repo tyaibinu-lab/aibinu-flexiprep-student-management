@@ -958,14 +958,12 @@ function StudentForm({
 
 
   async function submit(event) {
+  event.preventDefault();
 
-    event.preventDefault();
+  setFormError("");
+  setSaving(true);
 
-    setFormError("");
-
-
-    /* Required fields */
-
+  try {
     const requiredFields = [
       ["firstName", "First Name"],
       ["lastName", "Last Name"],
@@ -973,47 +971,70 @@ function StudentForm({
       ["phone", "Phone"],
       ["parent", "Parent / Guardian"],
       ["parentPhone", "Parent Phone"],
-      ["className", "Class"],
-      ["programme", "Programme"]
+      ["className", "Class"]
     ];
 
-
     for (const [field, label] of requiredFields) {
-
-      if (!form[field]) {
-
-        setFormError(
-          `${label} is required.`
-        );
-
-        return;
+      if (!String(form[field] ?? "").trim()) {
+        throw new Error(`${label} is required.`);
       }
-
     }
 
+    const response = await fetch("/api/students", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...form,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        gender: form.gender,
+        dob: form.dob,
+        phone: form.phone,
+        email: form.email,
+        address: form.address,
+        nationality: form.nationality,
+        religion: form.religion,
+        state: form.state,
+        lga: form.lga,
+        parent: form.parent,
+        parentPhone: form.parentPhone,
+        className: form.className,
+        programme: form.programme,
+        status: form.status,
+        registrationDate: form.registrationDate,
+        id: form.id
+      })
+    });
 
-    setSaving(true);
+    const data = await response.json();
 
-
-    try {
-
-      await save(form);
-
-    } catch (error) {
-
-      setFormError(
-        error.message ||
+    if (!response.ok) {
+      throw new Error(
+        data?.error?.message ||
+        data?.error ||
+        data?.message ||
         "Unable to register student."
       );
-
-    } finally {
-
-      setSaving(false);
-
     }
+
+    setForm({
+      ...blankStudent,
+      ...initial
+    });
+
+    setFormError("");
+    
+    alert("Student registered successfully.");
+
+  } catch (error) {
+    console.error("Registration error:", error);
+    setFormError(error.message || "Unable to register student.");
+  } finally {
+    setSaving(false);
   }
-
-
+}
   const lgaOptions =
     form.state
       ? lgas[form.state] || []
