@@ -6,16 +6,10 @@ function getConfig() {
   const table = process.env.AIRTABLE_STUDENTS_TABLE;
 
   if (!token || !baseId || !table) {
-    throw new Error(
-      "Airtable environment variables are not configured."
-    );
+    throw new Error("Airtable environment variables are not configured.");
   }
 
-  return {
-    token,
-    baseId,
-    table
-  };
+  return { token, baseId, table };
 }
 
 function headers(token) {
@@ -24,12 +18,6 @@ function headers(token) {
     "Content-Type": "application/json"
   };
 }
-
-
-/* =========================
-   CONVERT AIRTABLE RECORD
-   TO APP STUDENT FORMAT
-========================= */
 
 function formatStudent(record) {
   const fields = record.fields || {};
@@ -49,37 +37,24 @@ function formatStudent(record) {
     email: fields["Email"] || "",
     address: fields["Address"] || "",
 
-    nationality:
-      fields["Nationality"] || "Nigerian",
-
+    nationality: fields["Nationality"] || "Nigerian",
     religion: fields["Religion"] || "",
 
-    state:
-      fields["State of Origin"] || "",
+    state: fields["State of Origin"] || "",
+    lga: fields["LGA of Origin"] || "",
 
-    lga:
-      fields["LGA of Origin"] || "",
+    parent: fields["Parent/Guardian"] || "",
+    parentPhone: fields["Parent Phone"] || "",
 
-    parent:
-      fields["Parent/Guardian"] || "",
+    className: fields["Class"] || "",
+    programme: fields["Programme"] || "",
 
-    parentPhone:
-      fields["Parent Phone"] || "",
-
-    className:
-      fields["Class"] || "",
-
-    programme:
-      fields["Programme"] || "",
-
-    status:
-      fields["Status"] || "Active",
+    status: fields["Status"] || "Active",
 
     registrationDate:
       fields["Registration Date"] || "",
 
-    photo:
-      fields["Photo"] || null,
+    photo: fields["Photo"] || null,
 
     fullName:
       `${fields["First Name"] || ""} ${
@@ -88,10 +63,62 @@ function formatStudent(record) {
   };
 }
 
+function studentFields(student) {
+  return {
+    "Student ID": student.id || "",
 
-/* =========================
-   API HANDLER
-========================= */
+    "First Name":
+      student.firstName || "",
+
+    "Last Name":
+      student.lastName || "",
+
+    "Gender":
+      student.gender || "",
+
+    "Date of Birth":
+      student.dob || "",
+
+    "Phone":
+      student.phone || "",
+
+    "Email":
+      student.email || "",
+
+    "Address":
+      student.address || "",
+
+    "Nationality":
+      student.nationality || "Nigerian",
+
+    "Religion":
+      student.religion || "",
+
+    "State of Origin":
+      student.state || "",
+
+    "LGA of Origin":
+      student.lga || "",
+
+    "Parent/Guardian":
+      student.parent || "",
+
+    "Parent Phone":
+      student.parentPhone || "",
+
+    "Class":
+      student.className || "",
+
+    "Programme":
+      student.programme || "",
+
+    "Status":
+      student.status || "Active",
+
+    "Registration Date":
+      student.registrationDate || ""
+  };
+}
 
 export default async function handler(req, res) {
 
@@ -126,11 +153,10 @@ export default async function handler(req, res) {
           .json(data);
       }
 
-      const records =
-        (data.records || []).map(formatStudent);
-
       return res.status(200).json({
-        records
+        records:
+          (data.records || [])
+            .map(formatStudent)
       });
     }
 
@@ -152,67 +178,10 @@ export default async function handler(req, res) {
         body: JSON.stringify({
 
           records: [
-
             {
-              fields: {
-
-                "Student ID":
-                  student.id || "",
-
-                "First Name":
-                  student.firstName || "",
-
-                "Last Name":
-                  student.lastName || "",
-
-                "Gender":
-                  student.gender || "",
-
-                "Date of Birth":
-                  student.dob || "",
-
-                "Phone":
-                  student.phone || "",
-
-                "Email":
-                  student.email || "",
-
-                "Address":
-                  student.address || "",
-
-                "Nationality":
-                  student.nationality || "Nigerian",
-
-                "Religion":
-                  student.religion || "",
-
-                "State of Origin":
-                  student.state || "",
-
-                "LGA of Origin":
-                  student.lga || "",
-
-                "Parent/Guardian":
-                  student.parent || "",
-
-                "Parent Phone":
-                  student.parentPhone || "",
-
-                "Class":
-                  student.className || "",
-
-                "Programme":
-                  student.programme || "",
-
-                "Status":
-                  student.status || "Active",
-
-                "Registration Date":
-                  student.registrationDate || ""
-
-              }
+              fields:
+                studentFields(student)
             }
-
           ],
 
           typecast: true
@@ -221,10 +190,8 @@ export default async function handler(req, res) {
 
       });
 
-
       const data =
         await response.json();
-
 
       if (!response.ok) {
 
@@ -234,11 +201,79 @@ export default async function handler(req, res) {
 
       }
 
-
       return res
         .status(201)
         .json(data);
+    }
 
+
+    /* =========================
+       UPDATE STUDENT
+    ========================= */
+
+    if (req.method === "PUT") {
+
+      const student =
+        req.body || {};
+
+      const airtableId =
+        student.airtableId ||
+        student.recordId ||
+        "";
+
+      if (!airtableId) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Missing Airtable record ID for this student."
+          });
+
+      }
+
+      const updateUrl =
+        `${url}/${encodeURIComponent(
+          airtableId
+        )}`;
+
+      const response =
+        await fetch(updateUrl, {
+
+          method: "PATCH",
+
+          headers:
+            headers(token),
+
+          body:
+            JSON.stringify({
+
+              fields:
+                studentFields(student),
+
+              typecast: true
+
+            })
+
+        });
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+
+        return res
+          .status(response.status)
+          .json(data);
+
+      }
+
+      return res
+        .status(200)
+        .json({
+          record:
+            formatStudent(data)
+        });
     }
 
 
@@ -249,7 +284,8 @@ export default async function handler(req, res) {
     return res
       .status(405)
       .json({
-        error: "Method not allowed"
+        error:
+          "Method not allowed"
       });
 
 
@@ -263,7 +299,8 @@ export default async function handler(req, res) {
     return res
       .status(500)
       .json({
-        error: error.message ||
+        error:
+          error.message ||
           "Server error."
       });
 
