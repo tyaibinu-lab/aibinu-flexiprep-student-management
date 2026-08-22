@@ -45,12 +45,32 @@ export default async function handler(req, res) {
         method: "POST",
         headers: headers(token),
         body: JSON.stringify({
-          records: [
-            {
-              fields: req.body
-            }
-          ]
-        })
+  records: [
+    {
+      fields: {
+        "Student ID": req.body.id,
+        "First Name": req.body.firstName,
+        "Last Name": req.body.lastName,
+        "Gender": req.body.gender,
+        "Date of Birth": req.body.dob,
+        "Phone": req.body.phone,
+        "Email": req.body.email,
+        "Address": req.body.address,
+        "Nationality": req.body.nationality,
+        "Religion": req.body.religion,
+        "State of Origin": req.body.state,
+        "LGA of Origin": req.body.lga,
+        "Parent/Guardian": req.body.parent,
+        "Parent Phone": req.body.parentPhone,
+        "Class": req.body.className,
+        "Programme": req.body.programme,
+        "Status": req.body.status,
+        "Registration Date": req.body.registrationDate
+      }
+    }
+  ],
+  typecast: true
+})
       });
 
       const data = await response.json();
