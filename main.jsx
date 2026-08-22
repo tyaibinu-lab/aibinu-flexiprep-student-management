@@ -981,12 +981,13 @@ function StudentForm({
     }
 
     const response = await fetch("/api/students", {
-      method: "POST",
+  method: editing ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        ...form,
+     body: JSON.stringify({
+  ...form,
+  airtableId: form.airtableId,
         firstName: form.firstName,
         lastName: form.lastName,
         gender: form.gender,
