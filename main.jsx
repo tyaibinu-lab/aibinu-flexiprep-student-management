@@ -329,13 +329,16 @@ function App() {
     try {
 
       const response = await fetch("/api/students", {
-        method: "POST",
+        method: editing ? "PUT" : "POST",
 
         headers: {
           "Content-Type": "application/json"
         },
 
-        body: JSON.stringify(student)
+        body: JSON.stringify({
+  ...student,
+  airtableId: editing?.airtableId
+})
       });
 
 
@@ -980,55 +983,9 @@ function StudentForm({
       }
     }
 
-    const response = await fetch("/api/students", {
-  method: editing ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-     body: JSON.stringify({
-  ...form,
-  airtableId: form.airtableId,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        gender: form.gender,
-        dob: form.dob,
-        phone: form.phone,
-        email: form.email,
-        address: form.address,
-        nationality: form.nationality,
-        religion: form.religion,
-        state: form.state,
-        lga: form.lga,
-        parent: form.parent,
-        parentPhone: form.parentPhone,
-        className: form.className,
-        programme: form.programme,
-        status: form.status,
-        registrationDate: form.registrationDate,
-        id: form.id
-      })
-    });
+    await save(form);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data?.error?.message ||
-        data?.error ||
-        data?.message ||
-        "Unable to register student."
-      );
-    }
-
-    setForm({
-      ...blankStudent,
-      ...initial
-    });
-
-    setFormError("");
-    
-    alert("Student registered successfully.");
-
+setFormError("");
   } catch (error) {
     console.error("Registration error:", error);
     setFormError(error.message || "Unable to register student.");
