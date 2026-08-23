@@ -499,14 +499,6 @@ if (savedStudent) {
     Payments
   </button>
 </div>
-
-  <button
-    className="secondary"
-    onClick={() => setView("payments")}
-  >
-    <CreditCard />
-    Payments
-  </button>
 </div>
 
       </header>
