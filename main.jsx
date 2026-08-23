@@ -1468,17 +1468,28 @@ function SelectField({
           Select...
         </option>
 
+        {options.map(option => {
 
-        {options.map(option => (
+  const optionValue =
+    typeof option === "string"
+      ? option
+      : option.value;
 
-          <option
-            key={option}
-            value={option}
-          >
-            {option}
-          </option>
+  const optionLabel =
+    typeof option === "string"
+      ? option
+      : option.label;
 
-        ))}
+  return (
+    <option
+      key={optionValue}
+      value={optionValue}
+    >
+      {optionLabel}
+    </option>
+  );
+
+})}
 
       </select>
 
@@ -1664,6 +1675,424 @@ function Info({
 }
 
 
+/* =========================
+   PAYMENTS
+========================= */
+
+function Payments({ students, back }) {
+
+  const [form, setForm] = useState({
+    student: "",
+    feeType: "",
+    termSession: "",
+    amountDue: "",
+    amountPaid: "",
+    paymentMethod: "",
+    paymentStatus: "Part Paid",
+    notes: ""
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const balance =
+    (Number(form.amountDue) || 0) -
+    (Number(form.amountPaid) || 0);
+
+  function update(field, value) {
+    setForm(previous => ({
+      ...previous,
+      [field]: value
+    }));
+  }
+
+  function formatNaira(value) {
+    return `₦${Number(value || 0).toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  }
+
+  function handleAmountPaid(value) {
+    const paid = Number(value) || 0;
+    const due = Number(form.amountDue) || 0;
+
+    let status = "Pending";
+
+    if (paid <= 0) {
+      status = "Pending";
+    } else if (paid < due) {
+      status = "Part Paid";
+    } else {
+      status = "Paid";
+    }
+
+    setForm(previous => ({
+      ...previous,
+      amountPaid: value,
+      paymentStatus: status
+    }));
+  }
+
+  async function savePayment(event) {
+
+    event.preventDefault();
+
+    setMessage("");
+    setError("");
+
+    if (!form.student) {
+      setError("Please select a student.");
+      return;
+    }
+
+    if (!form.feeType) {
+      setError("Please select the fee type.");
+      return;
+    }
+
+    if (!form.termSession) {
+      setError("Please enter the Term/Session.");
+      return;
+    }
+
+    if (!form.amountDue) {
+      setError("Please enter the Amount Due.");
+      return;
+    }
+
+    if (form.amountPaid === "") {
+      setError("Please enter the Amount Paid.");
+      return;
+    }
+
+    if (!form.paymentMethod) {
+      setError("Please select the Payment Method.");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+
+      const response = await fetch("/api/payments", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+          student: [form.student],
+
+          feeType: form.feeType,
+
+          termSession: form.termSession,
+
+          amountDue:
+            Number(form.amountDue) || 0,
+
+          amountPaid:
+            Number(form.amountPaid) || 0,
+
+          paymentMethod:
+            form.paymentMethod,
+
+          paymentStatus:
+            form.paymentStatus,
+
+          notes:
+            form.notes || ""
+
+        })
+
+      });
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error?.message ||
+          data.error ||
+          "Payment could not be saved."
+        );
+
+      }
+
+      setMessage(
+        `Payment saved successfully. Receipt: ${
+          data.record?.receiptNumber || "Generated automatically"
+        }`
+      );
+
+      setForm({
+        student: "",
+        feeType: "",
+        termSession: "",
+        amountDue: "",
+        amountPaid: "",
+        paymentMethod: "",
+        paymentStatus: "Part Paid",
+        notes: ""
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      setError(
+        err.message ||
+        "Payment could not be saved."
+      );
+
+    } finally {
+
+      setSaving(false);
+
+    }
+  }
+
+
+  return (
+
+    <main>
+
+      <button
+        className="back"
+        onClick={back}
+        type="button"
+      >
+        <ChevronLeft />
+        Back to Students
+      </button>
+
+
+      <div className="head">
+
+        <div>
+
+          <label>
+            AIBINU FLEXIPREP
+          </label>
+
+          <h1>
+            Payments
+          </h1>
+
+          <p>
+            Record and manage student payments.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      {message && (
+
+        <div className="success">
+          {message}
+        </div>
+
+      )}
+
+
+      {error && (
+
+        <div className="error">
+          {error}
+        </div>
+
+      )}
+
+
+      <form
+        className="form"
+        onSubmit={savePayment}
+      >
+
+        <Section title="Payment Information">
+
+          <div className="grid">
+
+
+            <SelectField
+              label="Student"
+              required
+              value={form.student}
+              onChange={value =>
+                update("student", value)
+              }
+              options={
+                students.map(student => ({
+                  value:
+                    student.airtableId,
+                  label:
+                    `${student.fullName || `${student.firstName || ""} ${student.lastName || ""}`} — ${student.id || ""}`
+                }))
+              }
+            />
+
+
+            <SelectField
+              label="Fee Type"
+              required
+              value={form.feeType}
+              onChange={value =>
+                update("feeType", value)
+              }
+              options={[
+                "Tuition",
+                "Exam Coaching",
+                "WAEC/NECO Registration",
+                "UTME Prep",
+                "GCE Prep",
+                "Materials/Books",
+                "PTA/Development Levy",
+                "Other"
+              ]}
+            />
+
+
+            <Field
+              label="Term / Session"
+              required
+              value={form.termSession}
+              onChange={value =>
+                update("termSession", value)
+              }
+              placeholder="e.g. 2026 UTME"
+            />
+
+
+            <Field
+              label="Amount Due (₦)"
+              required
+              type="number"
+              value={form.amountDue}
+              onChange={value =>
+                update("amountDue", value)
+              }
+            />
+
+
+            <Field
+              label="Amount Paid (₦)"
+              required
+              type="number"
+              value={form.amountPaid}
+              onChange={handleAmountPaid}
+            />
+
+
+            <div className="field">
+
+              <label>
+                Balance
+              </label>
+
+              <div
+                style={{
+                  padding: "12px",
+                  borderRadius: "8px",
+                  background:
+                    balance > 0
+                      ? "#fff4f4"
+                      : "#eefaf3",
+                  fontWeight: "700",
+                  fontSize: "1.1rem"
+                }}
+              >
+                {formatNaira(balance)}
+              </div>
+
+            </div>
+
+
+            <SelectField
+              label="Payment Method"
+              required
+              value={form.paymentMethod}
+              onChange={value =>
+                update("paymentMethod", value)
+              }
+              options={[
+                "Cash",
+                "Bank Transfer",
+                "POS",
+                "Mobile Money",
+                "Cheque"
+              ]}
+            />
+
+
+            <SelectField
+              label="Payment Status"
+              value={form.paymentStatus}
+              onChange={value =>
+                update("paymentStatus", value)
+              }
+              options={[
+                "Pending",
+                "Part Paid",
+                "Paid"
+              ]}
+            />
+
+
+            <Field
+              label="Notes"
+              value={form.notes}
+              onChange={value =>
+                update("notes", value)
+              }
+              full
+            />
+
+          </div>
+
+        </Section>
+
+
+        <div className="actions">
+
+          <button
+            type="button"
+            className="secondary"
+            onClick={back}
+            disabled={saving}
+          >
+            Cancel
+          </button>
+
+
+          <button
+            type="submit"
+            className="primary"
+            disabled={saving}
+          >
+
+            <CreditCard />
+
+            {saving
+              ? "Saving Payment..."
+              : "Save Payment"}
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </main>
+
+  );
+}
 /* =========================
    START APP
 ========================= */
