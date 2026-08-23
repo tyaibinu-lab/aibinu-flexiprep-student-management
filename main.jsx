@@ -1,7 +1,3 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  createRoot
-} from "react-dom/client";
 import {
   Users,
   UserPlus,
@@ -13,7 +9,8 @@ import {
   GraduationCap,
   Filter,
   Camera,
-  RefreshCw
+  RefreshCw,
+  CreditCard
 } from "lucide-react";
 import "./styles.css";
 /* =========================
