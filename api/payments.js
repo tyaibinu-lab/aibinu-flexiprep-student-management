@@ -160,91 +160,6 @@ export default async function handler(req, res) {
 
   const payment = req.body || {};
 
-  // Generate Payment ID safely on the server
-  const paymentDate = payment.paymentDate
-    ? new Date(payment.paymentDate)
-    : new Date();
-
-  const year =
-    !isNaN(paymentDate.getTime())
-      ? paymentDate.getUTCFullYear()
-      : new Date().getUTCFullYear();
-
-  // Get existing payment IDs
-  let existingRecords = [];
-  let offset = null;
-
-  do {
-    const queryUrl =
-      `${url}?fields%5B%5D=Payment%20ID${offset ? `&offset=${encodeURIComponent(offset)}` : ""}`;
-
-    const listResponse = await fetch(queryUrl, {
-      method: "GET",
-      headers: headers(token)
-    });
-
-    const listData = await listResponse.json();
-
-    if (!listResponse.ok) {
-      return res
-        .status(listResponse.status)
-        .json(listData);
-    }
-
-    existingRecords = existingRecords.concat(
-      listData.records || []
-    );
-
-    offset = listData.offset || null;
-
-  } while (offset);
-
-  // Find the highest valid payment number for this year
-  let highestNumber = 0;
-
-  for (const record of existingRecords) {
-
-    const paymentId =
-      record.fields?.["Payment ID"] || "";
-
-    const match =
-      String(paymentId).match(
-        new RegExp(`^PAY-${year}-(\\d+)$`)
-      );
-
-    if (match) {
-
-      const number =
-        parseInt(match[1], 10);
-
-      if (
-        Number.isFinite(number) &&
-        number > highestNumber
-      ) {
-        highestNumber = number;
-      }
-    }
-  }
-
-  const nextNumber =
-    highestNumber + 1;
-
-  const paymentId =
-    `PAY-${year}-${String(nextNumber).padStart(4, "0")}`;
-
-  const receiptNumber =
-    `RCP-${paymentId}`;
-
-  const fields =
-    paymentFields(payment);
-
-  // Add generated identifiers
-  fields["Payment ID"] =
-    paymentId;
-
-  fields["Receipt Number"] =
-    receiptNumber;
-
   const response =
     await fetch(url, {
 
@@ -258,7 +173,8 @@ export default async function handler(req, res) {
 
           records: [
             {
-              fields
+              fields:
+                paymentFields(payment)
             }
           ],
 
@@ -286,7 +202,6 @@ export default async function handler(req, res) {
         formatPayment(data.records[0])
     });
 }
-
     /* =========================
        UPDATE PAYMENT
     ========================= */
