@@ -63,10 +63,9 @@ function paymentFields(payment) {
         : [payment.student];
   }
 
-  if (payment.paymentDate) {
-    fields["Payment Date"] = payment.paymentDate;
-  }
-
+  fields["Payment Date"] =
+  payment.paymentDate || new Date().toISOString().split("T")[0];
+  
   if (payment.programme) {
     fields["Programme"] = payment.programme;
   }
