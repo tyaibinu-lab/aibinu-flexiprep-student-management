@@ -158,52 +158,134 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
 
-      const payment =
-        req.body || {};
+  const payment = req.body || {};
 
-      const response =
-        await fetch(url, {
+  // Generate Payment ID safely on the server
+  const paymentDate = payment.paymentDate
+    ? new Date(payment.paymentDate)
+    : new Date();
 
-          method: "POST",
+  const year =
+    !isNaN(paymentDate.getTime())
+      ? paymentDate.getUTCFullYear()
+      : new Date().getUTCFullYear();
 
-          headers:
-            headers(token),
+  // Get existing payment IDs
+  let existingRecords = [];
+  let offset = null;
 
-          body:
-            JSON.stringify({
+  do {
+    const queryUrl =
+      `${url}?fields%5B%5D=Payment%20ID${offset ? `&offset=${encodeURIComponent(offset)}` : ""}`;
 
-              records: [
-                {
-                  fields:
-                    paymentFields(payment)
-                }
-              ],
+    const listResponse = await fetch(queryUrl, {
+      method: "GET",
+      headers: headers(token)
+    });
 
-              typecast: true
+    const listData = await listResponse.json();
 
-            })
-
-        });
-
-      const data =
-        await response.json();
-
-      if (!response.ok) {
-
-        return res
-          .status(response.status)
-          .json(data);
-
-      }
-
+    if (!listResponse.ok) {
       return res
-        .status(201)
-        .json({
-          record:
-            formatPayment(data.records[0])
-        });
+        .status(listResponse.status)
+        .json(listData);
     }
 
+    existingRecords = existingRecords.concat(
+      listData.records || []
+    );
+
+    offset = listData.offset || null;
+
+  } while (offset);
+
+  // Find the highest valid payment number for this year
+  let highestNumber = 0;
+
+  for (const record of existingRecords) {
+
+    const paymentId =
+      record.fields?.["Payment ID"] || "";
+
+    const match =
+      String(paymentId).match(
+        new RegExp(`^PAY-${year}-(\\d+)$`)
+      );
+
+    if (match) {
+
+      const number =
+        parseInt(match[1], 10);
+
+      if (
+        Number.isFinite(number) &&
+        number > highestNumber
+      ) {
+        highestNumber = number;
+      }
+    }
+  }
+
+  const nextNumber =
+    highestNumber + 1;
+
+  const paymentId =
+    `PAY-${year}-${String(nextNumber).padStart(4, "0")}`;
+
+  const receiptNumber =
+    `RCP-${paymentId}`;
+
+  const fields =
+    paymentFields(payment);
+
+  // Add generated identifiers
+  fields["Payment ID"] =
+    paymentId;
+
+  fields["Receipt Number"] =
+    receiptNumber;
+
+  const response =
+    await fetch(url, {
+
+      method: "POST",
+
+      headers:
+        headers(token),
+
+      body:
+        JSON.stringify({
+
+          records: [
+            {
+              fields
+            }
+          ],
+
+          typecast: true
+
+        })
+
+    });
+
+  const data =
+    await response.json();
+
+  if (!response.ok) {
+
+    return res
+      .status(response.status)
+      .json(data);
+
+  }
+
+  return res
+    .status(201)
+    .json({
+      record:
+        formatPayment(data.records[0])
+    });
+}
 
     /* =========================
        UPDATE PAYMENT
