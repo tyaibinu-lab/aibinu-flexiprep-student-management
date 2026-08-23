@@ -476,9 +476,23 @@ if (savedStudent) {
 
         </div>
 
-        <strong>
-          Student Management
-        </strong>
+        <div style={{
+  display: "flex",
+  alignItems: "center",
+  gap: "12px"
+}}>
+  <strong>
+    Student Management
+  </strong>
+
+  <button
+    className="secondary"
+    onClick={() => setView("payments")}
+  >
+    <CreditCard />
+    Payments
+  </button>
+</div>
 
       </header>
 
