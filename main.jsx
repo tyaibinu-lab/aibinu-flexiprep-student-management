@@ -481,9 +481,23 @@ if (savedStudent) {
   alignItems: "center",
   gap: "12px"
 }}>
+  <div style={{
+  display: "flex",
+  alignItems: "center",
+  gap: "12px"
+}}>
   <strong>
     Student Management
   </strong>
+
+  <button
+    className="secondary"
+    onClick={() => setView("payments")}
+  >
+    <CreditCard />
+    Payments
+  </button>
+</div>
 
   <button
     className="secondary"
@@ -559,7 +573,15 @@ if (savedStudent) {
         />
 
       )}
+      
+{view === "payments" && (
 
+  <Payments
+    students={students}
+    back={() => setView("list")}
+  />
+
+)}
     </>
   );
 }
