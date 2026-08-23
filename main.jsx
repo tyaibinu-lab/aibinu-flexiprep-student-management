@@ -1,5 +1,3 @@
-import React, { useEffect, useMemo, useState } from 
-import "./styles.css";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   createRoot
