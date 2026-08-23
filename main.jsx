@@ -182,7 +182,11 @@ function App() {
   const [students, setStudents] = useState([]);
 
   const [view, setView] = useState("list");
-
+  
+  const [view, setView] = useState("list");
+  
+  const [paymentView, setPaymentView] = useState("list");
+  
   const [selected, setSelected] = useState(null);
 
   const [editing, setEditing] = useState(null);
