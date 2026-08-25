@@ -28,9 +28,23 @@ export default async function handler(req, res) {
     // Airtable table containing the CBT questions
     const tableName = "CBT_Questions";
 
-    // Get only questions belonging to the selected examination
+    /*
+      IMPORTANT:
+
+      "Exam ID (from CBT Exam)" is a lookup field
+      from the linked CBT Exam record.
+
+      Airtable can return lookup values as an array.
+      ARRAYJOIN converts the lookup value into text
+      so it can be compared with the Exam ID.
+    */
+
+    const safeExamId = String(examId)
+      .replace(/\\/g, "\\\\")
+      .replace(/"/g, '\\"');
+
     const formula =
-      `{Exam ID (from CBT Exam)}="${examId}"`;
+      `ARRAYJOIN({Exam ID (from CBT Exam)})="${safeExamId}"`;
 
     const url =
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}` +
@@ -86,7 +100,10 @@ export default async function handler(req, res) {
     return res.status(200).json(questions);
 
   } catch (error) {
-    console.error("CBT Questions API Error:", error);
+    console.error(
+      "CBT Questions API Error:",
+      error
+    );
 
     return res.status(500).json({
       error: "Failed to load questions",
