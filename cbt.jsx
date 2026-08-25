@@ -530,8 +530,7 @@ function ExamScreen({
   const questions =
     physicsQuestions.slice(0, exam.questions);
 
-  const totalSeconds =
-    exam.duration * 60;
+  const totalSeconds = 10;
 
   const [question, setQuestion] = useState(1);
 
