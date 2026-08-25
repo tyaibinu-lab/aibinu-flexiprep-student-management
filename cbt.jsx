@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 /* =========================================================
-   EXAM CONFIGURATION
-========================================================= */
+   AIBINU FLEXIPREP CBT ENGINE
+   ========================================================= */
 
 const exams = [
   {
@@ -26,330 +26,186 @@ const exams = [
   }
 ];
 
-
 /* =========================================================
-   QUESTION BANK
-   TEMPORARY LOCAL QUESTIONS
-========================================================= */
+   TEMPORARY 20-QUESTION PHYSICS BANK
+   ========================================================= */
 
 const physicsQuestions = [
-
   {
-    question:
-      "Which of the following is a fundamental quantity in physics?",
-    options: [
-      "Force",
-      "Energy",
-      "Mass",
-      "Density"
-    ],
+    question: "Which of the following is a fundamental quantity in physics?",
+    options: ["Force", "Energy", "Mass", "Density"],
     answer: "Mass"
   },
-
   {
-    question:
-      "What is the SI unit of force?",
-    options: [
-      "Joule",
-      "Newton",
-      "Watt",
-      "Pascal"
-    ],
+    question: "What is the SI unit of force?",
+    options: ["Joule", "Newton", "Watt", "Pascal"],
     answer: "Newton"
   },
-
   {
-    question:
-      "Which instrument is used to measure electric current?",
-    options: [
-      "Voltmeter",
-      "Ammeter",
-      "Thermometer",
-      "Barometer"
-    ],
+    question: "Which instrument is used to measure electric current?",
+    options: ["Voltmeter", "Ammeter", "Thermometer", "Barometer"],
     answer: "Ammeter"
   },
-
   {
-    question:
-      "Which of the following is a vector quantity?",
-    options: [
-      "Mass",
-      "Speed",
-      "Distance",
-      "Velocity"
-    ],
+    question: "Which of the following is a vector quantity?",
+    options: ["Mass", "Speed", "Distance", "Velocity"],
     answer: "Velocity"
   },
-
   {
-    question:
-      "The SI unit of work is",
-    options: [
-      "Newton",
-      "Joule",
-      "Watt",
-      "Pascal"
-    ],
-    answer: "Joule"
-  },
-
-  {
-    question:
-      "Which quantity is defined as distance travelled per unit time?",
-    options: [
-      "Acceleration",
-      "Velocity",
-      "Speed",
-      "Force"
-    ],
-    answer: "Speed"
-  },
-
-  {
-    question:
-      "A body moving with constant velocity has",
-    options: [
-      "Constant acceleration",
-      "Zero acceleration",
-      "Increasing acceleration",
-      "Decreasing acceleration"
-    ],
-    answer: "Zero acceleration"
-  },
-
-  {
-    question:
-      "The acceleration due to gravity near the Earth's surface is approximately",
-    options: [
-      "4.9 m/s²",
-      "9.8 m/s²",
-      "98 m/s²",
-      "0.98 m/s²"
-    ],
-    answer: "9.8 m/s²"
-  },
-
-  {
-    question:
-      "Which of the following instruments measures potential difference?",
-    options: [
-      "Ammeter",
-      "Voltmeter",
-      "Galvanometer",
-      "Barometer"
-    ],
-    answer: "Voltmeter"
-  },
-
-  {
-    question:
-      "The resistance of a conductor is measured in",
-    options: [
-      "Volt",
-      "Ampere",
-      "Ohm",
-      "Coulomb"
-    ],
-    answer: "Ohm"
-  },
-
-  {
-    question:
-      "Which particle carries a negative electric charge?",
-    options: [
-      "Proton",
-      "Neutron",
-      "Electron",
-      "Nucleus"
-    ],
-    answer: "Electron"
-  },
-
-  {
-    question:
-      "Which type of energy is possessed by a body because of its position?",
-    options: [
-      "Kinetic energy",
-      "Potential energy",
-      "Electrical energy",
-      "Sound energy"
-    ],
-    answer: "Potential energy"
-  },
-
-  {
-    question:
-      "The unit of power is",
-    options: [
-      "Joule",
-      "Newton",
-      "Watt",
-      "Volt"
-    ],
+    question: "The SI unit of power is?",
+    options: ["Joule", "Newton", "Watt", "Volt"],
     answer: "Watt"
   },
-
   {
-    question:
-      "Which of the following is an example of a simple machine?",
-    options: [
-      "Transformer",
-      "Lever",
-      "Battery",
-      "Motor"
-    ],
-    answer: "Lever"
+    question: "Which instrument is used to measure temperature?",
+    options: ["Barometer", "Thermometer", "Ammeter", "Hydrometer"],
+    answer: "Thermometer"
   },
-
   {
-    question:
-      "The force that opposes motion between two surfaces in contact is",
-    options: [
-      "Tension",
-      "Friction",
-      "Upthrust",
-      "Weight"
-    ],
-    answer: "Friction"
+    question: "The acceleration due to gravity near the Earth's surface is approximately?",
+    options: ["9.8 m/s²", "98 m/s²", "0.98 m/s²", "980 m/s²"],
+    answer: "9.8 m/s²"
   },
-
   {
-    question:
-      "Which wave does not require a material medium for propagation?",
-    options: [
-      "Sound wave",
-      "Water wave",
-      "Light wave",
-      "Seismic wave"
-    ],
-    answer: "Light wave"
+    question: "Which of the following is a scalar quantity?",
+    options: ["Force", "Velocity", "Acceleration", "Speed"],
+    answer: "Speed"
   },
-
   {
-    question:
-      "The change in direction of light as it passes from one medium to another is called",
-    options: [
-      "Reflection",
-      "Refraction",
-      "Diffraction",
-      "Interference"
-    ],
-    answer: "Refraction"
+    question: "The unit of electrical resistance is?",
+    options: ["Ohm", "Volt", "Ampere", "Coulomb"],
+    answer: "Ohm"
   },
-
   {
-    question:
-      "Which colour of visible light has the longest wavelength?",
+    question: "Which law states that every action has an equal and opposite reaction?",
     options: [
-      "Violet",
-      "Blue",
-      "Green",
-      "Red"
+      "Newton's First Law",
+      "Newton's Second Law",
+      "Newton's Third Law",
+      "Law of Conservation of Energy"
     ],
-    answer: "Red"
+    answer: "Newton's Third Law"
   },
-
   {
-    question:
-      "A transformer operates using the principle of",
+    question: "What is the approximate speed of light in vacuum?",
     options: [
-      "Electrolysis",
-      "Electromagnetic induction",
-      "Thermal expansion",
-      "Radioactivity"
+      "3 × 10⁶ m/s",
+      "3 × 10⁸ m/s",
+      "3 × 10¹⁰ m/s",
+      "3 × 10⁴ m/s"
     ],
-    answer: "Electromagnetic induction"
+    answer: "3 × 10⁸ m/s"
   },
-
   {
-    question:
-      "Which of the following is a renewable source of energy?",
-    options: [
-      "Coal",
-      "Natural gas",
-      "Solar energy",
-      "Petroleum"
-    ],
+    question: "Which of the following is a renewable source of energy?",
+    options: ["Coal", "Natural gas", "Solar energy", "Petroleum"],
     answer: "Solar energy"
+  },
+  {
+    question: "The quantity of matter contained in a body is called?",
+    options: ["Weight", "Mass", "Density", "Volume"],
+    answer: "Mass"
+  },
+  {
+    question: "Which instrument is commonly used to measure atmospheric pressure?",
+    options: ["Ammeter", "Barometer", "Voltmeter", "Thermometer"],
+    answer: "Barometer"
+  },
+  {
+    question: "Work is done when a force causes an object to?",
+    options: [
+      "Change colour",
+      "Move through a distance",
+      "Increase in temperature only",
+      "Remain stationary"
+    ],
+    answer: "Move through a distance"
+  },
+  {
+    question: "The SI unit of energy is?",
+    options: ["Watt", "Joule", "Newton", "Pascal"],
+    answer: "Joule"
+  },
+  {
+    question: "Which type of lens is used to correct short-sightedness?",
+    options: [
+      "Convex lens",
+      "Concave lens",
+      "Cylindrical lens",
+      "Plane glass"
+    ],
+    answer: "Concave lens"
+  },
+  {
+    question: "Which of the following is a good conductor of electricity?",
+    options: ["Rubber", "Glass", "Copper", "Wood"],
+    answer: "Copper"
+  },
+  {
+    question: "What happens to the pressure of a gas when its volume decreases at constant temperature?",
+    options: [
+      "It decreases",
+      "It increases",
+      "It remains zero",
+      "It becomes constant"
+    ],
+    answer: "It increases"
+  },
+  {
+    question: "Which of the following is an example of electromagnetic radiation?",
+    options: ["Sound", "Water wave", "Light", "Ocean wave"],
+    answer: "Light"
   }
-
 ];
 
-
 /* =========================================================
-   APP
-========================================================= */
+   MAIN APP
+   ========================================================= */
 
 function App() {
-
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
-
   const [stage, setStage] = useState("login");
-
   const [selectedExam, setSelectedExam] = useState(null);
-
   const [error, setError] = useState("");
 
   function login() {
-
     setError("");
 
-    const id =
-      studentId.trim().toUpperCase();
+    const id = studentId.trim().toUpperCase();
 
     if (!id) {
-      setError(
-        "Please enter your Student ID."
-      );
+      setError("Please enter your Student ID.");
       return;
     }
 
     setStudentId(id);
 
-    /*
-      TEMPORARY LOGIN
-
-      Later:
-      Connect this to Airtable Students table.
-    */
-
+    // Temporary name.
+    // This will later come from Airtable.
     setStudentName("Student");
 
     setStage("exams");
   }
 
-
   function startExam(exam) {
-
     setSelectedExam(exam);
-
     setStage("instructions");
   }
 
-
   function beginExam() {
-
     setStage("exam");
   }
 
-
   function logout() {
-
     setStudentId("");
     setStudentName("");
     setSelectedExam(null);
-
     setStage("login");
   }
 
-
   return (
-
     <div style={styles.page}>
-
-      {/* HEADER */}
 
       <header style={styles.header}>
 
@@ -358,7 +214,6 @@ function App() {
         </div>
 
         <div>
-
           <h1 style={styles.brand}>
             AIBINU FLEXIPREP
           </h1>
@@ -366,93 +221,59 @@ function App() {
           <div style={styles.subtitle}>
             EDUCONSULT
           </div>
-
         </div>
 
-
         {studentId && (
-
           <div style={styles.studentBox}>
-
-            <strong>
-              {studentId}
-            </strong>
-
-            <span>
-              {studentName}
-            </span>
-
+            <strong>{studentId}</strong>
+            <span>{studentName}</span>
           </div>
-
         )}
 
       </header>
 
-
-      {/* LOGIN */}
-
       {stage === "login" && (
-
         <Login
           studentId={studentId}
           setStudentId={setStudentId}
           login={login}
           error={error}
         />
-
       )}
 
-
-      {/* EXAM LIST */}
-
       {stage === "exams" && (
-
         <ExamList
           exams={exams}
           studentId={studentId}
           startExam={startExam}
           logout={logout}
         />
-
       )}
 
+      {stage === "instructions" && selectedExam && (
+        <Instructions
+          exam={selectedExam}
+          beginExam={beginExam}
+          back={() => setStage("exams")}
+        />
+      )}
 
-      {/* INSTRUCTIONS */}
-
-      {stage === "instructions" &&
-        selectedExam && (
-
-          <Instructions
-            exam={selectedExam}
-            beginExam={beginExam}
-            back={() =>
-              setStage("exams")
-            }
-          />
-
-        )}
-
-
-      {/* EXAM */}
-
-      {stage === "exam" &&
-        selectedExam && (
-
-          <ExamScreen
-            exam={selectedExam}
-            studentId={studentId}
-          />
-
-        )}
+      {stage === "exam" && selectedExam && (
+        <ExamScreen
+          exam={selectedExam}
+          studentId={studentId}
+          studentName={studentName}
+          onExit={logout}
+        />
+      )}
 
     </div>
   );
 }
 
-
 /* =========================================================
    LOGIN
-========================================================= */
+   ========================================================= */
 
 function Login({
   studentId,
@@ -460,9 +281,7 @@ function Login({
   login,
   error
 }) {
-
   return (
-
     <main style={styles.center}>
 
       <section style={styles.loginCard}>
@@ -476,40 +295,29 @@ function Login({
         </h2>
 
         <p style={styles.muted}>
-          Enter your AIBINU Flexiprep
-          Student ID to continue.
+          Enter your AIBINU Flexiprep Student ID
+          to continue.
         </p>
-
 
         <input
           style={styles.input}
           value={studentId}
           onChange={(e) =>
-            setStudentId(
-              e.target.value
-            )
+            setStudentId(e.target.value)
           }
           onKeyDown={(e) => {
-
-            if (
-              e.key === "Enter"
-            ) {
+            if (e.key === "Enter") {
               login();
             }
-
           }}
           placeholder="e.g. AF-2026-0001"
         />
 
-
         {error && (
-
           <div style={styles.error}>
             {error}
           </div>
-
         )}
-
 
         <button
           style={styles.primaryButton}
@@ -517,7 +325,6 @@ function Login({
         >
           Continue
         </button>
-
 
         <p style={styles.small}>
           AIBINU FLEXIPREP EDUCONSULT
@@ -529,10 +336,9 @@ function Login({
   );
 }
 
-
 /* =========================================================
    EXAM LIST
-========================================================= */
+   ========================================================= */
 
 function ExamList({
   exams,
@@ -540,28 +346,20 @@ function ExamList({
   startExam,
   logout
 }) {
-
   return (
-
     <main style={styles.container}>
 
       <div style={styles.topRow}>
 
         <div>
-
           <h2>
             Available Examinations
           </h2>
 
           <p style={styles.muted}>
-            Student ID:{" "}
-            <strong>
-              {studentId}
-            </strong>
+            Student ID: <strong>{studentId}</strong>
           </p>
-
         </div>
-
 
         <button
           style={styles.secondaryButton}
@@ -571,7 +369,6 @@ function ExamList({
         </button>
 
       </div>
-
 
       <div style={styles.examGrid}>
 
@@ -594,7 +391,6 @@ function ExamList({
               {exam.programme}
             </p>
 
-
             <div style={styles.examInfo}>
 
               <span>
@@ -611,12 +407,9 @@ function ExamList({
 
             </div>
 
-
             <button
               style={styles.primaryButton}
-              onClick={() =>
-                startExam(exam)
-              }
+              onClick={() => startExam(exam)}
             >
               View Examination
             </button>
@@ -631,19 +424,16 @@ function ExamList({
   );
 }
 
-
 /* =========================================================
    INSTRUCTIONS
-========================================================= */
+   ========================================================= */
 
 function Instructions({
   exam,
   beginExam,
   back
 }) {
-
   return (
-
     <main style={styles.center}>
 
       <section style={styles.instructionCard}>
@@ -657,65 +447,50 @@ function Instructions({
         </h2>
 
         <p style={styles.muted}>
-          Please read the instructions
-          carefully before starting.
+          Please read the instructions carefully
+          before starting.
         </p>
 
         <hr />
 
-
         <div style={styles.instructionList}>
 
           <p>
-            📝{" "}
-            <strong>
-              Questions:
-            </strong>{" "}
+            📝 <strong>Questions:</strong>{" "}
             {exam.questions}
           </p>
 
           <p>
-            ⏱️{" "}
-            <strong>
-              Duration:
-            </strong>{" "}
+            ⏱️ <strong>Duration:</strong>{" "}
             {exam.duration} minutes
           </p>
 
           <p>
-            🎯{" "}
-            <strong>
-              Pass Mark:
-            </strong>{" "}
+            🎯 <strong>Pass Mark:</strong>{" "}
             {exam.passMark}%
           </p>
 
           <p>
-            ⚠️ The examination timer
-            will begin when you click
-            Start Examination.
+            ⚠️ The examination timer will begin
+            when you click Start Examination.
           </p>
 
           <p>
-            ⚠️ You may submit the
-            examination before the
-            timer expires.
+            ⚠️ You may submit the examination
+            at any time before the timer ends.
           </p>
 
           <p>
-            ⚠️ If time reaches zero,
-            the examination will be
-            submitted automatically.
+            ⚠️ If time reaches zero, your
+            examination will be submitted automatically.
           </p>
 
           <p>
-            💡 You can move backward
-            and forward between
-            questions.
+            💡 Read every question carefully before
+            selecting your answer.
           </p>
 
         </div>
-
 
         <div style={styles.buttonRow}>
 
@@ -725,7 +500,6 @@ function Instructions({
           >
             Back
           </button>
-
 
           <button
             style={styles.primaryButton}
@@ -742,46 +516,49 @@ function Instructions({
   );
 }
 
-
 /* =========================================================
    EXAM SCREEN
-========================================================= */
+   ========================================================= */
 
 function ExamScreen({
   exam,
-  studentId
+  studentId,
+  studentName,
+  onExit
 }) {
 
   const questions =
-    physicsQuestions.slice(
-      0,
-      exam.questions
-    );
+    physicsQuestions.slice(0, exam.questions);
 
+  const totalSeconds =
+    exam.duration * 60;
 
-  const [question, setQuestion] =
-    useState(1);
+  const [question, setQuestion] = useState(1);
 
   const [answers, setAnswers] =
     useState({});
 
+  const [timeLeft, setTimeLeft] =
+    useState(totalSeconds);
+
   const [submitted, setSubmitted] =
     useState(false);
 
-  const [score, setScore] =
-    useState(0);
+  const [result, setResult] =
+    useState(null);
 
-  const [timeLeft, setTimeLeft] =
-    useState(exam.duration * 60);
+  const [submitting, setSubmitting] =
+    useState(false);
 
-
-  /* =======================================================
+  /* =====================================================
      TIMER
-  ======================================================= */
+     ===================================================== */
 
   useEffect(() => {
 
-    if (submitted) return;
+    if (submitted) {
+      return;
+    }
 
     if (timeLeft <= 0) {
 
@@ -790,234 +567,274 @@ function ExamScreen({
       return;
     }
 
-
     const timer =
       setInterval(() => {
 
         setTimeLeft(
           (previous) =>
-            previous - 1
+            previous > 0
+              ? previous - 1
+              : 0
         );
 
       }, 1000);
 
-
-    return () =>
-      clearInterval(timer);
+    return () => clearInterval(timer);
 
   }, [timeLeft, submitted]);
 
-
-  /* =======================================================
+  /* =====================================================
      FORMAT TIMER
-  ======================================================= */
+     ===================================================== */
 
   function formatTime(seconds) {
 
     const minutes =
-      Math.floor(
-        seconds / 60
-      );
+      Math.floor(seconds / 60);
 
     const secs =
       seconds % 60;
 
-    return (
-      String(minutes).padStart(2, "0") +
-      ":" +
-      String(secs).padStart(2, "0")
-    );
+    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   }
 
-
-  /* =======================================================
+  /* =====================================================
      SELECT ANSWER
-  ======================================================= */
+     ===================================================== */
 
   function selectAnswer(option) {
 
-    if (submitted) return;
-
-    setAnswers({
-      ...answers,
-      [question]: option
-    });
-  }
-
-
-  /* =======================================================
-     SUBMIT EXAM
-  ======================================================= */
-
-  function submitExam(
-    automatic = false
-  ) {
-
-    if (submitted) return;
-
-
-    if (!automatic) {
-
-      const unanswered =
-        questions.length -
-        Object.keys(answers).length;
-
-
-      const message =
-        unanswered > 0
-
-          ? `You have ${unanswered} unanswered question(s).\n\nDo you want to submit the examination now?`
-
-          : "Are you sure you want to submit the examination now?";
-
-
-      const confirmed =
-        window.confirm(message);
-
-
-      if (!confirmed) return;
-
+    if (submitted) {
+      return;
     }
 
-
-    let totalScore = 0;
-
-
-    questions.forEach(
-      (item, index) => {
-
-        const studentAnswer =
-          answers[index + 1];
-
-
-        if (
-          studentAnswer ===
-          item.answer
-        ) {
-
-          totalScore++;
-
-        }
-
-      }
-    );
-
-
-    setScore(totalScore);
-
-    setSubmitted(true);
-
+    setAnswers((previous) => ({
+      ...previous,
+      [question]: option
+    }));
   }
 
+  /* =====================================================
+     ANSWER COUNT
+     ===================================================== */
 
-  /* =======================================================
-     RESULT
-  ======================================================= */
+  const answeredCount =
+    Object.keys(answers).length;
 
-  if (submitted) {
+  const unansweredCount =
+    questions.length - answeredCount;
+
+  /* =====================================================
+     CALCULATE SCORE
+     ===================================================== */
+
+  function calculateScore() {
+
+    let correct = 0;
+
+    questions.forEach((item, index) => {
+
+      const studentAnswer =
+        answers[index + 1];
+
+      if (
+        studentAnswer ===
+        item.answer
+      ) {
+        correct++;
+      }
+
+    });
 
     const percentage =
       Math.round(
-        (score /
-          questions.length) *
-          100
+        (correct / questions.length) * 100
       );
 
+    return {
+      correct,
+      total: questions.length,
+      percentage,
+      passed:
+        percentage >= exam.passMark
+    };
+  }
 
-    const passed =
-      percentage >=
-      exam.passMark;
+  /* =====================================================
+     SUBMIT EXAMINATION
+     ===================================================== */
 
+  async function submitExam(autoSubmit = false) {
+
+    if (submitted || submitting) {
+      return;
+    }
+
+    if (!autoSubmit) {
+
+      if (unansweredCount > 0) {
+
+        const proceed =
+          window.confirm(
+            `You have ${unansweredCount} unanswered question(s).\n\nDo you want to submit the examination now?`
+          );
+
+        if (!proceed) {
+          return;
+        }
+
+      } else {
+
+        const proceed =
+          window.confirm(
+            "You have answered all questions.\n\nDo you want to submit the examination now?"
+          );
+
+        if (!proceed) {
+          return;
+        }
+
+      }
+
+    }
+
+    setSubmitting(true);
+
+    const finalResult =
+      calculateScore();
+
+    setResult(finalResult);
+    setSubmitted(true);
+
+    /* ================================================
+       SEND RESULT TO BACKEND
+       ================================================ */
+
+    try {
+
+      await fetch("/api/cbt", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+
+          studentId,
+          studentName,
+
+          examId: exam.id,
+
+          examTitle:
+            exam.title,
+
+          subject:
+            exam.subject,
+
+          programme:
+            exam.programme,
+
+          answers,
+
+          score:
+            finalResult.correct,
+
+          total:
+            finalResult.total,
+
+          percentage:
+            finalResult.percentage,
+
+          submittedAutomatically:
+            autoSubmit,
+
+          submittedAt:
+            new Date().toISOString()
+
+        })
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "CBT submission error:",
+        error
+      );
+
+    }
+
+    setSubmitting(false);
+  }
+
+  /* =====================================================
+     RESULT SCREEN
+     ===================================================== */
+
+  if (submitted && result) {
 
     return (
-
       <main style={styles.center}>
 
-        <section
-          style={
-            styles.resultCard
-          }
-        >
+        <section style={styles.resultCard}>
 
-          <div style={styles.examBadge}>
-            {exam.subject}
+          <div style={styles.resultIcon}>
+            {result.passed ? "🎉" : "📚"}
           </div>
 
-
-          <h2>
+          <h1>
             Examination Submitted
-          </h2>
+          </h1>
 
+          <p style={styles.muted}>
+            {exam.title}
+          </p>
+
+          <div style={styles.scoreBox}>
+
+            <div style={styles.bigScore}>
+              {result.percentage}%
+            </div>
+
+            <div>
+              Score:{" "}
+              <strong>
+                {result.correct}
+              </strong>{" "}
+              / {result.total}
+            </div>
+
+          </div>
+
+          <div
+            style={{
+              ...styles.status,
+              background:
+                result.passed
+                  ? "#e4f2e9"
+                  : "#ffe9e9",
+              color:
+                result.passed
+                  ? "#0f6b3a"
+                  : "#a40000"
+            }}
+          >
+            {result.passed
+              ? "PASS"
+              : "NOT YET PASSED"}
+          </div>
 
           <p style={styles.muted}>
             Student ID:{" "}
-            <strong>
-              {studentId}
-            </strong>
+            <strong>{studentId}</strong>
           </p>
-
-
-          <hr />
-
-
-          <div
-            style={
-              styles.resultIcon
-            }
-          >
-            {passed
-              ? "🎉"
-              : "📚"}
-          </div>
-
-
-          <div
-            style={
-              styles.scoreCircle
-            }
-          >
-
-            <strong>
-              {percentage}%
-            </strong>
-
-          </div>
-
-
-          <h3>
-            {passed
-              ? "PASSED"
-              : "FAILED"}
-          </h3>
-
-
-          <p>
-            Score:{" "}
-            <strong>
-              {score} /{" "}
-              {questions.length}
-            </strong>
-          </p>
-
-
-          <p style={styles.muted}>
-            Pass Mark:{" "}
-            {exam.passMark}%
-          </p>
-
-
-          <p style={styles.muted}>
-            {passed
-              ? "Excellent work. Keep it up!"
-              : "Keep studying and try again."}
-          </p>
-
 
           <button
             style={styles.primaryButton}
-            onClick={() =>
-              window.location.reload()
-            }
+            onClick={onExit}
           >
             Exit Examination
           </button>
@@ -1028,28 +845,15 @@ function ExamScreen({
     );
   }
 
-
-  /* =======================================================
+  /* =====================================================
      CURRENT QUESTION
-  ======================================================= */
+     ===================================================== */
 
   const current =
     questions[question - 1];
 
-
-  const answered =
-    answers[question];
-
-
-  const unanswered =
-    questions.length -
-    Object.keys(answers).length;
-
-
   return (
-
     <main style={styles.container}>
-
 
       {/* EXAM HEADER */}
 
@@ -1061,129 +865,87 @@ function ExamScreen({
             {exam.title}
           </strong>
 
-          <small
-            style={{
-              display: "block",
-              marginTop: "5px"
-            }}
-          >
+          <small>
             Student: {studentId}
           </small>
 
         </div>
 
-
         <div
           style={{
             ...styles.timer,
             ...(timeLeft <= 300
-              ? styles.timerWarning
+              ? styles.timerDanger
               : {})
           }}
         >
-          ⏱️{" "}
-          {formatTime(timeLeft)}
+          ⏱️ {formatTime(timeLeft)}
         </div>
 
       </div>
 
-
       {/* PROGRESS */}
 
-      <div
-        style={
-          styles.progressBox
-        }
-      >
+      <div style={styles.progressPanel}>
 
         <div>
-          Question{" "}
           <strong>
-            {question}
-          </strong>{" "}
-          of{" "}
-          <strong>
+            Question {question} of{" "}
             {questions.length}
           </strong>
         </div>
 
-
-        <div>
+        <div style={styles.progressText}>
           Answered:{" "}
-          <strong>
-            {Object.keys(
-              answers
-            ).length}
-          </strong>
-          {" / "}
-          {questions.length}
+          <strong>{answeredCount}</strong>
+          {"  |  "}
+          Unanswered:{" "}
+          <strong>{unansweredCount}</strong>
         </div>
 
       </div>
 
-
       {/* QUESTION */}
 
-      <section
-        style={
-          styles.questionCard
-        }
-      >
+      <section style={styles.questionCard}>
 
-        <div
-          style={
-            styles.questionNumber
-          }
-        >
+        <div style={styles.questionNumber}>
           Question {question} of{" "}
           {questions.length}
         </div>
 
-
-        <h2>
+        <h2 style={styles.questionText}>
           {current.question}
         </h2>
-
 
         <div>
 
           {current.options.map(
-            (
-              option,
-              index
-            ) => (
+            (option, index) => (
 
               <button
                 key={option}
                 onClick={() =>
-                  selectAnswer(
-                    option
-                  )
+                  selectAnswer(option)
                 }
                 style={{
                   ...styles.option,
-
-                  ...(answered ===
+                  ...(answers[question] ===
                   option
                     ? styles.selectedOption
                     : {})
                 }}
               >
 
-                <span
-                  style={{
-                    fontWeight:
-                      "bold",
-                    marginRight:
-                      "12px"
-                  }}
-                >
+                <span style={styles.optionLetter}>
                   {String.fromCharCode(
                     65 + index
                   )}
                 </span>
 
-                {option}
+                <span>
+                  {option}
+                </span>
 
               </button>
 
@@ -1192,82 +954,80 @@ function ExamScreen({
 
         </div>
 
-
         {/* NAVIGATION */}
 
-        <div
-          style={
-            styles.navigationRow
-          }
-        >
+        <div style={styles.navigationRow}>
 
           <button
-            style={
-              styles.secondaryButton
-            }
-            disabled={
-              question === 1
-            }
+            style={styles.secondaryButton}
+            disabled={question === 1}
             onClick={() =>
               setQuestion(
-                question - 1
+                (previous) =>
+                  Math.max(
+                    1,
+                    previous - 1
+                  )
               )
             }
           >
             ← Previous
           </button>
 
-
           {question <
-            questions.length && (
+          questions.length ? (
 
             <button
-              style={
-                styles.primaryButton
-              }
+              style={styles.primaryButton}
               onClick={() =>
                 setQuestion(
-                  question + 1
+                  (previous) =>
+                    Math.min(
+                      questions.length,
+                      previous + 1
+                    )
                 )
               }
             >
               Next Question →
             </button>
 
+          ) : (
+
+            <button
+              style={styles.primaryButton}
+              onClick={() =>
+                submitExam(false)
+              }
+              disabled={submitting}
+            >
+              {submitting
+                ? "Submitting..."
+                : "✓ Submit Examination"}
+            </button>
+
           )}
-
-
-          <button
-            style={
-              styles.submitButton
-            }
-            onClick={() =>
-              submitExam(false)
-            }
-          >
-            ✓ Submit Examination
-          </button>
 
         </div>
 
+        {/* SUBMIT ANYTIME */}
 
-        {/* SUBMISSION NOTICE */}
+        <div style={styles.submitArea}>
 
-        <div
-          style={
-            styles.submitNotice
-          }
-        >
+          <p style={styles.submitHelp}>
+            You can submit your examination
+            at any time.
+          </p>
 
-          <strong>
-            You can submit at any time.
-          </strong>
-
-          <br />
-
-          {unanswered > 0
-            ? `${unanswered} question(s) unanswered.`
-            : "All questions answered."}
+          <button
+            style={styles.submitButton}
+            onClick={() =>
+              submitExam(false)
+            }
+            disabled={submitting}
+          >
+            ✓ Submit Examination
+          </button>
 
         </div>
 
@@ -1277,10 +1037,9 @@ function ExamScreen({
   );
 }
 
-
 /* =========================================================
    STYLES
-========================================================= */
+   ========================================================= */
 
 const styles = {
 
@@ -1292,20 +1051,16 @@ const styles = {
     color: "#173b2a"
   },
 
-
   header: {
     background: "#0f6b3a",
     color: "white",
-    padding:
-      "15px 25px",
+    padding: "18px 25px",
     display: "flex",
-    alignItems:
-      "center",
+    alignItems: "center",
     gap: "12px",
     boxShadow:
       "0 2px 8px rgba(0,0,0,0.12)"
   },
-
 
   logo: {
     width: "48px",
@@ -1314,20 +1069,16 @@ const styles = {
     background: "#d9b441",
     color: "#0f6b3a",
     display: "flex",
-    alignItems:
-      "center",
-    justifyContent:
-      "center",
+    alignItems: "center",
+    justifyContent: "center",
     fontWeight: "bold",
     fontSize: "18px"
   },
-
 
   brand: {
     margin: 0,
     fontSize: "18px"
   },
-
 
   subtitle: {
     fontSize: "11px",
@@ -1335,28 +1086,22 @@ const styles = {
     letterSpacing: "1px"
   },
 
-
   studentBox: {
     marginLeft: "auto",
     display: "flex",
-    flexDirection:
-      "column",
+    flexDirection: "column",
     textAlign: "right",
     fontSize: "13px"
   },
 
-
   center: {
     minHeight:
-      "calc(100vh - 80px)",
+      "calc(100vh - 85px)",
     display: "flex",
-    justifyContent:
-      "center",
-    alignItems:
-      "center",
+    justifyContent: "center",
+    alignItems: "center",
     padding: "20px"
   },
-
 
   loginCard: {
     background: "white",
@@ -1369,7 +1114,6 @@ const styles = {
     textAlign: "center"
   },
 
-
   instructionCard: {
     background: "white",
     width: "100%",
@@ -1380,29 +1124,30 @@ const styles = {
       "0 8px 30px rgba(0,0,0,0.08)"
   },
 
-
   resultCard: {
     background: "white",
     width: "100%",
-    maxWidth: "550px",
-    padding: "35px",
+    maxWidth: "500px",
+    padding: "40px",
     borderRadius: "18px",
     boxShadow:
       "0 8px 30px rgba(0,0,0,0.08)",
     textAlign: "center"
   },
 
-
   iconCircle: {
     fontSize: "45px",
     marginBottom: "10px"
   },
 
+  resultIcon: {
+    fontSize: "55px",
+    marginBottom: "10px"
+  },
 
   input: {
     width: "100%",
-    boxSizing:
-      "border-box",
+    boxSizing: "border-box",
     padding: "15px",
     border:
       "1px solid #ccd8d1",
@@ -1411,19 +1156,16 @@ const styles = {
     marginTop: "15px"
   },
 
-
   primaryButton: {
     background: "#0f6b3a",
     color: "white",
     border: "none",
     borderRadius: "9px",
-    padding:
-      "13px 20px",
+    padding: "13px 20px",
     fontWeight: "bold",
     cursor: "pointer",
     marginTop: "15px"
   },
-
 
   secondaryButton: {
     background: "white",
@@ -1431,25 +1173,20 @@ const styles = {
     border:
       "1px solid #0f6b3a",
     borderRadius: "9px",
-    padding:
-      "12px 18px",
+    padding: "12px 18px",
     fontWeight: "bold",
     cursor: "pointer"
   },
 
-
   submitButton: {
-    background: "#d9b441",
-    color: "#173b2a",
+    background: "#b88908",
+    color: "white",
     border: "none",
     borderRadius: "9px",
-    padding:
-      "13px 20px",
+    padding: "13px 22px",
     fontWeight: "bold",
-    cursor: "pointer",
-    marginTop: "15px"
+    cursor: "pointer"
   },
-
 
   error: {
     background: "#ffe9e9",
@@ -1460,11 +1197,9 @@ const styles = {
     fontSize: "14px"
   },
 
-
   muted: {
     color: "#66756d"
   },
-
 
   small: {
     fontSize: "11px",
@@ -1472,26 +1207,19 @@ const styles = {
     marginTop: "25px"
   },
 
-
   container: {
     maxWidth: "1100px",
     margin: "auto",
-    padding:
-      "30px 20px"
+    padding: "30px 20px"
   },
-
 
   topRow: {
     display: "flex",
-    justifyContent:
-      "space-between",
-    alignItems:
-      "center",
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: "15px",
-    marginBottom:
-      "25px"
+    marginBottom: "25px"
   },
-
 
   examGrid: {
     display: "grid",
@@ -1499,7 +1227,6 @@ const styles = {
       "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "20px"
   },
-
 
   examCard: {
     background: "white",
@@ -1509,88 +1236,76 @@ const styles = {
       "0 5px 20px rgba(0,0,0,0.06)"
   },
 
-
   examBadge: {
     display: "inline-block",
     background: "#e4f2e9",
     color: "#0f6b3a",
-    padding:
-      "6px 10px",
+    padding: "6px 10px",
     borderRadius: "20px",
     fontSize: "12px",
     fontWeight: "bold"
   },
 
-
   examInfo: {
     display: "flex",
-    flexDirection:
-      "column",
+    flexDirection: "column",
     gap: "8px",
     color: "#58675f",
     fontSize: "14px",
     marginTop: "18px"
   },
 
-
   instructionList: {
     lineHeight: "1.7"
   },
 
-
   buttonRow: {
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     gap: "12px",
     marginTop: "25px"
   },
-
 
   examHeader: {
     background: "white",
     padding: "18px",
     borderRadius: "12px",
     display: "flex",
-    justifyContent:
-      "space-between",
-    alignItems:
-      "center",
-    marginBottom:
-      "15px"
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "12px"
   },
-
 
   timer: {
     background: "#fff2d2",
     color: "#795600",
-    padding:
-      "10px 15px",
+    padding: "10px 15px",
     borderRadius: "8px",
     fontWeight: "bold",
-    minWidth: "70px",
+    minWidth: "75px",
     textAlign: "center"
   },
 
-
-  timerWarning: {
+  timerDanger: {
     background: "#ffe1e1",
     color: "#a40000"
   },
 
-
-  progressBox: {
+  progressPanel: {
     background: "white",
-    padding: "12px 18px",
+    padding: "14px 18px",
     borderRadius: "10px",
-    marginBottom: "15px",
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
     gap: "10px",
+    marginBottom: "15px",
     fontSize: "14px"
   },
 
+  progressText: {
+    color: "#66756d"
+  },
 
   questionCard: {
     background: "white",
@@ -1600,14 +1315,15 @@ const styles = {
       "0 5px 20px rgba(0,0,0,0.06)"
   },
 
-
   questionNumber: {
     color: "#0f6b3a",
     fontWeight: "bold",
-    marginBottom:
-      "20px"
+    marginBottom: "20px"
   },
 
+  questionText: {
+    lineHeight: "1.45"
+  },
 
   option: {
     width: "100%",
@@ -1619,9 +1335,24 @@ const styles = {
       "1px solid #d7e0db",
     borderRadius: "10px",
     cursor: "pointer",
-    fontSize: "15px"
+    fontSize: "15px",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px"
   },
 
+  optionLetter: {
+    width: "30px",
+    height: "30px",
+    borderRadius: "50%",
+    background: "#e4f2e9",
+    color: "#0f6b3a",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    flexShrink: 0
+  },
 
   selectedOption: {
     background: "#e4f2e9",
@@ -1629,63 +1360,62 @@ const styles = {
       "2px solid #0f6b3a"
   },
 
-
   navigationRow: {
     display: "flex",
-    justifyContent:
-      "space-between",
-    alignItems:
-      "center",
-    gap: "10px",
-    flexWrap: "wrap",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
     marginTop: "25px"
   },
 
-
-  submitNotice: {
-    background: "#f5f7f6",
-    padding: "12px",
-    borderRadius: "8px",
-    marginTop: "20px",
-    fontSize: "13px",
-    color: "#58675f",
-    textAlign: "center"
-  },
-
-
-  resultIcon: {
-    fontSize: "50px",
-    marginTop: "15px"
-  },
-
-
-  scoreCircle: {
-    width: "130px",
-    height: "130px",
-    borderRadius: "50%",
-    background: "#e4f2e9",
-    color: "#0f6b3a",
+  submitArea: {
+    borderTop:
+      "1px solid #e1e7e3",
+    marginTop: "25px",
+    paddingTop: "20px",
     display: "flex",
-    alignItems:
-      "center",
-    justifyContent:
-      "center",
-    margin:
-      "20px auto",
-    fontSize: "32px"
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "15px",
+    flexWrap: "wrap"
+  },
+
+  submitHelp: {
+    color: "#66756d",
+    fontSize: "13px",
+    margin: 0
+  },
+
+  scoreBox: {
+    background: "#f5f7f6",
+    padding: "25px",
+    borderRadius: "12px",
+    marginTop: "25px",
+    marginBottom: "20px"
+  },
+
+  bigScore: {
+    fontSize: "48px",
+    fontWeight: "bold",
+    color: "#0f6b3a",
+    marginBottom: "8px"
+  },
+
+  status: {
+    display: "inline-block",
+    padding: "10px 25px",
+    borderRadius: "20px",
+    fontWeight: "bold",
+    marginBottom: "20px"
   }
-
 };
-
 
 /* =========================================================
    START APPLICATION
-========================================================= */
+   ========================================================= */
 
 createRoot(
-  document.getElementById(
-    "cbt-root"
-  )
+  document.getElementById("cbt-root")
 ).render(
   <App />
 );
