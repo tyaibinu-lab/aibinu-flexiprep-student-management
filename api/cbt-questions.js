@@ -25,30 +25,37 @@ export default async function handler(req, res) {
       });
     }
 
-    // Airtable table containing the CBT questions
     const tableName = "CBT_Questions";
 
     /*
-      IMPORTANT:
+      The CBT_Questions table contains a linked
+      CBT Exam field.
 
-      "Exam ID (from CBT Exam)" is a lookup field
-      from the linked CBT Exam record.
+      We search the lookup field:
+      Exam ID (from CBT Exam)
 
-      Airtable can return lookup values as an array.
-      ARRAYJOIN converts the lookup value into text
-      so it can be compared with the Exam ID.
+      ARRAYJOIN converts Airtable lookup values
+      into text so that they can be compared.
     */
 
     const safeExamId = String(examId)
       .replace(/\\/g, "\\\\")
       .replace(/"/g, '\\"');
 
-    const formula =
-      `ARRAYJOIN({Exam ID (from CBT Exam)})="${safeExamId}"`;
+    const formula = `
+      OR(
+        ARRAYJOIN({Exam ID (from CBT Exam)})="${safeExamId}",
+        ARRAYJOIN({CBT Exam})="${safeExamId}"
+      )
+    `;
 
     const url =
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}` +
       `?filterByFormula=${encodeURIComponent(formula)}`;
+
+    console.log("CBT Questions Request");
+    console.log("Exam ID:", examId);
+    console.log("Formula:", formula);
 
     const response = await fetch(url, {
       headers: {
@@ -59,6 +66,11 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errorText = await response.text();
 
+      console.error(
+        "Airtable CBT Questions Error:",
+        errorText
+      );
+
       return res.status(response.status).json({
         error: "Airtable request failed",
         details: errorText
@@ -67,14 +79,27 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Convert Airtable records into the format required by the CBT
+    console.log(
+      "Questions returned from Airtable:",
+      data.records.length
+    );
+
+    /*
+      Convert Airtable records into the format
+      required by the CBT application.
+    */
+
     const questions = data.records.map(record => {
       const f = record.fields || {};
 
       return {
-        id: f["Question ID"] || record.id,
+        id:
+          f["Question ID"] ||
+          record.id,
 
-        question: f["Question"] || "",
+        question:
+          f["Question"] ||
+          "",
 
         options: [
           f["Option A"] || "",
@@ -83,23 +108,36 @@ export default async function handler(req, res) {
           f["Option D"] || ""
         ],
 
-        answer: f["Correct Answer"] || "",
+        answer:
+          f["Correct Answer"] ||
+          "",
 
-        topic: f["Topic"] || "",
+        topic:
+          f["Topic"] ||
+          "",
 
-        bloomLevel: f["Bloom Level"] || "",
+        bloomLevel:
+          f["Bloom Level"] ||
+          "",
 
-        difficulty: f["Difficulty"] || "",
+        difficulty:
+          f["Difficulty"] ||
+          "",
 
-        explanation: f["Explanation"] || "",
+        explanation:
+          f["Explanation"] ||
+          "",
 
-        status: f["Status"] || ""
+        status:
+          f["Status"] ||
+          ""
       };
     });
 
     return res.status(200).json(questions);
 
   } catch (error) {
+
     console.error(
       "CBT Questions API Error:",
       error
