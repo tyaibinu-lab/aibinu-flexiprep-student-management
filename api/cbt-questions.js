@@ -25,116 +25,281 @@ export default async function handler(req, res) {
       });
     }
 
-    const tableName = "CBT_Questions";
+    const headers = {
+      Authorization: `Bearer ${AIRTABLE_PAT}`
+    };
 
-    /*
-      The CBT_Questions table contains a linked
-      CBT Exam field.
+    /* =====================================================
+       STEP 1
+       FIND THE CBT EXAM
+       ===================================================== */
 
-      We search the lookup field:
-      Exam ID (from CBT Exam)
+    const examsUrl =
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/CBT_Exams`;
 
-      ARRAYJOIN converts Airtable lookup values
-      into text so that they can be compared.
-    */
-
-    const safeExamId = String(examId)
-      .replace(/\\/g, "\\\\")
-      .replace(/"/g, '\\"');
-
-    const formula = `
-      OR(
-        ARRAYJOIN({Exam ID (from CBT Exam)})="${safeExamId}",
-        ARRAYJOIN({CBT Exam})="${safeExamId}"
-      )
-    `;
-
-    const url =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}` +
-      `?filterByFormula=${encodeURIComponent(formula)}`;
-
-    console.log("CBT Questions Request");
-    console.log("Exam ID:", examId);
-    console.log("Formula:", formula);
-
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_PAT}`
-      }
+    const examsResponse = await fetch(examsUrl, {
+      headers
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!examsResponse.ok) {
+      const errorText = await examsResponse.text();
 
-      console.error(
-        "Airtable CBT Questions Error:",
-        errorText
-      );
-
-      return res.status(response.status).json({
-        error: "Airtable request failed",
+      return res.status(examsResponse.status).json({
+        error: "Unable to load CBT Exams from Airtable",
         details: errorText
       });
     }
 
-    const data = await response.json();
+    const examsData = await examsResponse.json();
+
+    let selectedExam = null;
+
+    for (const record of examsData.records || []) {
+
+      const fields = record.fields || {};
+
+      const airtableRecordId = record.id;
+
+      const airtableExamId =
+        fields["Exam ID"] || "";
+
+      if (
+        String(examId) === String(airtableRecordId) ||
+        String(examId) === String(airtableExamId)
+      ) {
+        selectedExam = record;
+        break;
+      }
+    }
+
+    if (!selectedExam) {
+      return res.status(404).json({
+        error: "Exam not found",
+        examId
+      });
+    }
+
+    const selectedExamRecordId =
+      selectedExam.id;
+
+    const selectedExamId =
+      selectedExam.fields?.["Exam ID"] ||
+      "";
+
+    console.log("================================");
+    console.log("CBT EXAM FOUND");
+    console.log("Exam requested:", examId);
+    console.log(
+      "Airtable record ID:",
+      selectedExamRecordId
+    );
+    console.log(
+      "Exam ID:",
+      selectedExamId
+    );
+    console.log("================================");
+
+
+    /* =====================================================
+       STEP 2
+       LOAD CBT QUESTIONS
+       ===================================================== */
+
+    let allQuestions = [];
+
+    let offset = null;
+
+    do {
+
+      let questionsUrl =
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/CBT_Questions`;
+
+      if (offset) {
+        questionsUrl +=
+          `?offset=${encodeURIComponent(offset)}`;
+      }
+
+      const questionsResponse =
+        await fetch(questionsUrl, {
+          headers
+        });
+
+      if (!questionsResponse.ok) {
+
+        const errorText =
+          await questionsResponse.text();
+
+        return res.status(
+          questionsResponse.status
+        ).json({
+          error:
+            "Unable to load CBT Questions from Airtable",
+          details: errorText
+        });
+      }
+
+      const questionsData =
+        await questionsResponse.json();
+
+      allQuestions.push(
+        ...(questionsData.records || [])
+      );
+
+      offset =
+        questionsData.offset || null;
+
+    } while (offset);
+
+
+    /* =====================================================
+       STEP 3
+       FILTER QUESTIONS BY ACTUAL LINKED RECORD
+       ===================================================== */
+
+    const matchedRecords =
+      allQuestions.filter(record => {
+
+        const fields =
+          record.fields || {};
+
+        /*
+          Airtable linked-record fields normally
+          return an array such as:
+
+          [
+            "recXXXXXXXXXXXXXX"
+          ]
+        */
+
+        const linkedExam =
+          fields["CBT Exam"];
+
+        if (Array.isArray(linkedExam)) {
+
+          return linkedExam.some(
+            linkedId =>
+              String(linkedId) ===
+              String(selectedExamRecordId)
+          );
+
+        }
+
+        /*
+          Fallback in case Airtable returns
+          the linked field as text.
+        */
+
+        if (linkedExam) {
+
+          return (
+            String(linkedExam) ===
+              String(selectedExamRecordId) ||
+            String(linkedExam) ===
+              String(selectedExamId)
+          );
+
+        }
+
+        return false;
+      });
+
 
     console.log(
-      "Questions returned from Airtable:",
-      data.records.length
+      "Total CBT questions:",
+      allQuestions.length
     );
 
-    /*
-      Convert Airtable records into the format
-      required by the CBT application.
-    */
+    console.log(
+      "Questions linked to exam:",
+      matchedRecords.length
+    );
 
-    const questions = data.records.map(record => {
-      const f = record.fields || {};
 
-      return {
-        id:
-          f["Question ID"] ||
-          record.id,
+    /* =====================================================
+       STEP 4
+       CONVERT QUESTIONS TO CBT FORMAT
+       ===================================================== */
 
-        question:
-          f["Question"] ||
-          "",
+    const questions =
+      matchedRecords.map(record => {
 
-        options: [
-          f["Option A"] || "",
-          f["Option B"] || "",
-          f["Option C"] || "",
-          f["Option D"] || ""
-        ],
+        const f =
+          record.fields || {};
 
-        answer:
-          f["Correct Answer"] ||
-          "",
+        return {
 
-        topic:
-          f["Topic"] ||
-          "",
+          id:
+            f["Question ID"] ||
+            record.id,
 
-        bloomLevel:
-          f["Bloom Level"] ||
-          "",
+          question:
+            f["Question"] ||
+            "",
 
-        difficulty:
-          f["Difficulty"] ||
-          "",
+          options: [
 
-        explanation:
-          f["Explanation"] ||
-          "",
+            f["Option A"] ||
+              "",
 
-        status:
-          f["Status"] ||
-          ""
-      };
+            f["Option B"] ||
+              "",
+
+            f["Option C"] ||
+              "",
+
+            f["Option D"] ||
+              ""
+
+          ],
+
+          answer:
+            f["Correct Answer"] ||
+            "",
+
+          topic:
+            f["Topic"] ||
+              "",
+
+          bloomLevel:
+            f["Bloom Level"] ||
+              "",
+
+          difficulty:
+            f["Difficulty"] ||
+              "",
+
+          explanation:
+            f["Explanation"] ||
+              "",
+
+          status:
+            f["Status"] ||
+              ""
+        };
+
+      });
+
+
+    /* =====================================================
+       STEP 5
+       RETURN QUESTIONS
+       ===================================================== */
+
+    return res.status(200).json({
+
+      examId:
+        selectedExamId,
+
+      examRecordId:
+        selectedExamRecordId,
+
+      count:
+        questions.length,
+
+      questions
+
     });
 
-    return res.status(200).json(questions);
 
   } catch (error) {
 
@@ -144,8 +309,13 @@ export default async function handler(req, res) {
     );
 
     return res.status(500).json({
-      error: "Failed to load questions",
-      details: error.message
+
+      error:
+        "Failed to load CBT questions",
+
+      details:
+        error.message
+
     });
   }
 }
