@@ -554,35 +554,47 @@ function ExamScreen({
      TIMER
      ===================================================== */
 
-  useEffect(() => {
+  
+   useEffect(() => {
 
-    if (submitted) {
-      return;
-    }
+  if (submitted || submitting) {
+    return;
+  }
 
-    if (timeLeft <= 0) {
+  const timer = setInterval(() => {
 
-      submitExam(true);
+    setTimeLeft((previous) => {
 
-      return;
-    }
+      if (previous <= 1) {
 
-    const timer =
-      setInterval(() => {
+        clearInterval(timer);
 
-        setTimeLeft(
-          (previous) =>
-            previous > 0
-              ? previous - 1
-              : 0
-        );
+        return 0;
+      }
 
-      }, 1000);
+      return previous - 1;
 
-    return () => clearInterval(timer);
+    });
 
-  }, [timeLeft, submitted]);
+  }, 1000);
 
+  return () => clearInterval(timer);
+
+}, [submitted, submitting]);   
+   
+useEffect(() => {
+
+  if (
+    timeLeft === 0 &&
+    !submitted &&
+    !submitting
+  ) {
+
+    submitExam(true);
+
+  }
+
+}, [timeLeft, submitted, submitting]);
   /* =====================================================
      FORMAT TIMER
      ===================================================== */
