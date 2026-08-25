@@ -54,16 +54,13 @@ export default async function handler(req, res) {
     let selectedExam = null;
 
     for (const record of examsData.records || []) {
-
       const fields = record.fields || {};
-
-      const airtableRecordId = record.id;
 
       const airtableExamId =
         fields["Exam ID"] || "";
 
       if (
-        String(examId) === String(airtableRecordId) ||
+        String(examId) === String(record.id) ||
         String(examId) === String(airtableExamId)
       ) {
         selectedExam = record;
@@ -78,25 +75,42 @@ export default async function handler(req, res) {
       });
     }
 
-    const selectedExamRecordId =
-      selectedExam.id;
+    const examFields =
+      selectedExam.fields || {};
 
-    const selectedExamId =
-      selectedExam.fields?.["Exam ID"] || "";
+    const linkedQuestions =
+      examFields["CBT_Questions"] || [];
 
+    console.log("================================");
+    console.log("EXAM FOUND");
+    console.log("Exam record:", selectedExam.id);
     console.log(
-      "CBT Exam Record:",
-      selectedExamRecordId
+      "Exam ID:",
+      examFields["Exam ID"]
     );
-
     console.log(
-      "CBT Exam ID:",
-      selectedExamId
+      "Linked question count:",
+      Array.isArray(linkedQuestions)
+        ? linkedQuestions.length
+        : 0
     );
+    console.log("================================");
 
 
     /* =====================================================
-       2. LOAD ALL CBT QUESTIONS
+       2. CHECK LINKED QUESTIONS
+       ===================================================== */
+
+    if (
+      !Array.isArray(linkedQuestions) ||
+      linkedQuestions.length === 0
+    ) {
+      return res.status(200).json([]);
+    }
+
+
+    /* =====================================================
+       3. LOAD CBT QUESTIONS
        ===================================================== */
 
     let allQuestions = [];
@@ -119,7 +133,6 @@ export default async function handler(req, res) {
         });
 
       if (!questionsResponse.ok) {
-
         const errorText =
           await questionsResponse.text();
 
@@ -144,69 +157,54 @@ export default async function handler(req, res) {
     } while (offset);
 
 
+    /* =====================================================
+       4. GET QUESTION RECORD IDs FROM EXAM
+       ===================================================== */
+
+    const linkedQuestionIds =
+      linkedQuestions.map(item => {
+
+        if (typeof item === "string") {
+          return item;
+        }
+
+        if (item && item.id) {
+          return item.id;
+        }
+
+        return null;
+
+      }).filter(Boolean);
+
+
     console.log(
-      "Total CBT Questions:",
-      allQuestions.length
+      "Linked question IDs:",
+      linkedQuestionIds
     );
 
 
     /* =====================================================
-       3. FIND QUESTIONS LINKED TO THIS EXAM
+       5. MATCH QUESTIONS
        ===================================================== */
 
     const matchedRecords =
       allQuestions.filter(record => {
 
-        const fields =
-          record.fields || {};
-
-        /*
-          Primary linked field:
-          CBT Exam
-        */
-
-        const linkedExam =
-          fields["CBT Exam"];
-
-        if (Array.isArray(linkedExam)) {
-
-          return linkedExam.some(
-            linkedId =>
-              String(linkedId) ===
-              String(selectedExamRecordId)
-          );
-
-        }
-
-        /*
-          Fallback if Airtable gives
-          the linked field as text.
-        */
-
-        if (linkedExam) {
-
-          return (
-            String(linkedExam) ===
-              String(selectedExamRecordId) ||
-            String(linkedExam) ===
-              String(selectedExamId)
-          );
-
-        }
-
-        return false;
+        return linkedQuestionIds.includes(
+          record.id
+        );
 
       });
 
 
     console.log(
-      "Questions linked to exam:",
+      "Questions actually found:",
       matchedRecords.length
     );
 
 
     /* =====================================================
-       4. CONVERT AIRTABLE QUESTIONS
+       6. CONVERT TO CBT FORMAT
        ===================================================== */
 
     const questions =
@@ -226,19 +224,10 @@ export default async function handler(req, res) {
             "",
 
           options: [
-
-            f["Option A"] ||
-              "",
-
-            f["Option B"] ||
-              "",
-
-            f["Option C"] ||
-              "",
-
-            f["Option D"] ||
-              ""
-
+            f["Option A"] || "",
+            f["Option B"] || "",
+            f["Option C"] || "",
+            f["Option D"] || ""
           ],
 
           answer:
@@ -251,19 +240,19 @@ export default async function handler(req, res) {
 
           bloomLevel:
             f["Bloom Level"] ||
-              "",
+            "",
 
           difficulty:
             f["Difficulty"] ||
-              "",
+            "",
 
           explanation:
             f["Explanation"] ||
-              "",
+            "",
 
           status:
             f["Status"] ||
-              ""
+            ""
 
         };
 
@@ -271,24 +260,12 @@ export default async function handler(req, res) {
 
 
     /* =====================================================
-       5. CHECK QUESTION COUNT
+       7. RETURN ARRAY TO REACT APP
        ===================================================== */
 
-    console.log(
-      "Final questions sent to CBT:",
-      questions.length
+    return res.status(200).json(
+      questions
     );
-
-
-    /* =====================================================
-       IMPORTANT
-       
-       The React application expects an ARRAY,
-       NOT an object containing the array.
-       ===================================================== */
-
-    return res.status(200).json(questions);
-
 
   } catch (error) {
 
@@ -301,6 +278,5 @@ export default async function handler(req, res) {
       error: "Failed to load CBT questions",
       details: error.message
     });
-
   }
 }
