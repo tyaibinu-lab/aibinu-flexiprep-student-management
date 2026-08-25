@@ -30,8 +30,7 @@ export default async function handler(req, res) {
     };
 
     /* =====================================================
-       STEP 1
-       FIND THE CBT EXAM
+       1. FIND THE EXAM
        ===================================================== */
 
     const examsUrl =
@@ -45,7 +44,7 @@ export default async function handler(req, res) {
       const errorText = await examsResponse.text();
 
       return res.status(examsResponse.status).json({
-        error: "Unable to load CBT Exams from Airtable",
+        error: "Unable to load CBT Exams",
         details: errorText
       });
     }
@@ -83,26 +82,21 @@ export default async function handler(req, res) {
       selectedExam.id;
 
     const selectedExamId =
-      selectedExam.fields?.["Exam ID"] ||
-      "";
+      selectedExam.fields?.["Exam ID"] || "";
 
-    console.log("================================");
-    console.log("CBT EXAM FOUND");
-    console.log("Exam requested:", examId);
     console.log(
-      "Airtable record ID:",
+      "CBT Exam Record:",
       selectedExamRecordId
     );
+
     console.log(
-      "Exam ID:",
+      "CBT Exam ID:",
       selectedExamId
     );
-    console.log("================================");
 
 
     /* =====================================================
-       STEP 2
-       LOAD CBT QUESTIONS
+       2. LOAD ALL CBT QUESTIONS
        ===================================================== */
 
     let allQuestions = [];
@@ -132,8 +126,7 @@ export default async function handler(req, res) {
         return res.status(
           questionsResponse.status
         ).json({
-          error:
-            "Unable to load CBT Questions from Airtable",
+          error: "Unable to load CBT Questions",
           details: errorText
         });
       }
@@ -151,9 +144,14 @@ export default async function handler(req, res) {
     } while (offset);
 
 
+    console.log(
+      "Total CBT Questions:",
+      allQuestions.length
+    );
+
+
     /* =====================================================
-       STEP 3
-       FILTER QUESTIONS BY ACTUAL LINKED RECORD
+       3. FIND QUESTIONS LINKED TO THIS EXAM
        ===================================================== */
 
     const matchedRecords =
@@ -163,12 +161,8 @@ export default async function handler(req, res) {
           record.fields || {};
 
         /*
-          Airtable linked-record fields normally
-          return an array such as:
-
-          [
-            "recXXXXXXXXXXXXXX"
-          ]
+          Primary linked field:
+          CBT Exam
         */
 
         const linkedExam =
@@ -185,7 +179,7 @@ export default async function handler(req, res) {
         }
 
         /*
-          Fallback in case Airtable returns
+          Fallback if Airtable gives
           the linked field as text.
         */
 
@@ -201,13 +195,9 @@ export default async function handler(req, res) {
         }
 
         return false;
+
       });
 
-
-    console.log(
-      "Total CBT questions:",
-      allQuestions.length
-    );
 
     console.log(
       "Questions linked to exam:",
@@ -216,8 +206,7 @@ export default async function handler(req, res) {
 
 
     /* =====================================================
-       STEP 4
-       CONVERT QUESTIONS TO CBT FORMAT
+       4. CONVERT AIRTABLE QUESTIONS
        ===================================================== */
 
     const questions =
@@ -258,7 +247,7 @@ export default async function handler(req, res) {
 
           topic:
             f["Topic"] ||
-              "",
+            "",
 
           bloomLevel:
             f["Bloom Level"] ||
@@ -275,30 +264,30 @@ export default async function handler(req, res) {
           status:
             f["Status"] ||
               ""
+
         };
 
       });
 
 
     /* =====================================================
-       STEP 5
-       RETURN QUESTIONS
+       5. CHECK QUESTION COUNT
        ===================================================== */
 
-    return res.status(200).json({
+    console.log(
+      "Final questions sent to CBT:",
+      questions.length
+    );
 
-      examId:
-        selectedExamId,
 
-      examRecordId:
-        selectedExamRecordId,
+    /* =====================================================
+       IMPORTANT
+       
+       The React application expects an ARRAY,
+       NOT an object containing the array.
+       ===================================================== */
 
-      count:
-        questions.length,
-
-      questions
-
-    });
+    return res.status(200).json(questions);
 
 
   } catch (error) {
@@ -309,13 +298,9 @@ export default async function handler(req, res) {
     );
 
     return res.status(500).json({
-
-      error:
-        "Failed to load CBT questions",
-
-      details:
-        error.message
-
+      error: "Failed to load CBT questions",
+      details: error.message
     });
+
   }
 }
