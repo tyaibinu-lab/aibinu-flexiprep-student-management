@@ -1010,7 +1010,8 @@ function ExamScreen({
 
         </div>
 
-        {/* SUBMIT ANYTIME */}
+        
+{/* SUBMIT ANYTIME */}
 
         <div style={styles.submitArea}>
 
@@ -1036,7 +1037,6 @@ function ExamScreen({
     </main>
   );
 }
-
 /* =========================================================
    STYLES
    ========================================================= */
