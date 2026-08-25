@@ -5,26 +5,6 @@ import { createRoot } from "react-dom/client";
    AIBINU FLEXIPREP CBT ENGINE
    ========================================================= */
 
-const exams = [
-  {
-    id: "PHY-PRACTICE-01",
-    title: "Physics Practice Test 1",
-    subject: "Physics",
-    programme: "UTME",
-    questions: 20,
-    duration: 30,
-    passMark: 50
-  },
-  {
-    id: "PHY-PRACTICE-02",
-    title: "Physics Practice Test 2",
-    subject: "Physics",
-    programme: "WAEC / NECO",
-    questions: 20,
-    duration: 30,
-    passMark: 50
-  }
-];
 
 /* =========================================================
    TEMPORARY 20-QUESTION PHYSICS BANK
@@ -163,11 +143,39 @@ const physicsQuestions = [
    ========================================================= */
 
 function App() {
+  const [exams, setExams] = useState([]);
+  const [loadingExams, setLoadingExams] = useState(true);
+  const [examError, setExamError] = useState("");
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
   const [stage, setStage] = useState("login");
   const [selectedExam, setSelectedExam] = useState(null);
   const [error, setError] = useState("");
+     useEffect(() => {
+    async function loadExams() {
+      try {
+        setLoadingExams(true);
+        setExamError("");
+
+        const response = await fetch("/api/cbt-exams");
+
+        if (!response.ok) {
+          throw new Error("Failed to load examinations");
+        }
+
+        const data = await response.json();
+
+        setExams(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("CBT Exams API Error:", err);
+        setExamError("Unable to load examinations.");
+      } finally {
+        setLoadingExams(false);
+      }
+    }
+
+    loadExams();
+  }, []);
 
   function login() {
     setError("");
@@ -242,13 +250,15 @@ function App() {
       )}
 
       {stage === "exams" && (
-        <ExamList
-          exams={exams}
-          studentId={studentId}
-          startExam={startExam}
-          logout={logout}
-        />
-      )}
+  <ExamList
+    exams={exams}
+    studentId={studentId}
+    startExam={startExam}
+    logout={logout}
+    loading={loadingExams}
+    error={examError}
+  />
+)}
 
       {stage === "instructions" && selectedExam && (
         <Instructions
