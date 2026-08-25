@@ -1009,30 +1009,31 @@ function ExamScreen({
           )}
 
         </div>
-
-        
+     
 {/* SUBMIT ANYTIME */}
 
-        <div style={styles.submitArea}>
+{question < questions.length && (
+  <div style={styles.submitArea}>
 
-          <p style={styles.submitHelp}>
-            You can submit your examination
-            at any time.
-          </p>
+    <p style={styles.submitHelp}>
+      You can submit your examination
+      at any time.
+    </p>
 
-          <button
-            style={styles.submitButton}
-            onClick={() =>
-              submitExam(false)
-            }
-            disabled={submitting}
-          >
-            ✓ Submit Examination
-          </button>
+    <button
+      style={styles.submitButton}
+      onClick={() =>
+        submitExam(false)
+      }
+      disabled={submitting}
+    >
+      ✓ Submit Examination
+    </button>
 
-        </div>
+  </div>
+)}
 
-      </section>
+</section>
 
     </main>
   );
