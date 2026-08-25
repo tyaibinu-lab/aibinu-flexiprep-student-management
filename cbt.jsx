@@ -3,140 +3,8 @@ import { createRoot } from "react-dom/client";
 
 /* =========================================================
    AIBINU FLEXIPREP CBT ENGINE
+   Airtable-connected version
    ========================================================= */
-
-
-/* =========================================================
-   TEMPORARY 20-QUESTION PHYSICS BANK
-   ========================================================= */
-
-const physicsQuestions = [
-  {
-    question: "Which of the following is a fundamental quantity in physics?",
-    options: ["Force", "Energy", "Mass", "Density"],
-    answer: "Mass"
-  },
-  {
-    question: "What is the SI unit of force?",
-    options: ["Joule", "Newton", "Watt", "Pascal"],
-    answer: "Newton"
-  },
-  {
-    question: "Which instrument is used to measure electric current?",
-    options: ["Voltmeter", "Ammeter", "Thermometer", "Barometer"],
-    answer: "Ammeter"
-  },
-  {
-    question: "Which of the following is a vector quantity?",
-    options: ["Mass", "Speed", "Distance", "Velocity"],
-    answer: "Velocity"
-  },
-  {
-    question: "The SI unit of power is?",
-    options: ["Joule", "Newton", "Watt", "Volt"],
-    answer: "Watt"
-  },
-  {
-    question: "Which instrument is used to measure temperature?",
-    options: ["Barometer", "Thermometer", "Ammeter", "Hydrometer"],
-    answer: "Thermometer"
-  },
-  {
-    question: "The acceleration due to gravity near the Earth's surface is approximately?",
-    options: ["9.8 m/s²", "98 m/s²", "0.98 m/s²", "980 m/s²"],
-    answer: "9.8 m/s²"
-  },
-  {
-    question: "Which of the following is a scalar quantity?",
-    options: ["Force", "Velocity", "Acceleration", "Speed"],
-    answer: "Speed"
-  },
-  {
-    question: "The unit of electrical resistance is?",
-    options: ["Ohm", "Volt", "Ampere", "Coulomb"],
-    answer: "Ohm"
-  },
-  {
-    question: "Which law states that every action has an equal and opposite reaction?",
-    options: [
-      "Newton's First Law",
-      "Newton's Second Law",
-      "Newton's Third Law",
-      "Law of Conservation of Energy"
-    ],
-    answer: "Newton's Third Law"
-  },
-  {
-    question: "What is the approximate speed of light in vacuum?",
-    options: [
-      "3 × 10⁶ m/s",
-      "3 × 10⁸ m/s",
-      "3 × 10¹⁰ m/s",
-      "3 × 10⁴ m/s"
-    ],
-    answer: "3 × 10⁸ m/s"
-  },
-  {
-    question: "Which of the following is a renewable source of energy?",
-    options: ["Coal", "Natural gas", "Solar energy", "Petroleum"],
-    answer: "Solar energy"
-  },
-  {
-    question: "The quantity of matter contained in a body is called?",
-    options: ["Weight", "Mass", "Density", "Volume"],
-    answer: "Mass"
-  },
-  {
-    question: "Which instrument is commonly used to measure atmospheric pressure?",
-    options: ["Ammeter", "Barometer", "Voltmeter", "Thermometer"],
-    answer: "Barometer"
-  },
-  {
-    question: "Work is done when a force causes an object to?",
-    options: [
-      "Change colour",
-      "Move through a distance",
-      "Increase in temperature only",
-      "Remain stationary"
-    ],
-    answer: "Move through a distance"
-  },
-  {
-    question: "The SI unit of energy is?",
-    options: ["Watt", "Joule", "Newton", "Pascal"],
-    answer: "Joule"
-  },
-  {
-    question: "Which type of lens is used to correct short-sightedness?",
-    options: [
-      "Convex lens",
-      "Concave lens",
-      "Cylindrical lens",
-      "Plane glass"
-    ],
-    answer: "Concave lens"
-  },
-  {
-    question: "Which of the following is a good conductor of electricity?",
-    options: ["Rubber", "Glass", "Copper", "Wood"],
-    answer: "Copper"
-  },
-  {
-    question: "What happens to the pressure of a gas when its volume decreases at constant temperature?",
-    options: [
-      "It decreases",
-      "It increases",
-      "It remains zero",
-      "It becomes constant"
-    ],
-    answer: "It increases"
-  },
-  {
-    question: "Which of the following is an example of electromagnetic radiation?",
-    options: ["Sound", "Water wave", "Light", "Ocean wave"],
-    answer: "Light"
-  }
-];
 
 /* =========================================================
    MAIN APP
@@ -146,12 +14,24 @@ function App() {
   const [exams, setExams] = useState([]);
   const [loadingExams, setLoadingExams] = useState(true);
   const [examError, setExamError] = useState("");
+
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
+
   const [stage, setStage] = useState("login");
   const [selectedExam, setSelectedExam] = useState(null);
+
+  const [examQuestions, setExamQuestions] = useState([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [questionError, setQuestionError] = useState("");
+
   const [error, setError] = useState("");
-     useEffect(() => {
+
+  /* =====================================================
+     LOAD EXAMS FROM AIRTABLE
+     ===================================================== */
+
+  useEffect(() => {
     async function loadExams() {
       try {
         setLoadingExams(true);
@@ -165,7 +45,12 @@ function App() {
 
         const data = await response.json();
 
-        setExams(Array.isArray(data) ? data : []);
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid examination data");
+        }
+
+        setExams(data);
+
       } catch (err) {
         console.error("CBT Exams API Error:", err);
         setExamError("Unable to load examinations.");
@@ -176,6 +61,10 @@ function App() {
 
     loadExams();
   }, []);
+
+  /* =====================================================
+     LOGIN
+     ===================================================== */
 
   function login() {
     setError("");
@@ -189,31 +78,153 @@ function App() {
 
     setStudentId(id);
 
-    // Temporary name.
-    // This will later come from Airtable.
+    /* Temporary name.
+       Student name can later come from Airtable. */
     setStudentName("Student");
 
     setStage("exams");
   }
 
+  /* =====================================================
+     SELECT EXAM
+     ===================================================== */
+
   function startExam(exam) {
     setSelectedExam(exam);
+    setExamQuestions([]);
+    setQuestionError("");
     setStage("instructions");
   }
 
-  function beginExam() {
-    setStage("exam");
+  /* =====================================================
+     LOAD QUESTIONS AND BEGIN EXAM
+     ===================================================== */
+
+  async function beginExam() {
+    if (!selectedExam) {
+      return;
+    }
+
+    try {
+      setLoadingQuestions(true);
+      setQuestionError("");
+
+      /*
+        The API expects:
+
+        /api/cbt-questions?examId=EXAM-2026-001
+
+        The backend then uses:
+        Exam ID (from CBT Exam)
+      */
+
+      const url =
+        `/api/cbt-questions?examId=${encodeURIComponent(
+          selectedExam.id
+        )}`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        let message = "Failed to load examination questions.";
+
+        try {
+          const errorData = await response.json();
+
+          if (errorData?.error) {
+            message = errorData.error;
+          }
+        } catch {
+          /* Ignore JSON parsing error */
+        }
+
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error(
+          "Invalid question data received from server."
+        );
+      }
+
+      /*
+        Expected question count from Airtable.
+        Example:
+        Question Count = 20
+      */
+
+      const expectedCount =
+        Number(selectedExam.questionCount) || 0;
+
+      if (expectedCount > 0 && data.length < expectedCount) {
+        throw new Error(
+          `This examination requires ${expectedCount} questions, but only ${data.length} questions are linked to it in Airtable.`
+        );
+      }
+
+      /*
+        Only use the number of questions specified
+        in CBT_Exams.
+
+        Example:
+        Question Count = 20
+        → first 20 linked questions are used.
+      */
+
+      const questions =
+        expectedCount > 0
+          ? data.slice(0, expectedCount)
+          : data;
+
+      if (questions.length === 0) {
+        throw new Error(
+          "No questions are linked to this examination."
+        );
+      }
+
+      setExamQuestions(questions);
+
+      setStage("exam");
+
+    } catch (err) {
+      console.error(
+        "CBT Questions Loading Error:",
+        err
+      );
+
+      setQuestionError(
+        err.message ||
+        "Unable to load examination questions."
+      );
+
+    } finally {
+      setLoadingQuestions(false);
+    }
   }
+
+  /* =====================================================
+     LOGOUT
+     ===================================================== */
 
   function logout() {
     setStudentId("");
     setStudentName("");
     setSelectedExam(null);
+    setExamQuestions([]);
+    setQuestionError("");
     setStage("login");
   }
 
+  /* =====================================================
+     RENDER
+     ===================================================== */
+
   return (
     <div style={styles.page}>
+
+      {/* HEADER */}
 
       <header style={styles.header}>
 
@@ -240,6 +251,8 @@ function App() {
 
       </header>
 
+      {/* LOGIN */}
+
       {stage === "login" && (
         <Login
           studentId={studentId}
@@ -249,33 +262,44 @@ function App() {
         />
       )}
 
+      {/* EXAM LIST */}
+
       {stage === "exams" && (
-  <ExamList
-    exams={exams}
-    studentId={studentId}
-    startExam={startExam}
-    logout={logout}
-    loading={loadingExams}
-    error={examError}
-  />
-)}
+        <ExamList
+          exams={exams}
+          studentId={studentId}
+          startExam={startExam}
+          logout={logout}
+          loading={loadingExams}
+          error={examError}
+        />
+      )}
+
+      {/* INSTRUCTIONS */}
 
       {stage === "instructions" && selectedExam && (
         <Instructions
           exam={selectedExam}
           beginExam={beginExam}
           back={() => setStage("exams")}
+          loading={loadingQuestions}
+          error={questionError}
         />
       )}
 
-      {stage === "exam" && selectedExam && (
-        <ExamScreen
-          exam={selectedExam}
-          studentId={studentId}
-          studentName={studentName}
-          onExit={logout}
-        />
-      )}
+      {/* EXAM */}
+
+      {stage === "exam" &&
+        selectedExam &&
+        examQuestions.length > 0 && (
+          <ExamScreen
+            exam={selectedExam}
+            questions={examQuestions}
+            studentId={studentId}
+            studentName={studentName}
+            onExit={logout}
+          />
+        )}
 
     </div>
   );
@@ -354,7 +378,9 @@ function ExamList({
   exams,
   studentId,
   startExam,
-  logout
+  logout,
+  loading,
+  error
 }) {
   return (
     <main style={styles.container}>
@@ -367,7 +393,8 @@ function ExamList({
           </h2>
 
           <p style={styles.muted}>
-            Student ID: <strong>{studentId}</strong>
+            Student ID:{" "}
+            <strong>{studentId}</strong>
           </p>
         </div>
 
@@ -380,55 +407,119 @@ function ExamList({
 
       </div>
 
-      <div style={styles.examGrid}>
+      {/* LOADING */}
 
-        {exams.map((exam) => (
+      {loading && (
+        <div style={styles.messageCard}>
+          <div style={styles.loadingIcon}>
+            ⏳
+          </div>
 
-          <div
-            key={exam.id}
-            style={styles.examCard}
-          >
+          <h3>
+            Loading examinations...
+          </h3>
 
-            <div style={styles.examBadge}>
-              {exam.subject}
+          <p style={styles.muted}>
+            Please wait.
+          </p>
+        </div>
+      )}
+
+      {/* ERROR */}
+
+      {!loading && error && (
+        <div style={styles.errorCard}>
+          <strong>
+            Unable to load examinations
+          </strong>
+
+          <p>
+            {error}
+          </p>
+        </div>
+      )}
+
+      {/* NO EXAMS */}
+
+      {!loading &&
+        !error &&
+        exams.length === 0 && (
+          <div style={styles.messageCard}>
+            <div style={styles.loadingIcon}>
+              📚
             </div>
 
             <h3>
-              {exam.title}
+              No examinations available
             </h3>
 
             <p style={styles.muted}>
-              {exam.programme}
+              Please contact your administrator.
             </p>
+          </div>
+        )}
 
-            <div style={styles.examInfo}>
+      {/* EXAMS */}
 
-              <span>
-                📝 {exam.questions} Questions
-              </span>
+      {!loading &&
+        !error &&
+        exams.length > 0 && (
 
-              <span>
-                ⏱️ {exam.duration} Minutes
-              </span>
+          <div style={styles.examGrid}>
 
-              <span>
-                🎯 Pass Mark {exam.passMark}%
-              </span>
+            {exams.map((exam) => (
 
-            </div>
+              <div
+                key={exam.id}
+                style={styles.examCard}
+              >
 
-            <button
-              style={styles.primaryButton}
-              onClick={() => startExam(exam)}
-            >
-              View Examination
-            </button>
+                <div style={styles.examBadge}>
+                  {exam.subject}
+                </div>
+
+                <h3>
+                  {exam.title}
+                </h3>
+
+                <p style={styles.muted}>
+                  {exam.programme}
+                </p>
+
+                <div style={styles.examInfo}>
+
+                  <span>
+                    📝{" "}
+                    {exam.questionCount} Questions
+                  </span>
+
+                  <span>
+                    ⏱️{" "}
+                    {exam.duration} Minutes
+                  </span>
+
+                  <span>
+                    🎯 Pass Mark{" "}
+                    {exam.passMark}%
+                  </span>
+
+                </div>
+
+                <button
+                  style={styles.primaryButton}
+                  onClick={() =>
+                    startExam(exam)
+                  }
+                >
+                  View Examination
+                </button>
+
+              </div>
+
+            ))}
 
           </div>
-
-        ))}
-
-      </div>
+        )}
 
     </main>
   );
@@ -441,7 +532,9 @@ function ExamList({
 function Instructions({
   exam,
   beginExam,
-  back
+  back,
+  loading,
+  error
 }) {
   return (
     <main style={styles.center}>
@@ -467,7 +560,7 @@ function Instructions({
 
           <p>
             📝 <strong>Questions:</strong>{" "}
-            {exam.questions}
+            {exam.questionCount}
           </p>
 
           <p>
@@ -480,6 +573,18 @@ function Instructions({
             {exam.passMark}%
           </p>
 
+          {exam.instructions && (
+            <div style={styles.customInstructions}>
+              <strong>
+                Instructions:
+              </strong>
+
+              <p>
+                {exam.instructions}
+              </p>
+            </div>
+          )}
+
           <p>
             ⚠️ The examination timer will begin
             when you click Start Examination.
@@ -487,26 +592,34 @@ function Instructions({
 
           <p>
             ⚠️ You may submit the examination
-            at any time before the timer ends.
+            before the timer ends.
           </p>
 
           <p>
-            ⚠️ If time reaches zero, your
-            examination will be submitted automatically.
+            ⚠️ When the timer reaches zero,
+            the examination will be submitted
+            automatically.
           </p>
 
           <p>
-            💡 Read every question carefully before
-            selecting your answer.
+            💡 Read every question carefully
+            before selecting your answer.
           </p>
 
         </div>
+
+        {error && (
+          <div style={styles.error}>
+            {error}
+          </div>
+        )}
 
         <div style={styles.buttonRow}>
 
           <button
             style={styles.secondaryButton}
             onClick={back}
+            disabled={loading}
           >
             Back
           </button>
@@ -514,8 +627,11 @@ function Instructions({
           <button
             style={styles.primaryButton}
             onClick={beginExam}
+            disabled={loading}
           >
-            Start Examination
+            {loading
+              ? "Loading Questions..."
+              : "Start Examination"}
           </button>
 
         </div>
@@ -532,18 +648,23 @@ function Instructions({
 
 function ExamScreen({
   exam,
+  questions,
   studentId,
   studentName,
   onExit
 }) {
-
-  const questions =
-    physicsQuestions.slice(0, exam.questions);
+  /* =====================================================
+     TIMER
+     ===================================================== */
 
   const totalSeconds =
-  exam.duration * 60;
+    Math.max(
+      1,
+      Number(exam.duration) || 1
+    ) * 60;
 
-  const [question, setQuestion] = useState(1);
+  const [question, setQuestion] =
+    useState(1);
 
   const [answers, setAnswers] =
     useState({});
@@ -561,50 +682,58 @@ function ExamScreen({
     useState(false);
 
   /* =====================================================
-     TIMER
+     TIMER COUNTDOWN
      ===================================================== */
 
-  
-   useEffect(() => {
+  useEffect(() => {
 
-  if (submitted || submitting) {
-    return;
-  }
+    if (
+      submitted ||
+      submitting
+    ) {
+      return;
+    }
 
-  const timer = setInterval(() => {
+    const timer =
+      setInterval(() => {
 
-    setTimeLeft((previous) => {
+        setTimeLeft((previous) => {
 
-      if (previous <= 1) {
+          if (previous <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
 
-        clearInterval(timer);
+          return previous - 1;
+        });
 
-        return 0;
-      }
+      }, 1000);
 
-      return previous - 1;
+    return () =>
+      clearInterval(timer);
 
-    });
+  }, [submitted, submitting]);
 
-  }, 1000);
+  /* =====================================================
+     AUTO SUBMIT WHEN TIME ENDS
+     ===================================================== */
 
-  return () => clearInterval(timer);
+  useEffect(() => {
 
-}, [submitted, submitting]);   
-   
-useEffect(() => {
+    if (
+      timeLeft === 0 &&
+      !submitted &&
+      !submitting
+    ) {
+      submitExam(true);
+    }
 
-  if (
-    timeLeft === 0 &&
-    !submitted &&
-    !submitting
-  ) {
+  }, [
+    timeLeft,
+    submitted,
+    submitting
+  ]);
 
-    submitExam(true);
-
-  }
-
-}, [timeLeft, submitted, submitting]);
   /* =====================================================
      FORMAT TIMER
      ===================================================== */
@@ -617,7 +746,10 @@ useEffect(() => {
     const secs =
       seconds % 60;
 
-    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    return (
+      `${String(minutes).padStart(2, "0")}:` +
+      `${String(secs).padStart(2, "0")}`
+    );
   }
 
   /* =====================================================
@@ -637,14 +769,77 @@ useEffect(() => {
   }
 
   /* =====================================================
-     ANSWER COUNT
+     ANSWER COUNTS
      ===================================================== */
 
   const answeredCount =
     Object.keys(answers).length;
 
   const unansweredCount =
-    questions.length - answeredCount;
+    questions.length -
+    answeredCount;
+
+  /* =====================================================
+     CHECK ANSWER
+
+     Airtable may store:
+       A
+       B
+       C
+       D
+
+     OR it may store:
+       actual answer text
+
+     This function supports both.
+     ===================================================== */
+
+  function answerIsCorrect(
+    item,
+    studentAnswer
+  ) {
+    if (!studentAnswer) {
+      return false;
+    }
+
+    const correct =
+      String(item.answer || "")
+        .trim();
+
+    if (!correct) {
+      return false;
+    }
+
+    const options =
+      Array.isArray(item.options)
+        ? item.options
+        : [];
+
+    const selectedIndex =
+      options.indexOf(studentAnswer);
+
+    if (selectedIndex >= 0) {
+
+      const selectedLetter =
+        String.fromCharCode(
+          65 + selectedIndex
+        );
+
+      if (
+        correct.toUpperCase() ===
+        selectedLetter
+      ) {
+        return true;
+      }
+    }
+
+    return (
+      correct.toLowerCase() ===
+      String(studentAnswer)
+        .trim()
+        .toLowerCase()
+    );
+  }
 
   /* =====================================================
      CALCULATE SCORE
@@ -654,47 +849,68 @@ useEffect(() => {
 
     let correct = 0;
 
-    questions.forEach((item, index) => {
+    questions.forEach(
+      (item, index) => {
 
-      const studentAnswer =
-        answers[index + 1];
+        const studentAnswer =
+          answers[index + 1];
 
-      if (
-        studentAnswer ===
-        item.answer
-      ) {
-        correct++;
+        if (
+          answerIsCorrect(
+            item,
+            studentAnswer
+          )
+        ) {
+          correct++;
+        }
+
       }
+    );
 
-    });
+    const total =
+      questions.length;
 
     const percentage =
-      Math.round(
-        (correct / questions.length) * 100
-      );
+      total > 0
+        ? Math.round(
+            (correct / total) * 100
+          )
+        : 0;
 
     return {
       correct,
-      total: questions.length,
+      total,
       percentage,
       passed:
-        percentage >= exam.passMark
+        percentage >=
+        Number(exam.passMark || 0)
     };
   }
 
   /* =====================================================
-     SUBMIT EXAMINATION
+     SUBMIT EXAM
      ===================================================== */
 
-  async function submitExam(autoSubmit = false) {
+  async function submitExam(
+    autoSubmit = false
+  ) {
 
-    if (submitted || submitting) {
+    if (
+      submitted ||
+      submitting
+    ) {
       return;
     }
 
+    /* ================================================
+       MANUAL SUBMISSION CONFIRMATION
+       ================================================ */
+
     if (!autoSubmit) {
 
-      if (unansweredCount > 0) {
+      if (
+        unansweredCount > 0
+      ) {
 
         const proceed =
           window.confirm(
@@ -715,12 +931,14 @@ useEffect(() => {
         if (!proceed) {
           return;
         }
-
       }
-
     }
 
     setSubmitting(true);
+
+    /* ================================================
+       CALCULATE RESULT
+       ================================================ */
 
     const finalResult =
       calculateScore();
@@ -729,74 +947,111 @@ useEffect(() => {
     setSubmitted(true);
 
     /* ================================================
+       PREPARE RESULT DATA
+       ================================================ */
+
+    const resultData = {
+
+      studentId,
+
+      studentName,
+
+      examId:
+        exam.id,
+
+      examTitle:
+        exam.title,
+
+      subject:
+        exam.subject,
+
+      programme:
+        exam.programme,
+
+      answers,
+
+      score:
+        finalResult.correct,
+
+      total:
+        finalResult.total,
+
+      percentage:
+        finalResult.percentage,
+
+      passMark:
+        exam.passMark,
+
+      submittedAutomatically:
+        autoSubmit,
+
+      submittedAt:
+        new Date().toISOString()
+    };
+
+    console.log(
+      "CBT RESULT:",
+      resultData
+    );
+
+    /* ================================================
        SEND RESULT TO BACKEND
+
+       NOTE:
+       Your current GitHub /api folder does not yet
+       contain cbt.js. Therefore this attempt may return
+       404 until the result endpoint is created.
        ================================================ */
 
     try {
 
-      await fetch("/api/cbt", {
+      const response =
+        await fetch(
+          "/api/cbt",
+          {
+            method: "POST",
 
-        method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
 
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
+            body:
+              JSON.stringify(
+                resultData
+              )
+          }
+        );
 
-        body: JSON.stringify({
+      if (!response.ok) {
 
-          studentId,
-          studentName,
+        console.warn(
+          "CBT result endpoint is not available yet."
+        );
 
-          examId: exam.id,
-
-          examTitle:
-            exam.title,
-
-          subject:
-            exam.subject,
-
-          programme:
-            exam.programme,
-
-          answers,
-
-          score:
-            finalResult.correct,
-
-          total:
-            finalResult.total,
-
-          percentage:
-            finalResult.percentage,
-
-          submittedAutomatically:
-            autoSubmit,
-
-          submittedAt:
-            new Date().toISOString()
-
-        })
-
-      });
+      }
 
     } catch (error) {
 
-      console.error(
-        "CBT submission error:",
+      console.warn(
+        "CBT result could not be saved:",
         error
       );
 
-    }
+    } finally {
 
-    setSubmitting(false);
+      setSubmitting(false);
+    }
   }
 
   /* =====================================================
      RESULT SCREEN
      ===================================================== */
 
-  if (submitted && result) {
+  if (
+    submitted &&
+    result
+  ) {
 
     return (
       <main style={styles.center}>
@@ -804,7 +1059,9 @@ useEffect(() => {
         <section style={styles.resultCard}>
 
           <div style={styles.resultIcon}>
-            {result.passed ? "🎉" : "📚"}
+            {result.passed
+              ? "🎉"
+              : "📚"}
           </div>
 
           <h1>
@@ -851,7 +1108,9 @@ useEffect(() => {
 
           <p style={styles.muted}>
             Student ID:{" "}
-            <strong>{studentId}</strong>
+            <strong>
+              {studentId}
+            </strong>
           </p>
 
           <button
@@ -873,6 +1132,38 @@ useEffect(() => {
 
   const current =
     questions[question - 1];
+
+  if (!current) {
+    return (
+      <main style={styles.center}>
+
+        <section style={styles.errorCard}>
+
+          <h2>
+            Question Error
+          </h2>
+
+          <p>
+            The current question could not
+            be loaded.
+          </p>
+
+          <button
+            style={styles.primaryButton}
+            onClick={onExit}
+          >
+            Exit
+          </button>
+
+        </section>
+
+      </main>
+    );
+  }
+
+  /* =====================================================
+     EXAM UI
+     ===================================================== */
 
   return (
     <main style={styles.container}>
@@ -901,7 +1192,8 @@ useEffect(() => {
               : {})
           }}
         >
-          ⏱️ {formatTime(timeLeft)}
+          ⏱️{" "}
+          {formatTime(timeLeft)}
         </div>
 
       </div>
@@ -919,10 +1211,16 @@ useEffect(() => {
 
         <div style={styles.progressText}>
           Answered:{" "}
-          <strong>{answeredCount}</strong>
-          {"  |  "}
+          <strong>
+            {answeredCount}
+          </strong>
+
+          {" | "}
+
           Unanswered:{" "}
-          <strong>{unansweredCount}</strong>
+          <strong>
+            {unansweredCount}
+          </strong>
         </div>
 
       </div>
@@ -936,6 +1234,12 @@ useEffect(() => {
           {questions.length}
         </div>
 
+        {current.topic && (
+          <div style={styles.topic}>
+            Topic: {current.topic}
+          </div>
+        )}
+
         <h2 style={styles.questionText}>
           {current.question}
         </h2>
@@ -946,12 +1250,13 @@ useEffect(() => {
             (option, index) => (
 
               <button
-                key={option}
+                key={`${index}-${option}`}
                 onClick={() =>
                   selectAnswer(option)
                 }
                 style={{
                   ...styles.option,
+
                   ...(answers[question] ===
                   option
                     ? styles.selectedOption
@@ -959,7 +1264,11 @@ useEffect(() => {
                 }}
               >
 
-                <span style={styles.optionLetter}>
+                <span
+                  style={
+                    styles.optionLetter
+                  }
+                >
                   {String.fromCharCode(
                     65 + index
                   )}
@@ -978,11 +1287,19 @@ useEffect(() => {
 
         {/* NAVIGATION */}
 
-        <div style={styles.navigationRow}>
+        <div
+          style={
+            styles.navigationRow
+          }
+        >
 
           <button
-            style={styles.secondaryButton}
-            disabled={question === 1}
+            style={
+              styles.secondaryButton
+            }
+            disabled={
+              question === 1
+            }
             onClick={() =>
               setQuestion(
                 (previous) =>
@@ -1000,7 +1317,9 @@ useEffect(() => {
           questions.length ? (
 
             <button
-              style={styles.primaryButton}
+              style={
+                styles.primaryButton
+              }
               onClick={() =>
                 setQuestion(
                   (previous) =>
@@ -1017,11 +1336,15 @@ useEffect(() => {
           ) : (
 
             <button
-              style={styles.primaryButton}
+              style={
+                styles.primaryButton
+              }
               onClick={() =>
                 submitExam(false)
               }
-              disabled={submitting}
+              disabled={
+                submitting
+              }
             >
               {submitting
                 ? "Submitting..."
@@ -1031,35 +1354,51 @@ useEffect(() => {
           )}
 
         </div>
-     
-{/* SUBMIT ANYTIME */}
 
-{question < questions.length && (
-  <div style={styles.submitArea}>
+        {/* SUBMIT ANYTIME */}
 
-    <p style={styles.submitHelp}>
-      You can submit your examination
-      at any time.
-    </p>
+        {question <
+          questions.length && (
 
-    <button
-      style={styles.submitButton}
-      onClick={() =>
-        submitExam(false)
-      }
-      disabled={submitting}
-    >
-      ✓ Submit Examination
-    </button>
+          <div
+            style={
+              styles.submitArea
+            }
+          >
 
-  </div>
-)}
+            <p
+              style={
+                styles.submitHelp
+              }
+            >
+              You can submit your
+              examination at any time.
+            </p>
 
-</section>
+            <button
+              style={
+                styles.submitButton
+              }
+              onClick={() =>
+                submitExam(false)
+              }
+              disabled={
+                submitting
+              }
+            >
+              ✓ Submit Examination
+            </button>
+
+          </div>
+
+        )}
+
+      </section>
 
     </main>
   );
 }
+
 /* =========================================================
    STYLES
    ========================================================= */
@@ -1126,6 +1465,12 @@ const styles = {
     padding: "20px"
   },
 
+  container: {
+    maxWidth: "1100px",
+    margin: "auto",
+    padding: "30px 20px"
+  },
+
   loginCard: {
     background: "white",
     width: "100%",
@@ -1166,6 +1511,10 @@ const styles = {
   resultIcon: {
     fontSize: "55px",
     marginBottom: "10px"
+  },
+
+  loadingIcon: {
+    fontSize: "45px"
   },
 
   input: {
@@ -1220,6 +1569,23 @@ const styles = {
     fontSize: "14px"
   },
 
+  errorCard: {
+    background: "#ffe9e9",
+    color: "#8b0000",
+    padding: "25px",
+    borderRadius: "12px",
+    marginTop: "20px"
+  },
+
+  messageCard: {
+    background: "white",
+    padding: "40px",
+    borderRadius: "15px",
+    textAlign: "center",
+    boxShadow:
+      "0 5px 20px rgba(0,0,0,0.06)"
+  },
+
   muted: {
     color: "#66756d"
   },
@@ -1228,12 +1594,6 @@ const styles = {
     fontSize: "11px",
     color: "#89958f",
     marginTop: "25px"
-  },
-
-  container: {
-    maxWidth: "1100px",
-    margin: "auto",
-    padding: "30px 20px"
   },
 
   topRow: {
@@ -1280,6 +1640,13 @@ const styles = {
 
   instructionList: {
     lineHeight: "1.7"
+  },
+
+  customInstructions: {
+    background: "#f5f7f6",
+    padding: "15px",
+    borderRadius: "10px",
+    marginTop: "15px"
   },
 
   buttonRow: {
@@ -1341,7 +1708,17 @@ const styles = {
   questionNumber: {
     color: "#0f6b3a",
     fontWeight: "bold",
-    marginBottom: "20px"
+    marginBottom: "10px"
+  },
+
+  topic: {
+    display: "inline-block",
+    background: "#f0f4f1",
+    color: "#66756d",
+    padding: "5px 9px",
+    borderRadius: "15px",
+    fontSize: "12px",
+    marginBottom: "15px"
   },
 
   questionText: {
