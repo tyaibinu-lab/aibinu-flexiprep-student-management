@@ -891,6 +891,10 @@ function ExamScreen({
      SUBMIT EXAM
      ===================================================== */
 
+    /* =====================================================
+     SUBMIT EXAM
+     ===================================================== */
+
   async function submitExam(
     autoSubmit = false
   ) {
@@ -936,79 +940,85 @@ function ExamScreen({
 
     setSubmitting(true);
 
-    /* ================================================
-       CALCULATE RESULT
-       ================================================ */
-
-    const finalResult =
-      calculateScore();
-
-    setResult(finalResult);
-    setSubmitted(true);
-
-    /* ================================================
-       PREPARE RESULT DATA
-       ================================================ */
-
-    const resultData = {
-
-      studentId,
-
-      studentName,
-
-      examId:
-        exam.id,
-
-      examTitle:
-        exam.title,
-
-      subject:
-        exam.subject,
-
-      programme:
-        exam.programme,
-
-      answers,
-
-      score:
-        finalResult.correct,
-
-      total:
-        finalResult.total,
-
-      percentage:
-        finalResult.percentage,
-
-      passMark:
-        exam.passMark,
-
-      submittedAutomatically:
-        autoSubmit,
-
-      submittedAt:
-        new Date().toISOString()
-    };
-
-    console.log(
-      "CBT RESULT:",
-      resultData
-    );
-
-    /* ================================================
-       SEND RESULT TO BACKEND
-
-       NOTE:
-       Your current GitHub /api folder does not yet
-       contain cbt.js. Therefore this attempt may return
-       404 until the result endpoint is created.
-       ================================================ */
-
     try {
+
+      /* ==============================================
+         CONVERT ANSWERS TO QUESTION IDs
+
+         The app stores answers like:
+
+         {
+           1: "30 W",
+           2: "Kilogram",
+           3: "..."
+         }
+
+         But Airtable needs:
+
+         PHY-Q001 → C
+         PHY-Q002 → B
+         etc.
+         ============================================== */
+
+      const submissionAnswers =
+        questions.map(
+          (item, index) => {
+
+            const studentAnswer =
+              answers[index + 1] || "";
+
+            const selectedIndex =
+              Array.isArray(item.options)
+                ? item.options.indexOf(
+                    studentAnswer
+                  )
+                : -1;
+
+            let answerLetter = "";
+
+            if (
+              selectedIndex >= 0
+            ) {
+
+              answerLetter =
+                String.fromCharCode(
+                  65 + selectedIndex
+                );
+
+            }
+
+            return {
+
+              questionId:
+                item.id,
+
+              answer:
+                answerLetter,
+
+              timeSpentSeconds:
+                0,
+
+              answeredAt:
+                new Date().toISOString(),
+
+              explanationViewed:
+                false
+
+            };
+
+          }
+        );
+
+
+      /* ==============================================
+         SEND EXAMINATION TO AIRTABLE
+         ============================================== */
 
       const response =
         await fetch(
-          "/api/cbt",
+          "/api/cbt-submit",
           {
+
             method: "POST",
 
             headers: {
@@ -1017,33 +1027,136 @@ function ExamScreen({
             },
 
             body:
-              JSON.stringify(
-                resultData
-              )
+              JSON.stringify({
+
+                studentId:
+
+                  studentId,
+
+                examId:
+
+                  exam.id,
+
+                startTime:
+
+                  new Date().toISOString(),
+
+                submitTime:
+
+                  new Date().toISOString(),
+
+                answers:
+
+                  submissionAnswers
+
+              })
+
           }
         );
 
+
+      /* ==============================================
+         CHECK SERVER RESPONSE
+         ============================================== */
+
+      const data =
+        await response.json();
+
+
       if (!response.ok) {
 
-        console.warn(
-          "CBT result endpoint is not available yet."
+        throw new Error(
+          data?.error ||
+          "The examination could not be submitted."
         );
 
       }
 
+
+      /* ==============================================
+         USE SERVER SCORE
+         ============================================== */
+
+      const finalResult = {
+
+        correct:
+          Number(
+            data.correct || 0
+          ),
+
+        total:
+          Number(
+            data.totalQuestions ||
+            questions.length
+          ),
+
+        percentage:
+          Number(
+            data.percentage || 0
+          ),
+
+        passed:
+          Boolean(
+            data.passed
+          )
+
+      };
+
+
+      console.log(
+        "CBT SUBMISSION SUCCESS:",
+        data
+      );
+
+
+      console.log(
+        "ATTEMPT ID:",
+        data.attemptId
+      );
+
+
+      setResult(
+        finalResult
+      );
+
+      setSubmitted(
+        true
+      );
+
+
     } catch (error) {
 
-      console.warn(
-        "CBT result could not be saved:",
+      console.error(
+        "CBT Submission Error:",
         error
       );
 
+
+      /*
+        IMPORTANT:
+        Do NOT show the result screen if
+        Airtable submission failed.
+
+        This prevents a student from seeing
+        a successful result when the attempt
+        was not actually saved.
+      */
+
+      window.alert(
+        error.message ||
+        "Unable to submit examination. Please try again."
+      );
+
+
     } finally {
 
-      setSubmitting(false);
-    }
-  }
+      setSubmitting(
+        false
+      );
 
+    }
+
+  }
   /* =====================================================
      RESULT SCREEN
      ===================================================== */
