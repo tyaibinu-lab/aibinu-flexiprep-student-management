@@ -284,7 +284,8 @@ export default async function handler(req, res) {
           String(
             f["Exam ID"] || ""
           )
-          === examId
+          .trim()
+          === examId.trim()
 
           ||
 
@@ -553,6 +554,11 @@ export default async function handler(req, res) {
       =====================================================
       7. CALCULATE RESULT
       =====================================================
+
+      IMPORTANT:
+      Question Count comes from CBT_Exams.
+      If Question Count is available, it is used as
+      the official examination total.
     */
 
     const totalQuestions =
@@ -614,9 +620,22 @@ export default async function handler(req, res) {
               "Attempt ID":
                 attemptId,
 
+              /*
+                Existing Exam link.
+              */
               "Exam":
                 [examRecord.id],
 
+              /*
+                CORRECTION:
+                Also populate the CBT Exam link.
+              */
+              "CBT Exam":
+                [examRecord.id],
+
+              /*
+                Student link.
+                */
               "Student":
                 [studentRecord.id],
 
