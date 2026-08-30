@@ -8,7 +8,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(process.cwd(), "index.html"),
-        cbt: resolve(process.cwd(), "cbt.html")
+        cbt: resolve(process.cwd(), "cbt.html"),
+        admin: resolve(process.cwd(), "admin.html")
       }
     }
   }
