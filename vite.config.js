@@ -7,11 +7,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(process.cwd(), "index.html"),
-        cbt: resolve(process.cwd(), "cbt.html"),
-        admin: resolve(process.cwd(), "admin.html"),
-        finance: resolve(process.cwd(), "finance.html")
-      }
+  main: resolve(process.cwd(), "index.html"),
+  cbt: resolve(process.cwd(), "cbt.html"),
+  admin: resolve(process.cwd(), "admin.html"),
+  finance: resolve(process.cwd(), "finance.html"),
+  academic: resolve(process.cwd(), "academic.html")
+}
     }
   }
 });
