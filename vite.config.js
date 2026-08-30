@@ -9,7 +9,8 @@ export default defineConfig({
       input: {
         main: resolve(process.cwd(), "index.html"),
         cbt: resolve(process.cwd(), "cbt.html"),
-        admin: resolve(process.cwd(), "admin.html")
+        admin: resolve(process.cwd(), "admin.html"),
+        finance: resolve(process.cwd(), "finance.html")
       }
     }
   }
