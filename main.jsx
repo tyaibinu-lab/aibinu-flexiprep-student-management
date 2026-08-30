@@ -493,7 +493,9 @@ if (savedStudent) {
 
   <button
     className="secondary"
-    onClick={() => setView("payments")}
+    onClick={() => {
+      window.location.href = "/finance.html";
+    }}
   >
     <CreditCard />
     Payments
