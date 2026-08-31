@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -13,33 +13,70 @@
   --ink:#17382b;
   --muted:#6c7872;
   --bg:#f4f7f5;
-  --line:#dfe7e2
+  --line:#dfe7e2;
+  --danger:#b42318;
 }
 
 *{box-sizing:border-box}
+
+html{scroll-behavior:smooth}
 
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:var(--bg);
-  color:var(--ink)
+  color:var(--ink);
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  font-weight:700;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+button:active{
+  transform:translateY(1px);
+}
+
+.primary{
+  background:var(--gold);
+  color:var(--ink);
+}
+
+.secondary{
+  background:#fff;
+  color:var(--g);
+  border:1px solid var(--line);
 }
 
 header{
   background:var(--g);
   color:#fff;
   padding:16px 5%;
+}
+
+.header-inner{
+  max-width:1200px;
+  margin:auto;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:12px;
-  flex-wrap:wrap
+  gap:16px;
+  flex-wrap:wrap;
 }
 
 .brand{
   display:flex;
   gap:10px;
-  align-items:center
+  align-items:center;
 }
 
 .logo{
@@ -47,149 +84,200 @@ header{
   color:var(--g);
   padding:11px;
   border-radius:10px;
-  font-weight:800
+  font-weight:800;
+  font-size:20px;
+}
+
+.brand b{
+  font-size:18px;
 }
 
 .brand small{
   display:block;
-  opacity:.82
+  opacity:.82;
+  margin-top:3px;
 }
 
 nav{
   display:flex;
   gap:8px;
-  flex-wrap:wrap
-}
-
-button{
-  border:0;
-  border-radius:9px;
-  padding:11px 15px;
-  font-weight:700;
-  cursor:pointer
-}
-
-.primary{
-  background:var(--gold);
-  color:var(--ink)
-}
-
-.secondary{
-  background:#fff;
-  color:var(--g);
-  border:1px solid var(--line)
+  flex-wrap:wrap;
 }
 
 main{
   max-width:1200px;
   margin:24px auto;
-  padding:0 16px
+  padding:0 16px;
 }
 
 .head{
   display:flex;
   justify-content:space-between;
-  align-items:end;
-  gap:15px
+  align-items:flex-end;
+  gap:15px;
 }
 
 h1{
-  margin:5px 0
+  margin:5px 0;
+  font-size:42px;
 }
 
 .muted{
-  color:var(--muted)
+  color:var(--muted);
+  font-size:20px;
 }
 
 .cards{
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:12px;
-  margin-top:18px
+  margin-top:22px;
 }
 
 .card,
 .panel{
   background:#fff;
   border:1px solid var(--line);
-  border-radius:14px;
-  padding:16px
+  border-radius:18px;
+  padding:20px;
+}
+
+.card{
+  min-height:125px;
+}
+
+.card span{
+  display:block;
+  font-size:17px;
 }
 
 .card strong{
   display:block;
-  font-size:25px;
-  margin-top:7px
+  font-size:34px;
+  margin-top:10px;
 }
 
 .panel{
-  margin-top:18px
+  margin-top:20px;
 }
 
 .tabs{
   display:flex;
   gap:8px;
-  flex-wrap:wrap;
-  margin:14px 0
+  margin:0 0 16px;
+  overflow-x:auto;
+  padding-bottom:3px;
+  scrollbar-width:thin;
 }
 
 .tabs button{
-  touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent
+  flex:0 0 auto;
+  white-space:nowrap;
 }
 
 .tabs button.active{
   background:var(--g);
-  color:#fff
+  color:#fff;
 }
 
 .toolbar{
   display:flex;
   gap:10px;
-  margin:14px 0;
-  flex-wrap:wrap
+  margin:14px 0 18px;
 }
 
 .search{
   flex:1;
-  min-width:220px
 }
 
 input,
 select,
 textarea{
   width:100%;
-  padding:11px;
+  padding:12px;
   border:1px solid #ccd8d1;
-  border-radius:8px;
-  font:inherit;
-  background:#fff
+  border-radius:9px;
+  background:#fff;
+  color:var(--ink);
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  outline:2px solid #b9ddca;
+  border-color:var(--g);
 }
 
 .wrap{
-  overflow:auto
+  overflow-x:auto;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:900px
 }
 
 th,
 td{
   text-align:left;
-  padding:12px;
-  border-bottom:1px solid var(--line)
+  padding:13px 10px;
+  border-bottom:1px solid var(--line);
+  vertical-align:middle;
+}
+
+th{
+  font-size:15px;
 }
 
 .badge{
-  padding:4px 8px;
+  display:inline-block;
+  padding:5px 9px;
   border-radius:99px;
   font-size:12px;
   font-weight:700;
   background:#e5f5eb;
-  color:var(--g)
+  color:var(--g);
+}
+
+/* Mobile record cards */
+.mobile-records{
+  display:none;
+}
+
+.record-card{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+  background:#fff;
+}
+
+.record-title{
+  font-weight:800;
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+.record-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px 14px;
+}
+
+.record-field small{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:2px;
+}
+
+.record-field div{
+  word-break:break-word;
+}
+
+.record-action{
+  margin-top:12px;
+  text-align:right;
 }
 
 .modal{
@@ -200,11 +288,11 @@ td{
   align-items:center;
   justify-content:center;
   padding:15px;
-  z-index:10
+  z-index:10;
 }
 
 .modal.show{
-  display:flex
+  display:flex;
 }
 
 .dialog{
@@ -214,75 +302,183 @@ td{
   max-width:720px;
   width:100%;
   max-height:92vh;
-  overflow:auto
+  overflow:auto;
 }
 
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px
+  gap:12px;
 }
 
 .full{
-  grid-column:1/-1
+  grid-column:1/-1;
 }
 
 label{
   font-weight:700;
   font-size:14px;
   display:block;
-  margin-bottom:5px
+  margin-bottom:5px;
 }
 
 .actions{
   text-align:right;
-  margin-top:15px
+  margin-top:15px;
 }
 
 .msg{
   padding:10px;
   border-radius:8px;
-  margin:10px 0
+  margin:10px 0;
 }
 
 .err{
   background:#fde9e7;
-  color:#b42318
+  color:var(--danger);
 }
 
 .ok{
   background:#e5f5eb;
-  color:var(--g)
+  color:var(--g);
 }
 
 .hint{
   font-size:13px;
   color:var(--muted);
-  margin-top:5px
+  margin-top:5px;
 }
 
-@media(max-width:900px){
-  .cards{
-    grid-template-columns:repeat(2,1fr)
-  }
+.empty{
+  padding:20px 5px;
+  color:var(--muted);
 }
 
-@media(max-width:560px){
+@media(max-width:1000px){
+
   .cards{
-    grid-template-columns:1fr
+    grid-template-columns:repeat(3,1fr);
   }
 
-  .grid{
-    grid-template-columns:1fr
+}
+
+@media(max-width:700px){
+
+  header{
+    padding:14px 16px;
   }
 
-  .full{
-    grid-column:auto
+  .header-inner{
+    display:block;
+  }
+
+  nav{
+    margin-top:14px;
+  }
+
+  nav button{
+    flex:1;
+  }
+
+  main{
+    margin:18px auto;
+    padding:0 14px;
   }
 
   .head{
-    display:block
+    display:block;
   }
+
+  h1{
+    font-size:36px;
+    line-height:1.05;
+  }
+
+  .muted{
+    font-size:17px;
+  }
+
+  .head .primary{
+    margin-top:12px;
+  }
+
+  .cards{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .card{
+    min-height:105px;
+    padding:16px;
+  }
+
+  .card span{
+    font-size:15px;
+  }
+
+  .card strong{
+    font-size:30px;
+  }
+
+  .panel{
+    padding:14px;
+  }
+
+  .toolbar{
+    display:grid;
+    grid-template-columns:1fr auto;
+  }
+
+  /* Hide wide table on phones */
+  .wrap{
+    display:none;
+  }
+
+  /* Show mobile cards */
+  .mobile-records{
+    display:block;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .full{
+    grid-column:auto;
+  }
+
+}
+
+@media(max-width:480px){
+
+  .brand b{
+    font-size:16px;
+  }
+
+  .brand small{
+    font-size:12px;
+  }
+
+  h1{
+    font-size:32px;
+  }
+
+  .cards{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .record-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .toolbar{
+    grid-template-columns:1fr;
+  }
+
+  .toolbar button{
+    width:100%;
+  }
+
 }
 </style>
 </head>
@@ -291,28 +487,43 @@ label{
 
 <header>
 
-  <div class="brand">
-    <div class="logo">AF</div>
+  <div class="header-inner">
 
-    <div>
-      <b>AIBINU FLEXIPREP</b>
-      <small>EDUCONSULT · ACADEMIC MANAGEMENT</small>
+    <div class="brand">
+
+      <div class="logo">
+        AF
+      </div>
+
+      <div>
+        <b>AIBINU FLEXIPREP</b>
+
+        <small>
+          EDUCONSULT · ACADEMIC MANAGEMENT
+        </small>
+      </div>
+
     </div>
+
+    <nav>
+
+      <button
+        class="secondary"
+        type="button"
+        onclick="location.href='/'">
+        Student Management
+      </button>
+
+      <button
+        class="secondary"
+        type="button"
+        onclick="location.href='/finance.html'">
+        Payments
+      </button>
+
+    </nav>
+
   </div>
-
-  <nav>
-    <button
-      class="secondary"
-      onclick="location.href='/'">
-      Student Management
-    </button>
-
-    <button
-      class="secondary"
-      onclick="location.href='/finance.html'">
-      Payments
-    </button>
-  </nav>
 
 </header>
 
@@ -322,18 +533,23 @@ label{
   <div class="head">
 
     <div>
+
       <small>AIBINU FLEXIPREP</small>
 
-      <h1>Academic Management</h1>
+      <h1>
+        Academic Management
+      </h1>
 
       <div class="muted">
-        Programmes, classes, subjects, teachers and
-        class–subject assignments.
+        Programmes, classes, subjects, teachers
+        and class–subject assignments.
       </div>
+
     </div>
 
     <button
       class="primary"
+      type="button"
       onclick="openForm()">
       + Add Record
     </button>
@@ -344,72 +560,82 @@ label{
   <div id="msg"></div>
 
 
+  <!-- DASHBOARD COUNTERS -->
+
   <div class="cards">
 
     <div class="card">
-      Programmes
+      <span>Programmes</span>
       <strong id="countProgramme">0</strong>
     </div>
 
     <div class="card">
-      Classes
+      <span>Classes</span>
       <strong id="countClass">0</strong>
     </div>
 
     <div class="card">
-      Subjects
+      <span>Subjects</span>
       <strong id="countSubject">0</strong>
     </div>
 
     <div class="card">
-      Teachers
+      <span>Teachers</span>
       <strong id="countTeacher">0</strong>
     </div>
 
     <div class="card">
-      Assignments
+      <span>Assignments</span>
       <strong id="countAssignment">0</strong>
     </div>
 
   </div>
 
 
+  <!-- ACADEMIC RECORDS -->
+
   <section class="panel">
 
-    <div class="tabs">
+    <div class="tabs" id="tabs">
 
       <button
         class="secondary active"
+        type="button"
         data-type="All">
         All
       </button>
 
       <button
         class="secondary"
+        type="button"
         data-type="Programme">
         Programmes
       </button>
 
       <button
         class="secondary"
+        type="button"
         data-type="Class">
         Classes
       </button>
 
       <button
         class="secondary"
+        type="button"
         data-type="Subject">
         Subjects
       </button>
 
       <button
         class="secondary"
+        type="button"
         data-type="Teacher">
         Teachers
       </button>
 
       <button
         class="secondary"
+        type="button"
         data-type="Assignment">
         Assignments
       </button>
@@ -420,13 +646,18 @@ label{
     <div class="toolbar">
 
       <div class="search">
+
         <input
           id="search"
-          placeholder="Search records...">
+          type="search"
+          placeholder="Search records..."
+          autocomplete="off">
+
       </div>
 
       <button
         class="secondary"
+        type="button"
         onclick="loadData()">
         ↻ Refresh
       </button>
@@ -434,11 +665,14 @@ label{
     </div>
 
 
+    <!-- DESKTOP TABLE -->
+
     <div class="wrap">
 
       <table>
 
         <thead>
+
           <tr>
             <th>Type</th>
             <th>Name</th>
@@ -450,6 +684,7 @@ label{
             <th>Status</th>
             <th></th>
           </tr>
+
         </thead>
 
         <tbody id="rows"></tbody>
@@ -458,10 +693,20 @@ label{
 
     </div>
 
+
+    <!-- MOBILE RECORDS -->
+
+    <div
+      id="mobileRecords"
+      class="mobile-records">
+    </div>
+
   </section>
 
 </main>
 
+
+<!-- ADD / EDIT MODAL -->
 
 <div id="modal" class="modal">
 
@@ -473,15 +718,23 @@ label{
 
     <div id="formMsg"></div>
 
+
     <form id="academicForm">
 
       <div class="grid">
 
+
+        <!-- RECORD TYPE -->
+
         <div>
 
-          <label>Record Type</label>
+          <label>
+            Record Type
+          </label>
 
-          <select id="type" required>
+          <select
+            id="type"
+            required>
 
             <option value="Programme">
               Programme
@@ -508,79 +761,114 @@ label{
         </div>
 
 
+        <!-- NAME -->
+
         <div id="nameWrap">
 
           <label id="nameLabel">
             Name
           </label>
 
-          <input id="name" required>
+          <input id="name">
 
         </div>
 
 
+        <!-- CODE -->
+
         <div id="codeWrap">
 
-          <label>Code</label>
+          <label>
+            Code
+          </label>
 
           <input id="code">
 
         </div>
 
 
+        <!-- PROGRAMME -->
+
         <div id="programmeWrap">
 
-          <label>Programme</label>
+          <label>
+            Programme
+          </label>
 
           <select id="programme"></select>
 
         </div>
 
 
+        <!-- CLASS -->
+
         <div id="classWrap">
 
-          <label>Class</label>
+          <label>
+            Class
+          </label>
 
           <select id="className"></select>
 
         </div>
 
 
+        <!-- SUBJECT -->
+
         <div id="subjectWrap">
 
-          <label>Subject</label>
+          <label>
+            Subject
+          </label>
 
           <select id="subject"></select>
 
         </div>
 
 
+        <!-- TEACHER -->
+
         <div id="teacherWrap">
 
-          <label>Teacher</label>
+          <label>
+            Teacher
+          </label>
 
           <select id="teacher"></select>
 
         </div>
 
 
+        <!-- STATUS -->
+
         <div>
 
-          <label>Status</label>
+          <label>
+            Status
+          </label>
 
           <select id="status">
 
-            <option>Active</option>
-            <option>Inactive</option>
+            <option>
+              Active
+            </option>
+
+            <option>
+              Inactive
+            </option>
 
           </select>
 
         </div>
 
 
+        <!-- NOTES -->
+
         <div class="full">
 
-          <label>Notes</label>
+          <label>
+            Notes
+          </label>
 
           <textarea
             id="notes"
@@ -592,8 +880,10 @@ label{
 
 
       <div class="hint">
+
         For an Assignment, select an existing
         Class, Subject and Teacher.
+
       </div>
 
 
@@ -606,7 +896,9 @@ label{
           Cancel
         </button>
 
-        <button class="primary">
+        <button
+          type="submit"
+          class="primary">
           Save Record
         </button>
 
@@ -625,7 +917,14 @@ let records = [];
 let currentType = "All";
 let editing = null;
 
-const $ = id => document.getElementById(id);
+
+/* SHORT DOM SELECTOR */
+
+const $ = id =>
+  document.getElementById(id);
+
+
+/* HTML ESCAPE */
 
 const esc = s =>
   String(s ?? "").replace(
@@ -640,30 +939,101 @@ const esc = s =>
   );
 
 
+/* REMOVE INVALID / EMPTY RECORDS */
+
+const cleanRecords = data =>
+  (Array.isArray(data) ? data : [])
+  .filter(r => {
+
+    if(!r || !r.type)
+      return false;
+
+    /*
+      Hide incomplete Programme,
+      Class, Subject and Teacher records.
+    */
+
+    if(
+      r.type !== "Assignment" &&
+      !String(r.name || "").trim()
+    ){
+      return false;
+    }
+
+
+    /*
+      An Assignment must have
+      Class + Subject + Teacher.
+    */
+
+    if(
+      r.type === "Assignment" &&
+      (
+        !String(r.className || "").trim() ||
+        !String(r.subject || "").trim() ||
+        !String(r.teacher || "").trim()
+      )
+    ){
+      return false;
+    }
+
+    return true;
+
+  });
+
+
+/* DISPLAY NAME */
+
 const displayName = r =>
+
   r.type === "Assignment"
-    ? [r.className, r.subject, r.teacher]
-        .filter(Boolean)
-        .join(" — ")
+
+    ? [
+        r.className,
+        r.subject,
+        r.teacher
+      ]
+      .filter(Boolean)
+      .join(" — ")
+
     : (r.name || "");
 
+
+/* LOAD DATA FROM API */
 
 async function loadData(){
 
   try{
 
-    let r = await fetch("/api/academic");
+    const r =
+      await fetch(
+        "/api/academic",
+        {
+          cache:"no-store"
+        }
+      );
 
-    let d = await r.json();
 
-    if(!r.ok)
+    const d =
+      await r.json();
+
+
+    if(!r.ok){
+
       throw Error(
         d.error?.message ||
         d.error ||
         "Unable to load records"
       );
 
-    records = d.records || [];
+    }
+
+
+    records =
+      cleanRecords(
+        d.records || []
+      );
+
 
     populate();
 
@@ -671,34 +1041,46 @@ async function loadData(){
 
     show("", true);
 
+
   }catch(e){
 
-    show(e.message, false);
+    show(
+      e.message,
+      false
+    );
 
   }
 
 }
 
 
+/* UNIQUE ACTIVE RECORDS */
+
 function unique(type){
 
-  let seen = new Set();
+  const seen =
+    new Set();
+
 
   return records
 
-    .filter(
-      r =>
-        r.type === type &&
-        r.status !== "Inactive" &&
-        r.name
+    .filter(r =>
+      r.type === type &&
+      r.status !== "Inactive" &&
+      String(r.name || "").trim()
     )
 
     .filter(r => {
 
-      let k = r.name.trim().toLowerCase();
+      const k =
+        r.name
+          .trim()
+          .toLowerCase();
+
 
       if(seen.has(k))
         return false;
+
 
       seen.add(k);
 
@@ -708,17 +1090,26 @@ function unique(type){
 
     .sort(
       (a,b) =>
-        a.name.localeCompare(b.name)
+        a.name.localeCompare(
+          b.name
+        )
     );
 
 }
 
 
-function fill(id,type,placeholder){
+/* FILL SELECT */
 
-  let e = $(id);
+function fill(
+  id,
+  type,
+  placeholder
+){
 
-  let old = e.value;
+  const e = $(id);
+
+  const old = e.value;
+
 
   e.innerHTML =
     "<option value=''>" +
@@ -726,19 +1117,24 @@ function fill(id,type,placeholder){
     "</option>" +
 
     unique(type)
-      .map(
-        r =>
-          "<option value='" +
-          esc(r.name) +
-          "'>" +
-          esc(r.name) +
-          "</option>"
+
+      .map(r =>
+        "<option value='" +
+        esc(r.name) +
+        "'>" +
+        esc(r.name) +
+        "</option>"
       )
+
       .join("");
+
 
   if(
     [...e.options]
-      .some(o => o.value === old)
+      .some(
+        o =>
+          o.value === old
+      )
   ){
 
     e.value = old;
@@ -748,6 +1144,8 @@ function fill(id,type,placeholder){
 }
 
 
+/* POPULATE FORM SELECTS */
+
 function populate(){
 
   fill(
@@ -756,17 +1154,20 @@ function populate(){
     "Select programme"
   );
 
+
   fill(
     "className",
     "Class",
     "Select class"
   );
 
+
   fill(
     "subject",
     "Subject",
     "Select subject"
   );
+
 
   fill(
     "teacher",
@@ -777,6 +1178,57 @@ function populate(){
 }
 
 
+/* SEARCH */
+
+function matchesSearch(
+  r,
+  q
+){
+
+  if(!q)
+    return true;
+
+
+  return `
+    ${r.type || ""}
+    ${r.name || ""}
+    ${r.code || ""}
+    ${r.programme || ""}
+    ${r.className || ""}
+    ${r.subject || ""}
+    ${r.teacher || ""}
+  `
+  .toLowerCase()
+  .includes(q);
+
+}
+
+
+/* FILTER */
+
+function filteredRecords(){
+
+  const q =
+    $("search")
+      .value
+      .toLowerCase()
+      .trim();
+
+
+  return records.filter(
+    r =>
+      (
+        currentType === "All" ||
+        r.type === currentType
+      ) &&
+      matchesSearch(r, q)
+  );
+
+}
+
+
+/* RENDER */
+
 function render(){
 
   [
@@ -785,127 +1237,274 @@ function render(){
     "Subject",
     "Teacher",
     "Assignment"
-  ].forEach(
-    t =>
-      $("count" + t).textContent =
-        records.filter(
-          r => r.type === t
-        ).length
-  );
+  ]
+  .forEach(t => {
+
+    const valid =
+      records.filter(
+        r =>
+          r.type === t
+      );
 
 
-  let q =
-    $("search").value
-      .toLowerCase()
-      .trim();
+    $("count" + t)
+      .textContent =
+        valid.length;
+
+  });
 
 
-  let data =
-    records.filter(
-      r =>
-        (
-          currentType === "All" ||
-          r.type === currentType
-        ) &&
-        (
-          !q ||
-          `${r.type}
-           ${r.name}
-           ${r.code}
-           ${r.programme}
-           ${r.className}
-           ${r.subject}
-           ${r.teacher}`
-            .toLowerCase()
-            .includes(q)
-        )
-    );
+  const data =
+    filteredRecords();
 
+
+  /*
+    DESKTOP TABLE
+  */
 
   $("rows").innerHTML =
-    data.map(
-      r =>
+    data.map(r => `
 
-      "<tr>" +
+      <tr>
 
-      "<td>" +
-      esc(r.type) +
-      "</td>" +
+        <td>
+          ${esc(r.type)}
+        </td>
 
-      "<td><b>" +
-      esc(displayName(r)) +
-      "</b></td>" +
+        <td>
+          <b>
+            ${esc(displayName(r))}
+          </b>
+        </td>
 
-      "<td>" +
-      esc(r.code) +
-      "</td>" +
+        <td>
+          ${esc(r.code)}
+        </td>
 
-      "<td>" +
-      esc(r.programme) +
-      "</td>" +
+        <td>
+          ${esc(r.programme)}
+        </td>
 
-      "<td>" +
-      esc(r.className) +
-      "</td>" +
+        <td>
+          ${esc(r.className)}
+        </td>
 
-      "<td>" +
-      esc(r.subject) +
-      "</td>" +
+        <td>
+          ${esc(r.subject)}
+        </td>
 
-      "<td>" +
-      esc(r.teacher) +
-      "</td>" +
+        <td>
+          ${esc(r.teacher)}
+        </td>
 
-      "<td>" +
-      "<span class='badge'>" +
-      esc(r.status) +
-      "</span>" +
-      "</td>" +
+        <td>
+          <span class="badge">
+            ${esc(r.status || "Active")}
+          </span>
+        </td>
 
-      "<td>" +
+        <td>
 
-      "<button " +
-      "class='secondary' " +
-      "onclick=\"editRecord('" +
-      esc(r.airtableId) +
-      "')\">" +
+          <button
+            type="button"
+            class="secondary"
+            onclick="editRecord('${esc(r.airtableId)}')">
 
-      "Edit" +
+            Edit
 
-      "</button>" +
+          </button>
 
-      "</td>" +
+        </td>
 
-      "</tr>"
-    ).join("") ||
+      </tr>
 
-    "<tr>" +
-    "<td colspan='9'>" +
-    "No academic records found." +
-    "</td>" +
-    "</tr>";
+    `)
+    .join("")
+
+    ||
+
+    `
+      <tr>
+        <td
+          colspan="9"
+          class="empty">
+
+          No academic records found.
+
+        </td>
+      </tr>
+    `;
+
+
+  /*
+    MOBILE CARDS
+  */
+
+  $("mobileRecords").innerHTML =
+    data.map(r => `
+
+      <div class="record-card">
+
+        <div class="record-title">
+          ${esc(displayName(r))}
+        </div>
+
+
+        <div class="record-grid">
+
+          <div class="record-field">
+
+            <small>
+              Type
+            </small>
+
+            <div>
+              ${esc(r.type)}
+            </div>
+
+          </div>
+
+
+          <div class="record-field">
+
+            <small>
+              Code
+            </small>
+
+            <div>
+              ${esc(r.code)}
+            </div>
+
+          </div>
+
+
+          <div class="record-field">
+
+            <small>
+              Programme
+            </small>
+
+            <div>
+              ${esc(r.programme)}
+            </div>
+
+          </div>
+
+
+          <div class="record-field">
+
+            <small>
+              Class
+            </small>
+
+            <div>
+              ${esc(r.className)}
+            </div>
+
+          </div>
+
+
+          <div class="record-field">
+
+            <small>
+              Subject
+            </small>
+
+            <div>
+              ${esc(r.subject)}
+            </div>
+
+          </div>
+
+
+          <div class="record-field">
+
+            <small>
+              Teacher
+            </small>
+
+            <div>
+              ${esc(r.teacher)}
+            </div>
+
+          </div>
+
+
+          <div class="record-field">
+
+            <small>
+              Status
+            </small>
+
+            <div>
+
+              <span class="badge">
+                ${esc(r.status || "Active")}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="record-action">
+
+          <button
+            type="button"
+            class="secondary"
+            onclick="editRecord('${esc(r.airtableId)}')">
+
+            Edit
+
+          </button>
+
+        </div>
+
+      </div>
+
+    `)
+    .join("")
+
+    ||
+
+    `
+      <div class="empty">
+        No academic records found.
+      </div>
+    `;
 
 }
 
 
+/* FORM DISPLAY */
+
 function toggle(){
 
-  let t = $("type").value;
-
-  let a = t === "Assignment";
-
-
-  $("nameWrap").style.display =
-    a ? "none" : "block";
+  const t =
+    $("type").value;
 
 
-  $("codeWrap").style.display =
-    (
-      t === "Programme" ||
-      t === "Subject"
-    )
-    ? "block"
-    : "none";
+  const isAssignment =
+    t === "Assignment";
+
+
+  $("nameWrap")
+    .style.display =
+      isAssignment
+        ? "none"
+        : "block";
+
+
+  $("codeWrap")
+    .style.display =
+      (
+        t === "Programme" ||
+        t === "Subject"
+      )
+      ? "block"
+      : "none";
 
 
   [
@@ -913,64 +1512,94 @@ function toggle(){
     "classWrap",
     "subjectWrap",
     "teacherWrap"
-  ].forEach(
-    x =>
-      $(x).style.display =
-        a ? "block" : "none"
-  );
+  ]
+  .forEach(x => {
+
+    $(x).style.display =
+      isAssignment
+        ? "block"
+        : "none";
+
+  });
 
 
-  $("name").required = !a;
+  $("name").required =
+    !isAssignment;
 
-  $("className").required = a;
 
-  $("subject").required = a;
+  $("className").required =
+    isAssignment;
 
-  $("teacher").required = a;
 
-  $("nameLabel").textContent = t;
+  $("subject").required =
+    isAssignment;
+
+
+  $("teacher").required =
+    isAssignment;
+
+
+  $("nameLabel")
+    .textContent = t;
 
 }
 
 
-function openForm(r=null){
+/* OPEN FORM */
+
+function openForm(r = null){
 
   editing = r;
 
-  $("formTitle").textContent =
-    r
-      ? "Edit Academic Record"
-      : "Add Academic Record";
+
+  $("formTitle")
+    .textContent =
+      r
+        ? "Edit Academic Record"
+        : "Add Academic Record";
+
 
   $("formMsg").textContent = "";
+
+  $("formMsg").className = "";
+
 
   $("academicForm").reset();
 
 
   if(r){
 
-    $("type").value = r.type;
+    $("type").value =
+      r.type;
+
 
     $("name").value =
       r.name || "";
 
+
     $("code").value =
       r.code || "";
+
 
     $("programme").value =
       r.programme || "";
 
+
     $("className").value =
       r.className || "";
+
 
     $("subject").value =
       r.subject || "";
 
+
     $("teacher").value =
       r.teacher || "";
 
+
     $("status").value =
       r.status || "Active";
+
 
     $("notes").value =
       r.notes || "";
@@ -980,6 +1609,7 @@ function openForm(r=null){
 
   toggle();
 
+
   $("modal")
     .classList
     .add("show");
@@ -987,23 +1617,30 @@ function openForm(r=null){
 }
 
 
+/* CLOSE FORM */
+
 function closeForm(){
 
   $("modal")
     .classList
     .remove("show");
 
+
   editing = null;
 
 }
 
 
+/* EDIT RECORD */
+
 function editRecord(id){
 
-  let r =
+  const r =
     records.find(
-      x => x.airtableId === id
+      x =>
+        x.airtableId === id
     );
+
 
   if(r)
     openForm(r);
@@ -1011,223 +1648,293 @@ function editRecord(id){
 }
 
 
-function show(t,ok){
+/* MESSAGE */
 
-  let m = $("msg");
+function show(t, ok){
+
+  const m =
+    $("msg");
+
 
   m.className =
     t
-      ? "msg " + (ok ? "ok" : "err")
+      ? "msg " +
+        (
+          ok
+            ? "ok"
+            : "err"
+        )
       : "msg";
+
 
   m.textContent = t;
 
 }
 
 
-$("type").onchange = toggle;
+/*
+  TAB FUNCTION
+  There is ONLY ONE
+  click handler.
+*/
 
-$("search").oninput = render;
-
-
-function setTab(type,button){
+function setTab(
+  type,
+  button
+){
 
   currentType = type;
 
+
   document
-    .querySelectorAll("[data-type]")
+    .querySelectorAll(
+      "[data-type]"
+    )
     .forEach(
       x =>
-        x.classList.remove("active")
+        x.classList
+          .remove("active")
     );
 
-  if(button)
-    button.classList.add("active");
+
+  button
+    .classList
+    .add("active");
+
 
   render();
 
 }
 
 
-document
-  .querySelectorAll("[data-type]")
-  .forEach(b => {
+/*
+  SINGLE TAB CLICK HANDLER
 
-    b.type = "button";
+  This replaces the duplicate
+  handlers in the old version.
+*/
 
-    b.addEventListener(
-      "click",
-      function(ev){
-
-        ev.preventDefault();
-
-        ev.stopPropagation();
-
-        setTab(
-          this.dataset.type,
-          this
-        );
-
-      }
-    );
-
-  });
-
-
-document
-  .querySelector(".tabs")
+$("tabs")
   .addEventListener(
     "click",
     function(e){
 
-      const b =
+      const button =
         e.target.closest(
           "[data-type]"
         );
 
-      if(!b)
+
+      if(!button)
         return;
+
 
       e.preventDefault();
 
-      currentType =
-        b.dataset.type;
 
-      document
-        .querySelectorAll("[data-type]")
-        .forEach(
-          x =>
-            x.classList.remove("active")
-        );
-
-      b.classList.add("active");
-
-      render();
+      setTab(
+        button.dataset.type,
+        button
+      );
 
     }
   );
 
 
-$("academicForm").onsubmit =
-  async e => {
+/* FORM TYPE */
 
-    e.preventDefault();
-
-
-    if(
-      $("type").value === "Assignment" &&
-      (
-        !$("className").value ||
-        !$("subject").value ||
-        !$("teacher").value
-      )
-    ){
-
-      $("formMsg").className =
-        "msg err";
-
-      $("formMsg").textContent =
-        "Select Class, Subject and Teacher.";
-
-      return;
-
-    }
+$("type")
+  .addEventListener(
+    "change",
+    toggle
+  );
 
 
-    let body = {
+/* SEARCH */
 
-      type:
-        $("type").value,
-
-      name:
-        $("name").value.trim(),
-
-      code:
-        $("code").value.trim(),
-
-      programme:
-        $("programme").value,
-
-      className:
-        $("className").value,
-
-      subject:
-        $("subject").value,
-
-      teacher:
-        $("teacher").value,
-
-      status:
-        $("status").value,
-
-      notes:
-        $("notes").value.trim()
-
-    };
+$("search")
+  .addEventListener(
+    "input",
+    render
+  );
 
 
-    if(editing)
-      body.airtableId =
-        editing.airtableId;
+/* SAVE */
+
+$("academicForm")
+  .addEventListener(
+    "submit",
+    async e => {
+
+      e.preventDefault();
 
 
-    try{
+      /*
+        ASSIGNMENT VALIDATION
+      */
 
-      let r =
-        await fetch(
-          "/api/academic",
-          {
-            method:
-              editing
-                ? "PUT"
-                : "POST",
+      if(
+        $("type").value ===
+          "Assignment" &&
 
-            headers:{
-              "Content-Type":
-                "application/json"
-            },
+        (
+          !$("className").value ||
+          !$("subject").value ||
+          !$("teacher").value
+        )
+      ){
 
-            body:
-              JSON.stringify(body)
+        $("formMsg")
+          .className =
+            "msg err";
 
-          }
+
+        $("formMsg")
+          .textContent =
+            "Select Class, Subject and Teacher.";
+
+
+        return;
+
+      }
+
+
+      const body = {
+
+        type:
+          $("type").value,
+
+        name:
+          $("name")
+            .value
+            .trim(),
+
+        code:
+          $("code")
+            .value
+            .trim(),
+
+        programme:
+          $("programme").value,
+
+        className:
+          $("className").value,
+
+        subject:
+          $("subject").value,
+
+        teacher:
+          $("teacher").value,
+
+        status:
+          $("status").value,
+
+        notes:
+          $("notes")
+            .value
+            .trim()
+
+      };
+
+
+      if(editing){
+
+        body.airtableId =
+          editing.airtableId;
+
+      }
+
+
+      try{
+
+        const r =
+          await fetch(
+            "/api/academic",
+            {
+              method:
+                editing
+                  ? "PUT"
+                  : "POST",
+
+              headers:{
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(body)
+            }
+          );
+
+
+        const d =
+          await r.json();
+
+
+        if(!r.ok){
+
+          throw Error(
+            d.error?.message ||
+            d.error ||
+            "Save failed"
+          );
+
+        }
+
+
+        closeForm();
+
+
+        await loadData();
+
+
+        show(
+          "Academic record saved successfully.",
+          true
         );
 
 
-      let d =
-        await r.json();
+      }catch(x){
+
+        $("formMsg")
+          .className =
+            "msg err";
 
 
-      if(!r.ok)
-        throw Error(
-          d.error?.message ||
-          d.error ||
-          "Save failed"
-        );
+        $("formMsg")
+          .textContent =
+            x.message;
 
-
-      closeForm();
-
-      await loadData();
-
-      show(
-        "Academic record saved successfully.",
-        true
-      );
-
-
-    }catch(x){
-
-      $("formMsg").className =
-        "msg err";
-
-      $("formMsg").textContent =
-        x.message;
+      }
 
     }
+  );
 
-  };
 
+/*
+  CLOSE MODAL WHEN USER
+  TAPS OUTSIDE THE FORM
+*/
+
+$("modal")
+  .addEventListener(
+    "click",
+    e => {
+
+      if(
+        e.target ===
+        $("modal")
+      ){
+
+        closeForm();
+
+      }
+
+    }
+  );
+
+
+/* INITIALIZE */
 
 toggle();
 
