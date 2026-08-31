@@ -1,1384 +1,1054 @@
-const AIRTABLE_API = "https://api.airtable.com/v0";
+// ============================================================
+// AIBINU FLEXIPREP EDUCONSULT
+// AI CONTENT API
+// api/ai-content.js
+//
+// Handles:
+//   1. AI Note generation
+//   2. AI Question generation
+//   3. Airtable AI_Content_Jobs logging
+//   4. NoteBank_Notes creation
+//   5. CBT_Questions creation
+//
+// IMPORTANT:
+// This file is matched to the VERIFIED Airtable schema.
+// ============================================================
 
+const express = require("express");
+const router = express.Router();
+
+// ------------------------------------------------------------
+// ENVIRONMENT VARIABLES
+// ------------------------------------------------------------
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+
+// Verified Airtable table IDs
 const TABLES = {
-  topics: "tblEmw5tvBdM7TkMz",
-  notes: "tblsEjHgHA7vhPgm0",
-  questions: "tblWz5hU4tpVvMJbF",
-  aiJobs: "tbldFSYwYcTMtMm9A",
-  subjects: "tblQJzVQrpVgbx1j9",
-  classes: "tblpwV6RF0IpHGWLg"
+  AI_JOBS: "tbldFSYwYcTMtMm9A",
+  NOTES: "tblsEjHgHA7vhPgm0",
+  QUESTIONS: "tblWz5hU4tpVvMJbF",
 };
 
+// OpenAI model
 const OPENAI_MODEL =
   process.env.OPENAI_MODEL || "gpt-5.6-luna";
 
-function env() {
-  const openaiKey = process.env.OPENAI_API_KEY;
-  const airtableToken = process.env.AIRTABLE_PAT;
-  const baseId = process.env.AIRTABLE_BASE_ID;
+// ------------------------------------------------------------
+// BASIC VALIDATION
+// ------------------------------------------------------------
 
-  if (!openaiKey) {
-    throw new Error("OPENAI_API_KEY is not configured.");
-  }
+function requireConfig() {
+  const missing = [];
 
-  if (!airtableToken || !baseId) {
+  if (!OPENAI_API_KEY) missing.push("OPENAI_API_KEY");
+  if (!AIRTABLE_TOKEN) missing.push("AIRTABLE_TOKEN");
+  if (!AIRTABLE_BASE_ID) missing.push("AIRTABLE_BASE_ID");
+
+  if (missing.length) {
     throw new Error(
-      "Airtable environment variables are not configured."
+      `Missing environment variables: ${missing.join(", ")}`
     );
   }
-
-  return {
-    openaiKey,
-    airtableToken,
-    baseId
-  };
 }
 
-function airtableHeaders(token) {
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json"
-  };
-}
+// ------------------------------------------------------------
+// AIRTABLE API HELPER
+// ------------------------------------------------------------
 
-function openaiHeaders(key) {
-  return {
-    Authorization: `Bearer ${key}`,
-    "Content-Type": "application/json"
-  };
-}
-
-function makeId(prefix) {
-  const stamp =
-    Date.now().toString(36).toUpperCase();
-
-  return `${prefix}-${new Date().getFullYear()}-${stamp}`;
-}
-
-function safeString(value, max = 20000) {
-  return String(value ?? "")
-    .trim()
-    .slice(0, max);
-}
-
-function escapeFormula(value) {
-  return String(value ?? "")
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"');
-}
-
-async function airtableList(
-  baseId,
-  tableId,
-  token,
-  params = {}
-) {
-  const search = new URLSearchParams();
-
-  if (params.filterByFormula) {
-    search.set(
-      "filterByFormula",
-      params.filterByFormula
-    );
-  }
-
-  if (params.maxRecords) {
-    search.set(
-      "maxRecords",
-      String(params.maxRecords)
-    );
-  }
+async function airtableRequest(tableId, method = "GET", body = null) {
+  requireConfig();
 
   const url =
-    `${AIRTABLE_API}/${baseId}/${tableId}` +
-    (search.toString()
-      ? `?${search.toString()}`
-      : "");
+    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}`;
 
-  const response = await fetch(url, {
-    headers: airtableHeaders(token)
-  });
+  const options = {
+    method,
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+  };
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.error?.message ||
-      "Airtable read failed."
-    );
+  if (body !== null) {
+    options.body = JSON.stringify(body);
   }
 
-  return data.records || [];
-}
+  const response = await fetch(url, options);
 
-async function airtableCreate(
-  baseId,
-  tableId,
-  token,
-  fields
-) {
-  const response = await fetch(
-    `${AIRTABLE_API}/${baseId}/${tableId}`,
-    {
-      method: "POST",
-      headers: airtableHeaders(token),
-      body: JSON.stringify({
-        records: [{ fields }],
-        typecast: true
-      })
-    }
-  );
+  const text = await response.text();
 
-  const data = await response.json();
+  let data;
 
-  if (!response.ok) {
-    throw new Error(
-      data.error?.message ||
-      "Airtable create failed."
-    );
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { raw: text };
   }
 
-  return data.records?.[0];
-}
-
-async function airtableCreateMany(
-  baseId,
-  tableId,
-  token,
-  fieldsList
-) {
-  const created = [];
-
-  for (
-    let i = 0;
-    i < fieldsList.length;
-    i += 10
-  ) {
-    const chunk =
-      fieldsList.slice(i, i + 10);
-
-    const response = await fetch(
-      `${AIRTABLE_API}/${baseId}/${tableId}`,
-      {
-        method: "POST",
-        headers: airtableHeaders(token),
-        body: JSON.stringify({
-          records: chunk.map(fields => ({
-            fields
-          })),
-          typecast: true
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error?.message ||
-        "Airtable bulk create failed."
-      );
-    }
-
-    created.push(
-      ...(data.records || [])
-    );
-  }
-
-  return created;
-}
-
-async function airtableUpdate(
-  baseId,
-  tableId,
-  recordId,
-  token,
-  fields
-) {
-  const response = await fetch(
-    `${AIRTABLE_API}/${baseId}/${tableId}/${encodeURIComponent(recordId)}`,
-    {
-      method: "PATCH",
-      headers: airtableHeaders(token),
-      body: JSON.stringify({
-        fields,
-        typecast: true
-      })
-    }
-  );
-
-  const data = await response.json();
-
   if (!response.ok) {
+    console.error("Airtable error:", data);
+
     throw new Error(
-      data.error?.message ||
-      "Airtable update failed."
+      data?.error?.message ||
+      data?.error?.type ||
+      `Airtable request failed (${response.status})`
     );
   }
 
   return data;
 }
 
-async function findOne(
-  baseId,
-  tableId,
-  token,
-  fieldName,
-  value
-) {
-  const formula =
-    `{${fieldName}}="${escapeFormula(value)}"`;
+// ------------------------------------------------------------
+// CREATE AIRTABLE RECORD
+// ------------------------------------------------------------
 
-  const records =
-    await airtableList(
-      baseId,
-      tableId,
-      token,
+async function createAirtableRecord(tableId, fields) {
+  return airtableRequest(tableId, "POST", {
+    records: [
       {
-        filterByFormula: formula,
-        maxRecords: 1
-      }
-    );
-
-  return records[0] || null;
+        fields,
+      },
+    ],
+  });
 }
 
-async function openaiGenerate(
-  openaiKey,
-  instructions,
-  input,
-  schemaName,
-  schema
-) {
+// ------------------------------------------------------------
+// OPENAI HELPER
+// ------------------------------------------------------------
+
+async function callOpenAI(systemPrompt, userPrompt) {
+  requireConfig();
+
   const response = await fetch(
     "https://api.openai.com/v1/responses",
     {
       method: "POST",
-      headers:
-        openaiHeaders(openaiKey),
-
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         model: OPENAI_MODEL,
-        store: false,
 
-        instructions,
+        input: [
+          {
+            role: "system",
+            content: [
+              {
+                type: "input_text",
+                text: systemPrompt,
+              },
+            ],
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: userPrompt,
+              },
+            ],
+          },
+        ],
 
-        input,
-
-        text: {
-          format: {
-            type: "json_schema",
-            name: schemaName,
-            strict: true,
-            schema
-          }
-        }
-      })
+        temperature: 0.7,
+      }),
     }
   );
 
-  const data =
-    await response.json();
+  const data = await response.json();
 
   if (!response.ok) {
+    console.error("OpenAI error:", data);
+
     throw new Error(
-      data.error?.message ||
-      "OpenAI generation failed."
+      data?.error?.message ||
+      `OpenAI request failed (${response.status})`
     );
   }
 
-  const text =
-    data.output_text;
-
-  if (!text) {
-    throw new Error(
-      "OpenAI returned no usable output."
-    );
+  // Responses API normally exposes output_text.
+  if (data.output_text) {
+    return data.output_text;
   }
 
-  try {
-    return JSON.parse(text);
-  }
-
-  catch {
-    throw new Error(
-      "OpenAI returned invalid structured output."
-    );
-  }
-}
-
-
-/* =========================
-   NOTE SCHEMA
-========================= */
-
-const NOTE_SCHEMA = {
-
-  type: "object",
-
-  additionalProperties: false,
-
-  properties: {
-
-    title: {
-      type: "string"
-    },
-
-    content: {
-      type: "string"
-    },
-
-    learningObjectives: {
-      type: "string"
-    },
-
-    keyTerms: {
-      type: "string"
-    },
-
-    examples: {
-      type: "string"
-    },
-
-    workedExamples: {
-      type: "string"
-    },
-
-    summary: {
-      type: "string"
-    },
-
-    examTips: {
-      type: "string"
-    },
-
-    waecFocus: {
-      type: "string"
-    },
-
-    necoFocus: {
-      type: "string"
-    },
-
-    utmeFocus: {
-      type: "string"
-    }
-
-  },
-
-  required: [
-
-    "title",
-    "content",
-    "learningObjectives",
-    "keyTerms",
-    "examples",
-    "workedExamples",
-    "summary",
-    "examTips",
-    "waecFocus",
-    "necoFocus",
-    "utmeFocus"
-
-  ]
-
-};
-
-
-/* =========================
-   QUESTION SCHEMA
-========================= */
-
-const QUESTION_SCHEMA = {
-
-  type: "object",
-
-  additionalProperties: false,
-
-  properties: {
-
-    questions: {
-
-      type: "array",
-
-      items: {
-
-        type: "object",
-
-        additionalProperties: false,
-
-        properties: {
-
-          question: {
-            type: "string"
-          },
-
-          optionA: {
-            type: "string"
-          },
-
-          optionB: {
-            type: "string"
-          },
-
-          optionC: {
-            type: "string"
-          },
-
-          optionD: {
-            type: "string"
-          },
-
-          correctAnswer: {
-
-            type: "string",
-
-            enum: [
-              "A",
-              "B",
-              "C",
-              "D"
-            ]
-
-          },
-
-          explanation: {
-            type: "string"
-          },
-
-          bloomLevel: {
-            type: "string"
-          },
-
-          difficulty: {
-            type: "string"
-          },
-
-          marks: {
-            type: "number"
-          },
-
-          examType: {
-            type: "string"
-          },
-
-          questionType: {
-            type: "string"
-          }
-
-        },
-
-        required: [
-
-          "question",
-          "optionA",
-          "optionB",
-          "optionC",
-          "optionD",
-          "correctAnswer",
-          "explanation",
-          "bloomLevel",
-          "difficulty",
-          "marks",
-          "examType",
-          "questionType"
-
-        ]
-
-      }
-
-    }
-
-  },
-
-  required: [
-    "questions"
-  ]
-
-};
-
-
-/* =========================
-   AI INSTRUCTIONS
-========================= */
-
-function noteInstructions() {
-
-  return `
-
-You are the Aibinu Flexiprep Educonsult
-academic NoteBank assistant.
-
-Create a high-quality examination-
-preparation note from the teacher's
-instruction and supplied academic context.
-
-The teacher controls the requested
-teaching style, depth, examples,
-difficulty and emphasis.
-
-Respect the selected class and
-examination focus.
-
-The note must be educationally accurate,
-student-friendly and useful for WAEC,
-NECO and/or UTME preparation where
-selected.
-
-Do not claim that the note has been
-approved, published or reviewed.
-
-Return ONLY the requested structured object.
-
-`;
-
-}
-
-
-function questionInstructions() {
-
-  return `
-
-You are the Aibinu Flexiprep Educonsult
-examination-question assistant.
-
-Generate original multiple-choice
-questions from the teacher's instruction
-and supplied academic context.
-
-Questions must be appropriate for the
-selected class and topic.
-
-Use plausible distractors.
-
-Do not make the correct option obvious
-from length or wording.
-
-For calculation questions, ensure the
-numerical answer is internally correct.
-
-Include a concise but useful explanation
-for every answer.
-
-The questions are DRAFT content only.
-
-Never state that they have been approved
-or published.
-
-Return ONLY the requested structured
-object.
-
-`;
-
-}
-
-
-/* =========================
-   CREATE AI JOB
-========================= */
-
-async function createAIJob(
-  baseId,
-  token,
-  payload,
-  output,
-  status
-) {
-
-  const fields = {
-
-    "AI Job ID":
-      makeId("AI"),
-
-    "Content Type":
-      payload.contentType,
-
-    Prompt:
-      JSON.stringify(payload),
-
-    "AI Output":
-      JSON.stringify(output),
-
-    Model:
-      OPENAI_MODEL,
-
-    Status:
-      status,
-
-    "Created Date":
-      new Date().toISOString()
-
-  };
-
-
-  if (
-    payload.subjectRecordId
-  ) {
-
-    fields.Subject =
-      [payload.subjectRecordId];
-
-  }
-
-
-  if (
-    payload.topicRecordId
-  ) {
-
-    fields.Topic =
-      [payload.topicRecordId];
-
-  }
-
-
-  if (
-    payload.classRecordId
-  ) {
-
-    fields.Class =
-      [payload.classRecordId];
-
-  }
-
-
-  if (
-    payload.requestedByRecordId
-  ) {
-
-    fields["Requested By"] =
-      [payload.requestedByRecordId];
-
-  }
-
-
-  return airtableCreate(
-    baseId,
-    TABLES.aiJobs,
-    token,
-    fields
-  );
-
-}
-
-
-/* =========================
-   NOTE GENERATION
-========================= */
-
-async function handleNote(
-  body,
-  context,
-  envs
-) {
-
-  const {
-    openaiKey,
-    airtableToken,
-    baseId
-  } = envs;
-
-
-  const output =
-    await openaiGenerate(
-
-      openaiKey,
-
-      noteInstructions(),
-
-      `
-
-ACADEMIC CONTEXT
-
-Subject:
-${body.subject}
-
-Class:
-${body.className}
-
-Programme:
-${body.programme || "General"}
-
-Topic:
-${body.topic}
-
-Exam Focus:
-${(body.examTypes || []).join(", ")}
-
-
-TEACHER'S PROMPT
-
-${body.teacherPrompt}
-
-`,
-
-      "aibinu_flexiprep_note",
-
-      NOTE_SCHEMA
-
-    );
-
-
-  const noteJob =
-    await createAIJob(
-
-      baseId,
-
-      airtableToken,
-
-      {
-        ...body,
-        ...context
-      },
-
-      output,
-
-      "Generated"
-
-    );
-
-
-  const noteFields = {
-
-    "Note ID":
-      makeId("NOTE"),
-
-    Title:
-      output.title,
-
-    Content:
-      output.content,
-
-    "Learning Objectives":
-      output.learningObjectives,
-
-    "Key Terms":
-      output.keyTerms,
-
-    Examples:
-      output.examples,
-
-    "Worked Examples":
-      output.workedExamples,
-
-    Summary:
-      output.summary,
-
-    "Exam Tips":
-      output.examTips,
-
-    "WAEC Focus":
-      output.waecFocus,
-
-    "NECO Focus":
-      output.necoFocus,
-
-    "UTME Focus":
-      output.utmeFocus,
-
-    Version:
-      "1.0",
-
-    Status:
-      "AI Draft",
-
-    "Created Date":
-      new Date().toISOString(),
-
-    "Updated Date":
-      new Date().toISOString()
-
-  };
-
-
-  if (
-    context.topicRecordId
-  ) {
-
-    noteFields.Topic =
-      [context.topicRecordId];
-
-  }
-
-
-  if (
-    context.requestedByRecordId
-  ) {
-
-    noteFields["Created By"] =
-      [context.requestedByRecordId];
-
-  }
-
-
-  const note =
-    await airtableCreate(
-
-      baseId,
-
-      TABLES.notes,
-
-      airtableToken,
-
-      noteFields
-
-    );
-
-
-  return {
-
-    contentType:
-      "Note",
-
-    job:
-      noteJob,
-
-    note,
-
-    output
-
-  };
-
-}
-
-
-/* =========================
-   QUESTION GENERATION
-========================= */
-
-async function handleQuestions(
-  body,
-  context,
-  envs
-) {
-
-  const {
-    openaiKey,
-    airtableToken,
-    baseId
-  } = envs;
-
-
-  const count =
-    Math.min(
-
-      Math.max(
-
-        Number(
-          body.questionCount
-        ) || 20,
-
-        1
-
-      ),
-
-      100
-
-    );
-
-
-  const output =
-    await openaiGenerate(
-
-      openaiKey,
-
-      questionInstructions(),
-
-      `
-
-ACADEMIC CONTEXT
-
-Subject:
-${body.subject}
-
-Class:
-${body.className}
-
-Programme:
-${body.programme || "General"}
-
-Topic:
-${body.topic}
-
-Exam Focus:
-${(body.examTypes || []).join(", ")}
-
-Number:
-${count}
-
-Difficulty:
-${body.difficulty || "Mixed"}
-
-Bloom Level:
-${body.bloomLevel || "Mixed"}
-
-Question Type:
-${body.questionType || "MCQ"}
-
-
-TEACHER'S PROMPT
-
-${body.teacherPrompt}
-
-
-Generate exactly ${count} questions.
-
-`,
-
-      "aibinu_flexiprep_questions",
-
-      {
-
-        ...QUESTION_SCHEMA,
-
-        properties: {
-
-          questions: {
-
-            ...QUESTION_SCHEMA
-              .properties
-              .questions,
-
-            minItems:
-              count,
-
-            maxItems:
-              count
-
-          }
-
+  // Fallback extraction
+  let text = "";
+
+  if (Array.isArray(data.output)) {
+    for (const item of data.output) {
+      if (!Array.isArray(item.content)) continue;
+
+      for (const content of item.content) {
+        if (content.type === "output_text") {
+          text += content.text || "";
         }
-
       }
-
-    );
-
-
-  const job =
-    await createAIJob(
-
-      baseId,
-
-      airtableToken,
-
-      {
-        ...body,
-        ...context
-      },
-
-      output,
-
-      "Generated"
-
-    );
-
-
-  const questionFields =
-    output.questions.map(
-
-      (q, index) => ({
-
-        "Question ID":
-          makeId("Q") +
-          `-${index + 1}`,
-
-        Question:
-          q.question,
-
-        "Option A":
-          q.optionA,
-
-        "Option B":
-          q.optionB,
-
-        "Option C":
-          q.optionC,
-
-        "Option D":
-          q.optionD,
-
-        "Correct Answer":
-          q.correctAnswer,
-
-        Explanation:
-          q.explanation,
-
-        "Bloom Level":
-          q.bloomLevel,
-
-        Difficulty:
-          q.difficulty,
-
-        Marks:
-          q.marks,
-
-        "Exam Type":
-          [q.examType],
-
-        "Question Type":
-          q.questionType ||
-          "MCQ",
-
-        "Publication Status":
-          "Draft",
-
-        Source:
-          "Aibinu Flexiprep AI Assistant",
-
-        Year:
-          new Date().getFullYear()
-
-      })
-
-    );
-
-
-  questionFields.forEach(
-    fields => {
-
-      if (
-        context.subjectRecordId
-      ) {
-
-        fields.Subject =
-          [context.subjectRecordId];
-
-      }
-
-
-      if (
-        context.classRecordId
-      ) {
-
-        fields.Class =
-          [context.classRecordId];
-
-      }
-
-
-      if (
-        context.requestedByRecordId
-      ) {
-
-        fields["Created By"] =
-          [context.requestedByRecordId];
-
-      }
-
     }
+  }
+
+  if (!text.trim()) {
+    throw new Error("OpenAI returned no usable text.");
+  }
+
+  return text.trim();
+}
+
+// ------------------------------------------------------------
+// JSON EXTRACTION
+// ------------------------------------------------------------
+
+function extractJSON(text) {
+  if (!text) {
+    throw new Error("Empty AI response.");
+  }
+
+  // Remove markdown fences
+  let cleaned = text
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+
+  // Direct JSON
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {
+    // continue
+  }
+
+  // Find first JSON object
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+
+  if (firstBrace !== -1 && lastBrace !== -1) {
+    const possibleJSON = cleaned.slice(
+      firstBrace,
+      lastBrace + 1
+    );
+
+    try {
+      return JSON.parse(possibleJSON);
+    } catch (_) {
+      // continue
+    }
+  }
+
+  throw new Error(
+    "The AI response was not valid JSON."
+  );
+}
+
+// ------------------------------------------------------------
+// NORMALIZATION HELPERS
+// ------------------------------------------------------------
+
+function clean(value) {
+  if (value === undefined || value === null) {
+    return "";
+  }
+
+  return String(value).trim();
+}
+
+function normalizeBloom(value) {
+  const valid = [
+    "Remember",
+    "Understand",
+    "Apply",
+    "Analyze",
+    "Evaluate",
+    "Create",
+  ];
+
+  const found = valid.find(
+    item =>
+      item.toLowerCase() ===
+      clean(value).toLowerCase()
   );
 
-
-  const questions =
-    await airtableCreateMany(
-
-      baseId,
-
-      TABLES.questions,
-
-      airtableToken,
-
-      questionFields
-
-    );
-
-
-  return {
-
-    contentType:
-      "Question",
-
-    job,
-
-    questions,
-
-    output
-
-  };
-
+  return found || "Understand";
 }
 
-
-/* =========================
-   RESOLVE ACADEMIC CONTEXT
-========================= */
-
-async function resolveContext(
-  body,
-  envs
-) {
-
-  const {
-    airtableToken,
-    baseId
-  } = envs;
-
-
-  const context = {};
-
-
-  if (body.subject) {
-
-    const record =
-      await findOne(
-
-        baseId,
-
-        TABLES.subjects,
-
-        airtableToken,
-
-        "Subject Name",
-
-        body.subject
-
-      );
-
-
-    if (!record) {
-
-      throw new Error(
-
-        `Subject "${body.subject}" was not found in Airtable.`
-
-      );
-
-    }
-
-
-    context.subjectRecordId =
-      record.id;
-
-  }
-
-
-  if (body.className) {
-
-    const record =
-      await findOne(
-
-        baseId,
-
-        TABLES.classes,
-
-        airtableToken,
-
-        "Class Name",
-
-        body.className
-
-      );
-
-
-    if (!record) {
-
-      throw new Error(
-
-        `Class "${body.className}" was not found in Airtable.`
-
-      );
-
-    }
-
-
-    context.classRecordId =
-      record.id;
-
-  }
-
-
-  if (body.topic) {
-
-    const record =
-      await findOne(
-
-        baseId,
-
-        TABLES.topics,
-
-        airtableToken,
-
-        "Topic Name",
-
-        body.topic
-
-      );
-
-
-    if (!record) {
-
-      throw new Error(
-
-        `Topic "${body.topic}" was not found in NoteBank_Topics.`
-
-      );
-
-    }
-
-
-    context.topicRecordId =
-      record.id;
-
-  }
-
-
-  if (
-    body.requestedByRecordId
-  ) {
-
-    context.requestedByRecordId =
-      body.requestedByRecordId;
-
-  }
-
-
-  return context;
-
+function normalizeDifficulty(value) {
+  const valid = [
+    "Easy",
+    "Medium",
+    "Hard",
+  ];
+
+  const found = valid.find(
+    item =>
+      item.toLowerCase() ===
+      clean(value).toLowerCase()
+  );
+
+  return found || "Medium";
 }
 
+function normalizeQuestionType(value) {
+  const valid = [
+    "MCQ",
+    "Theory",
+    "Calculation",
+    "Practical",
+    "Objective",
+  ];
 
-/* =========================
-   API HANDLER
-========================= */
+  const found = valid.find(
+    item =>
+      item.toLowerCase() ===
+      clean(value).toLowerCase()
+  );
 
-export default async function handler(
-  req,
-  res
-) {
+  return found || "MCQ";
+}
 
-  if (
-    req.method !== "POST"
-  ) {
+function normalizeQuestionStatus(value) {
+  const valid = [
+    "Draft",
+    "Active",
+    "Archived",
+  ];
 
-    res.setHeader(
-      "Allow",
-      "POST"
-    );
+  const found = valid.find(
+    item =>
+      item.toLowerCase() ===
+      clean(value).toLowerCase()
+  );
 
-    return res.status(405).json({
+  return found || "Draft";
+}
 
-      error:
-        "Method not allowed."
+function normalizePublicationStatus(value) {
+  const valid = [
+    "Draft",
+    "Under Review",
+    "Approved",
+    "Published",
+    "Archived",
+  ];
 
-    });
+  const found = valid.find(
+    item =>
+      item.toLowerCase() ===
+      clean(value).toLowerCase()
+  );
 
-  }
+  return found || "Draft";
+}
 
+function normalizeExamTypes(value) {
+  if (!value) return ["General"];
 
+  const valid = [
+    "WAEC",
+    "NECO",
+    "UTME",
+    "General",
+    "IJMB",
+    "JUPEB",
+  ];
+
+  let values = Array.isArray(value)
+    ? value
+    : String(value)
+        .split(",")
+        .map(x => x.trim());
+
+  values = values.filter(x =>
+    valid.some(
+      v => v.toLowerCase() === x.toLowerCase()
+    )
+  );
+
+  return values.length ? values : ["General"];
+}
+
+// ------------------------------------------------------------
+// AI JOB LOGGER
+// ------------------------------------------------------------
+
+async function logAIJob({
+  requestedBy,
+  contentType,
+  subjectId,
+  topicId,
+  classId,
+  prompt,
+  aiOutput,
+  status,
+}) {
   try {
+    const fields = {
+      "AI Job ID":
+        `AI-${Date.now()}-${Math.floor(
+          Math.random() * 1000
+        )}`,
 
-    const body =
-      req.body || {};
+      "Content Type": contentType,
 
+      "Prompt": prompt,
 
-    const contentType =
-      body.contentType;
+      "AI Output": aiOutput,
 
+      "Model": OPENAI_MODEL,
 
-    if (
-      contentType !== "Note" &&
-      contentType !== "Question"
-    ) {
+      "Status": status || "Generated",
 
-      return res.status(400).json({
+      "Created Date": new Date().toISOString(),
+    };
 
-        error:
-          "contentType must be Note or Question."
+    // These are LINKED RECORD fields.
+    // Only add them when actual Airtable record IDs
+    // have been supplied by the frontend.
 
-      });
-
+    if (requestedBy) {
+      fields["Requested By"] = [
+        requestedBy,
+      ];
     }
 
-
-    if (
-
-      !safeString(
-        body.subject
-      ) ||
-
-      !safeString(
-        body.className
-      ) ||
-
-      !safeString(
-        body.topic
-      ) ||
-
-      !safeString(
-        body.teacherPrompt
-      )
-
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "Subject, Class, Topic and teacherPrompt are required."
-
-      });
-
+    if (subjectId) {
+      fields["Subject"] = [
+        subjectId,
+      ];
     }
 
+    if (topicId) {
+      fields["Topic"] = [
+        topicId,
+      ];
+    }
 
-    const envs =
-      env();
+    if (classId) {
+      fields["Class"] = [
+        classId,
+      ];
+    }
 
+    return await createAirtableRecord(
+      TABLES.AI_JOBS,
+      fields
+    );
+  } catch (error) {
+    // Logging must not destroy the main AI operation.
+    console.error(
+      "AI job logging failed:",
+      error.message
+    );
 
-    const context =
-      await resolveContext(
+    return null;
+  }
+}
 
-        body,
+// ============================================================
+// NOTE GENERATION
+// ============================================================
 
-        envs
+router.post("/generate-note", async (req, res) => {
+  try {
+    requireConfig();
 
+    const {
+      subject,
+      subjectId,
+      topic,
+      topicId,
+      className,
+      classId,
+      programme,
+      examTypes,
+      requestedBy,
+    } = req.body;
+
+    if (!subject) {
+      return res.status(400).json({
+        success: false,
+        error: "Subject is required.",
+      });
+    }
+
+    if (!topic) {
+      return res.status(400).json({
+        success: false,
+        error: "Topic is required.",
+      });
+    }
+
+    const prompt = `
+Create a high-quality Nigerian secondary-school examination
+study note.
+
+Institution:
+AIBINU FLEXIPREP EDUCONSULT
+
+Subject:
+${subject}
+
+Topic:
+${topic}
+
+Class:
+${className || "SS1"}
+
+Programme:
+${programme || "General"}
+
+Exam focus:
+${Array.isArray(examTypes)
+  ? examTypes.join(", ")
+  : examTypes || "WAEC, NECO, UTME"}
+
+The note must be suitable for serious examination preparation.
+
+Include:
+
+1. Title
+2. Learning objectives
+3. Introduction
+4. Detailed explanation
+5. Key terms
+6. Examples
+7. Worked examples where applicable
+8. Summary
+9. Examination tips
+10. WAEC focus
+11. NECO focus
+12. UTME focus
+
+Use clear teaching language.
+Use correct scientific terminology.
+Use equations where necessary.
+Use practical examples where appropriate.
+
+Return ONLY valid JSON using exactly this structure:
+
+{
+  "title": "",
+  "learningObjectives": "",
+  "keyTerms": "",
+  "content": "",
+  "examples": "",
+  "workedExamples": "",
+  "summary": "",
+  "examTips": "",
+  "waecFocus": "",
+  "necoFocus": "",
+  "utmeFocus": ""
+}
+`;
+
+    const aiOutput = await callOpenAI(
+      `
+You are an expert Nigerian secondary-school
+curriculum writer and examination-preparation specialist.
+
+You produce accurate WAEC, NECO and UTME-aligned
+educational content.
+
+Never invent examination requirements.
+Never include commentary outside the requested JSON.
+`,
+      prompt
+    );
+
+    const note = extractJSON(aiOutput);
+
+    const noteId =
+      `NOTE-${Date.now()}`;
+
+    // --------------------------------------------------------
+    // CREATE NOTE
+    // --------------------------------------------------------
+
+    const noteFields = {
+      "Note ID": noteId,
+
+      "Title":
+        clean(note.title) ||
+        `${subject}: ${topic}`,
+
+      "Content":
+        clean(note.content),
+
+      "Learning Objectives":
+        clean(note.learningObjectives),
+
+      "Key Terms":
+        clean(note.keyTerms),
+
+      "Examples":
+        clean(note.examples),
+
+      "Worked Examples":
+        clean(note.workedExamples),
+
+      "Summary":
+        clean(note.summary),
+
+      "Exam Tips":
+        clean(note.examTips),
+
+      "WAEC Focus":
+        clean(note.waecFocus),
+
+      "NECO Focus":
+        clean(note.necoFocus),
+
+      "UTME Focus":
+        clean(note.utmeFocus),
+
+      "Version": "1.0",
+
+      // VERIFIED NoteBank status
+      "Status": "AI Draft",
+
+      "Created Date":
+        new Date().toISOString(),
+
+      "Updated Date":
+        new Date().toISOString(),
+    };
+
+    // Topic is a LINKED RECORD field.
+    if (topicId) {
+      noteFields["Topic"] = [
+        topicId,
+      ];
+    }
+
+    // Created By is a LINKED RECORD field.
+    if (requestedBy) {
+      noteFields["Created By"] = [
+        requestedBy,
+      ];
+    }
+
+    const createdNote =
+      await createAirtableRecord(
+        TABLES.NOTES,
+        noteFields
       );
 
+    // --------------------------------------------------------
+    // LOG AI JOB
+    // --------------------------------------------------------
 
-    const result =
-
-      contentType === "Note"
-
-        ? await handleNote(
-            body,
-            context,
-            envs
-          )
-
-        : await handleQuestions(
-            body,
-            context,
-            envs
-          );
-
-
-    return res.status(200).json({
-
-      ok: true,
-
-      ...result
-
+    await logAIJob({
+      requestedBy,
+      contentType: "Note",
+      subjectId,
+      topicId,
+      classId,
+      prompt,
+      aiOutput,
+      status: "Generated",
     });
 
-  }
+    return res.json({
+      success: true,
+      message:
+        "AI note generated successfully.",
+      note: {
+        id:
+          createdNote?.records?.[0]?.id ||
+          null,
+        ...note,
+        status: "AI Draft",
+      },
+    });
 
-
-  catch (error) {
-
+  } catch (error) {
     console.error(
-      "AI_CONTENT_ERROR:",
+      "NOTE GENERATION ERROR:",
       error
     );
 
-
     return res.status(500).json({
-
-      ok: false,
-
+      success: false,
       error:
-        error?.message ||
-        "AI content generation failed."
+        error.message ||
+        "Failed to generate note.",
+    });
+  }
+});
 
+// ============================================================
+// QUESTION GENERATION
+// ============================================================
+
+router.post("/generate-question", async (req, res) => {
+  try {
+    requireConfig();
+
+    const {
+      subject,
+      subjectId,
+      topic,
+      className,
+      classId,
+      programme,
+      examTypes,
+      questionType,
+      difficulty,
+      bloomLevel,
+      source,
+      year,
+      marks,
+      requestedBy,
+    } = req.body;
+
+    if (!subject) {
+      return res.status(400).json({
+        success: false,
+        error: "Subject is required.",
+      });
+    }
+
+    if (!topic) {
+      return res.status(400).json({
+        success: false,
+        error: "Topic is required.",
+      });
+    }
+
+    const requestedQuestionType =
+      normalizeQuestionType(
+        questionType || "MCQ"
+      );
+
+    const requestedDifficulty =
+      normalizeDifficulty(
+        difficulty || "Medium"
+      );
+
+    const requestedBloom =
+      normalizeBloom(
+        bloomLevel || "Apply"
+      );
+
+    const prompt = `
+Generate ONE high-quality Nigerian secondary-school
+examination question.
+
+Institution:
+AIBINU FLEXIPREP EDUCONSULT
+
+Subject:
+${subject}
+
+Topic:
+${topic}
+
+Class:
+${className || "SS1"}
+
+Programme:
+${programme || "General"}
+
+Exam Type:
+${Array.isArray(examTypes)
+  ? examTypes.join(", ")
+  : examTypes || "WAEC, NECO, UTME"}
+
+Question Type:
+${requestedQuestionType}
+
+Difficulty:
+${requestedDifficulty}
+
+Bloom Level:
+${requestedBloom}
+
+The question must be academically sound and appropriate
+for the specified class and examination level.
+
+For an MCQ:
+
+- Provide four options.
+- Exactly one option must be correct.
+- Do not use "All of the above".
+- Do not use "None of the above".
+- Make distractors plausible.
+- Ensure the answer key matches the correct option.
+- Provide a clear explanation.
+
+Return ONLY valid JSON.
+
+For MCQ use exactly:
+
+{
+  "question": "",
+  "optionA": "",
+  "optionB": "",
+  "optionC": "",
+  "optionD": "",
+  "correctAnswer": "A",
+  "bloomLevel": "${requestedBloom}",
+  "difficulty": "${requestedDifficulty}",
+  "explanation": "",
+  "questionType": "MCQ",
+  "marks": 1,
+  "source": "",
+  "year": 2026
+}
+`;
+
+    const aiOutput = await callOpenAI(
+      `
+You are an expert WAEC, NECO and UTME examination
+question setter.
+
+You specialize in Nigerian secondary-school Physics,
+Chemistry, Biology, Mathematics and related subjects.
+
+Accuracy is more important than creativity.
+
+Return ONLY the requested JSON.
+`,
+      prompt
+    );
+
+    const question = extractJSON(aiOutput);
+
+    // --------------------------------------------------------
+    // VALIDATE CORRECT ANSWER
+    // --------------------------------------------------------
+
+    const correctAnswer =
+      clean(question.correctAnswer)
+        .toUpperCase();
+
+    const validAnswers = [
+      "A",
+      "B",
+      "C",
+      "D",
+    ];
+
+    if (
+      !validAnswers.includes(
+        correctAnswer
+      )
+    ) {
+      throw new Error(
+        `Invalid correct answer returned by AI: ${correctAnswer}`
+      );
+    }
+
+    // --------------------------------------------------------
+    // QUESTION ID
+    // --------------------------------------------------------
+
+    const questionId =
+      `Q-${Date.now()}-${Math.floor(
+        Math.random() * 10000
+      )}`;
+
+    // --------------------------------------------------------
+    // CREATE CBT QUESTION
+    // --------------------------------------------------------
+
+    const questionFields = {
+      "Question ID":
+        questionId,
+
+      "Topic":
+        clean(topic),
+
+      "Question":
+        clean(question.question),
+
+      "Option A":
+        clean(question.optionA),
+
+      "Option B":
+        clean(question.optionB),
+
+      "Option C":
+        clean(question.optionC),
+
+      "Option D":
+        clean(question.optionD),
+
+      "Correct Answer":
+        correctAnswer,
+
+      "Bloom Level":
+        normalizeBloom(
+          question.bloomLevel ||
+          requestedBloom
+        ),
+
+      "Difficulty":
+        normalizeDifficulty(
+          question.difficulty ||
+          requestedDifficulty
+        ),
+
+      "Explanation":
+        clean(question.explanation),
+
+      // VERIFIED CBT_Questions.Status choices:
+      // Draft / Active / Archived
+      "Status":
+        "Draft",
+
+      // VERIFIED Publication Status choices:
+      // Draft / Under Review / Approved / Published / Archived
+      "Publication Status":
+        "Draft",
+
+      "Question Type":
+        normalizeQuestionType(
+          question.questionType ||
+          requestedQuestionType
+        ),
+
+      "Programme":
+        programme ||
+        "General",
+
+      "Marks":
+        Number(
+          question.marks ||
+          marks ||
+          1
+        ),
+
+      "Source":
+        clean(
+          question.source ||
+          source ||
+          "AI Generated"
+        ),
+
+      "Year":
+        Number(
+          question.year ||
+          year ||
+          2026
+        ),
+    };
+
+    // --------------------------------------------------------
+    // LINK SUBJECT
+    // --------------------------------------------------------
+
+    if (subjectId) {
+      questionFields["Subject"] = [
+        subjectId,
+      ];
+    }
+
+    // --------------------------------------------------------
+    // LINK CLASS
+    // --------------------------------------------------------
+
+    if (classId) {
+      questionFields["Class"] = [
+        classId,
+      ];
+    }
+
+    // --------------------------------------------------------
+    // LINK CREATOR
+    // --------------------------------------------------------
+
+    if (requestedBy) {
+      questionFields["Created By"] = [
+        requestedBy,
+      ];
+    }
+
+    // --------------------------------------------------------
+    // EXAM TYPE
+    // --------------------------------------------------------
+
+    questionFields["Exam Type"] =
+      normalizeExamTypes(examTypes);
+
+    const createdQuestion =
+      await createAirtableRecord(
+        TABLES.QUESTIONS,
+        questionFields
+      );
+
+    // --------------------------------------------------------
+    // LOG AI JOB
+    // --------------------------------------------------------
+
+    await logAIJob({
+      requestedBy,
+      contentType: "Question",
+      subjectId,
+      topicId: null,
+      classId,
+      prompt,
+      aiOutput,
+      status: "Generated",
     });
 
-  }
+    return res.json({
+      success: true,
 
-}
+      message:
+        "AI question generated successfully.",
+
+      question: {
+        id:
+          createdQuestion?.records?.[0]?.id ||
+          null,
+
+        questionId,
+
+        ...question,
+
+        correctAnswer,
+
+        status: "Draft",
+
+        publicationStatus: "Draft",
+      },
+    });
+
+  } catch (error) {
+    console.error(
+      "QUESTION GENERATION ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      error:
+        error.message ||
+        "Failed to generate question.",
+    });
+  }
+});
+
+// ============================================================
+// HEALTH CHECK
+// ============================================================
+
+router.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    service:
+      "AIBINU Flexiprep AI Content API",
+    model: OPENAI_MODEL,
+    airtableConfigured:
+      Boolean(AIRTABLE_TOKEN),
+    baseConfigured:
+      Boolean(AIRTABLE_BASE_ID),
+  });
+});
+
+// ============================================================
+// EXPORT
+// ============================================================
+
+module.exports = router;
