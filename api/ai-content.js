@@ -8,9 +8,15 @@
 // Endpoint:
 // POST /api/ai-content
 //
-// contentType:
-//   "Note"     -> Generate and save AI note draft
-//   "Question" -> Generate and save AI question drafts
+// Supports:
+//   1. AI Note generation
+//   2. AI Question generation
+//   3. Multiple question generation
+//   4. Mixed Difficulty
+//   5. Mixed Bloom Level
+//   6. Airtable AI job logging
+//   7. NoteBank draft creation
+//   8. CBT Question draft creation
 //
 // Environment variables:
 //   OPENAI_API_KEY
@@ -28,6 +34,7 @@ const OPENAI_API =
 const OPENAI_MODEL =
   process.env.OPENAI_MODEL || "gpt-5.6-luna";
 
+
 // ============================================================
 // VERIFIED AIRTABLE TABLE IDs
 // ============================================================
@@ -40,12 +47,173 @@ const TABLES = {
 
 
 // ============================================================
+// VERCEL HANDLER
+// ============================================================
+
+module.exports = async function handler(req, res) {
+
+  // ----------------------------------------------------------
+  // CORS
+  // ----------------------------------------------------------
+
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "*"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "POST, GET, OPTIONS"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+
+  // ----------------------------------------------------------
+  // HEALTH CHECK
+  // ----------------------------------------------------------
+
+  if (req.method === "GET") {
+
+    return res.status(200).json({
+      success: true,
+      service:
+        "AIBINU Flexiprep AI Content API",
+      model: OPENAI_MODEL,
+      airtableConfigured:
+        Boolean(process.env.AIRTABLE_PAT),
+      baseConfigured:
+        Boolean(process.env.AIRTABLE_BASE_ID),
+      openaiConfigured:
+        Boolean(process.env.OPENAI_API_KEY)
+    });
+
+  }
+
+
+  // ----------------------------------------------------------
+  // ONLY POST
+  // ----------------------------------------------------------
+
+  if (req.method !== "POST") {
+
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed."
+    });
+
+  }
+
+
+  try {
+
+    const config = getConfig();
+
+    const body =
+      req.body || {};
+
+
+    const contentType =
+      clean(
+        body.contentType ||
+        body.type ||
+        body.mode
+      ).toLowerCase();
+
+
+    // --------------------------------------------------------
+    // NOTE
+    // --------------------------------------------------------
+
+    if (
+      contentType === "note" ||
+      contentType === "notes" ||
+      contentType === "generate-note"
+    ) {
+
+      const result =
+        await generateNote(
+          config,
+          body
+        );
+
+      return res.status(200).json({
+        success: true,
+        ...result
+      });
+
+    }
+
+
+    // --------------------------------------------------------
+    // QUESTION
+    // --------------------------------------------------------
+
+    if (
+      contentType === "question" ||
+      contentType === "questions" ||
+      contentType === "generate-question"
+    ) {
+
+      const result =
+        await generateQuestions(
+          config,
+          body
+        );
+
+      return res.status(200).json({
+        success: true,
+        ...result
+      });
+
+    }
+
+
+    return res.status(400).json({
+      success: false,
+      error:
+        "Invalid contentType. Use Note or Question."
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "AI CONTENT API ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+
+      success: false,
+
+      error:
+        error.message ||
+        "AI content generation failed."
+
+    });
+
+  }
+
+};
+
+
+// ============================================================
 // ENVIRONMENT
 // ============================================================
 
 function getConfig() {
 
   const config = {
+
     openaiKey:
       process.env.OPENAI_API_KEY,
 
@@ -54,29 +222,51 @@ function getConfig() {
 
     airtableBaseId:
       process.env.AIRTABLE_BASE_ID
+
   };
+
 
   const missing = [];
 
+
   if (!config.openaiKey) {
-    missing.push("OPENAI_API_KEY");
+
+    missing.push(
+      "OPENAI_API_KEY"
+    );
+
   }
+
 
   if (!config.airtablePat) {
-    missing.push("AIRTABLE_PAT");
+
+    missing.push(
+      "AIRTABLE_PAT"
+    );
+
   }
+
 
   if (!config.airtableBaseId) {
-    missing.push("AIRTABLE_BASE_ID");
+
+    missing.push(
+      "AIRTABLE_BASE_ID"
+    );
+
   }
 
+
   if (missing.length) {
+
     throw new Error(
       `Missing environment variables: ${missing.join(", ")}`
     );
+
   }
 
+
   return config;
+
 }
 
 
@@ -90,7 +280,9 @@ function clean(value) {
     value === undefined ||
     value === null
   ) {
+
     return "";
+
   }
 
   return String(value).trim();
@@ -102,15 +294,37 @@ function makeId(prefix) {
 
   return (
     `${prefix}-${Date.now()}-` +
-    `${Math.floor(Math.random() * 10000)}`
+    `${Math.floor(Math.random() * 100000)}`
   );
 
 }
 
 
 // ============================================================
-// VALID AIRTABLE SELECT VALUES
+// NORMALIZATION
 // ============================================================
+
+function normalizeDifficulty(value) {
+
+  const valid = [
+    "Easy",
+    "Medium",
+    "Hard"
+  ];
+
+
+  const found =
+    valid.find(
+      item =>
+        item.toLowerCase() ===
+        clean(value).toLowerCase()
+    );
+
+
+  return found || "Medium";
+
+}
+
 
 function normalizeBloom(value) {
 
@@ -123,33 +337,17 @@ function normalizeBloom(value) {
     "Create"
   ];
 
+
   const found =
     valid.find(
       item =>
         item.toLowerCase() ===
         clean(value).toLowerCase()
     );
+
 
   return found || "Understand";
-}
 
-
-function normalizeDifficulty(value) {
-
-  const valid = [
-    "Easy",
-    "Medium",
-    "Hard"
-  ];
-
-  const found =
-    valid.find(
-      item =>
-        item.toLowerCase() ===
-        clean(value).toLowerCase()
-    );
-
-  return found || "Medium";
 }
 
 
@@ -163,6 +361,7 @@ function normalizeQuestionType(value) {
     "Objective"
   ];
 
+
   const found =
     valid.find(
       item =>
@@ -170,7 +369,9 @@ function normalizeQuestionType(value) {
         clean(value).toLowerCase()
     );
 
+
   return found || "MCQ";
+
 }
 
 
@@ -185,7 +386,9 @@ function normalizeExamTypes(value) {
     "JUPEB"
   ];
 
+
   let values;
+
 
   if (Array.isArray(value)) {
 
@@ -197,10 +400,12 @@ function normalizeExamTypes(value) {
       clean(value)
         .split(",")
         .map(
-          item => item.trim()
+          item =>
+            item.trim()
         );
 
   }
+
 
   const result =
     values.filter(
@@ -212,6 +417,7 @@ function normalizeExamTypes(value) {
         )
     );
 
+
   return result.length
     ? result
     : ["General"];
@@ -220,7 +426,145 @@ function normalizeExamTypes(value) {
 
 
 // ============================================================
-// AIRTABLE
+// MIXED DISTRIBUTION
+// ============================================================
+
+function createBalancedList(
+  count,
+  values
+) {
+
+  const result = [];
+
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    result.push(
+      values[
+        i % values.length
+      ]
+    );
+
+  }
+
+
+  // Shuffle so the questions
+  // do not appear in obvious order.
+
+  for (
+    let i = result.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() *
+        (i + 1)
+      );
+
+
+    [
+      result[i],
+      result[j]
+    ] = [
+      result[j],
+      result[i]
+    ];
+
+  }
+
+
+  return result;
+
+}
+
+
+function getDifficultyList(
+  count,
+  difficulty
+) {
+
+  const value =
+    clean(difficulty);
+
+
+  if (
+    !value ||
+    value.toLowerCase() !==
+    "mixed"
+  ) {
+
+    return Array(
+      count
+    ).fill(
+      normalizeDifficulty(
+        value || "Medium"
+      )
+    );
+
+  }
+
+
+  return createBalancedList(
+    count,
+    [
+      "Easy",
+      "Medium",
+      "Hard"
+    ]
+  );
+
+}
+
+
+function getBloomList(
+  count,
+  bloom
+) {
+
+  const value =
+    clean(bloom);
+
+
+  if (
+    !value ||
+    value.toLowerCase() !==
+    "mixed"
+  ) {
+
+    return Array(
+      count
+    ).fill(
+      normalizeBloom(
+        value || "Apply"
+      )
+    );
+
+  }
+
+
+  return createBalancedList(
+    count,
+    [
+      "Remember",
+      "Understand",
+      "Apply",
+      "Analyze",
+      "Evaluate",
+      "Create"
+    ]
+  );
+
+}
+
+
+// ============================================================
+// AIRTABLE REQUEST
 // ============================================================
 
 async function airtableRequest(
@@ -234,6 +578,7 @@ async function airtableRequest(
     `${AIRTABLE_API}/` +
     `${config.airtableBaseId}/` +
     `${tableId}`;
+
 
   const options = {
 
@@ -273,6 +618,7 @@ async function airtableRequest(
 
   let data;
 
+
   try {
 
     data =
@@ -294,6 +640,7 @@ async function airtableRequest(
       data
     );
 
+
     throw new Error(
 
       data?.error?.message ||
@@ -313,7 +660,7 @@ async function airtableRequest(
 
 
 // ============================================================
-// CREATE ONE AIRTABLE RECORD
+// CREATE ONE RECORD
 // ============================================================
 
 async function createRecord(
@@ -331,13 +678,17 @@ async function createRecord(
     "POST",
 
     {
+
       records: [
+
         {
           fields
         }
+
       ],
 
       typecast: true
+
     }
 
   );
@@ -346,8 +697,8 @@ async function createRecord(
 
 
 // ============================================================
-// CREATE MANY AIRTABLE RECORDS
-// Airtable supports up to 10 records per request.
+// CREATE MANY RECORDS
+// Airtable maximum = 10 records/request
 // ============================================================
 
 async function createManyRecords(
@@ -357,6 +708,7 @@ async function createManyRecords(
 ) {
 
   const created = [];
+
 
   for (
     let i = 0;
@@ -381,6 +733,7 @@ async function createManyRecords(
         "POST",
 
         {
+
           records:
             chunk.map(
               fields => ({
@@ -389,6 +742,7 @@ async function createManyRecords(
             ),
 
           typecast: true
+
         }
 
       );
@@ -407,6 +761,7 @@ async function createManyRecords(
     }
 
   }
+
 
   return created;
 
@@ -430,8 +785,7 @@ async function callOpenAI(
 
       {
 
-        method:
-          "POST",
+        method: "POST",
 
         headers: {
 
@@ -484,6 +838,7 @@ async function callOpenAI(
       "OPENAI ERROR:",
       data
     );
+
 
     throw new Error(
 
@@ -597,12 +952,14 @@ function parseAIJSON(text) {
 
   } catch (_) {
 
-    // Try to find JSON object.
+    // Continue.
+
   }
 
 
   const first =
     cleaned.indexOf("{");
+
 
   const last =
     cleaned.lastIndexOf("}");
@@ -625,7 +982,8 @@ function parseAIJSON(text) {
 
     } catch (_) {
 
-      // Continue to error.
+      // Continue.
+
     }
 
   }
@@ -674,8 +1032,6 @@ async function logAIJob(
 
     };
 
-
-    // Linked record fields
 
     if (
       data.requestedBy
@@ -729,13 +1085,14 @@ async function logAIJob(
 
   } catch (error) {
 
-    // AI job logging failure should
-    // not erase successfully generated content.
-
     console.error(
       "AI JOB LOGGING ERROR:",
       error.message
     );
+
+
+    // Logging failure must not
+    // destroy generated content.
 
     return null;
 
@@ -756,16 +1113,28 @@ async function generateNote(
   const subject =
     clean(body.subject);
 
+  const subjectId =
+    clean(body.subjectId);
+
   const topic =
     clean(body.topic);
+
+  const topicId =
+    clean(body.topicId);
 
   const className =
     clean(body.className) ||
     "SS1";
 
+  const classId =
+    clean(body.classId);
+
   const programme =
     clean(body.programme) ||
     "General";
+
+  const requestedBy =
+    clean(body.requestedBy);
 
   const teacherPrompt =
     clean(
@@ -808,35 +1177,44 @@ async function generateNote(
 
   const instructions = `
 
-You are the official AI academic content
-assistant for AIBINU FLEXIPREP EDUCONSULT.
+You are the official AI academic
+content assistant for
+AIBINU FLEXIPREP EDUCONSULT.
 
-Your role is to help qualified teachers
-prepare high-quality examination notes.
+You assist qualified teachers
+in preparing examination content.
 
-The TEACHER'S PROMPT is the PRIMARY
-instruction.
+The TEACHER'S PROMPT is the
+PRIMARY instruction.
 
-Create original educational content.
+Target students:
 
-Target:
 Nigerian secondary-school students.
 
 Standards:
-WAEC, NECO and UTME where applicable.
 
-The content must be:
+WAEC
+NECO
+UTME
+
+where applicable.
+
+Content must be:
 
 - Accurate
 - Clear
 - Engaging
 - Examination-oriented
 - Age appropriate
-- Scientifically or mathematically correct
+- Scientifically correct
+- Mathematically correct where applicable
 - Well structured
 
-Do not claim the material has been
-teacher-approved or published.
+Do not claim that the material
+has been teacher-approved.
+
+Do not claim that it has been
+published.
 
 Return ONLY valid JSON.
 
@@ -845,6 +1223,7 @@ Return ONLY valid JSON.
 
   const input = `
 
+INSTITUTION:
 AIBINU FLEXIPREP EDUCONSULT
 
 SUBJECT:
@@ -862,29 +1241,30 @@ ${topic}
 EXAMINATION FOCUS:
 ${examTypes.join(", ")}
 
-
 TEACHER'S PROMPT:
 ${teacherPrompt}
 
 
-Create the note.
+Create a comprehensive examination
+study note.
 
-The note should contain:
+The note must contain:
 
-- A strong title
-- Learning objectives
-- Introduction
-- Detailed teaching content
-- Key terms
-- Examples
-- Worked examples where applicable
-- Summary
-- Examination tips
-- WAEC focus
-- NECO focus
-- UTME focus
+1. Strong title
+2. Learning objectives
+3. Introduction
+4. Detailed teaching content
+5. Key terms
+6. Examples
+7. Worked examples where applicable
+8. Summary
+9. Examination tips
+10. WAEC focus
+11. NECO focus
+12. UTME focus
 
-Return exactly this JSON structure:
+
+Return exactly:
 
 {
   "title": "",
@@ -905,13 +1285,9 @@ Return exactly this JSON structure:
 
   const aiText =
     await callOpenAI(
-
       config,
-
       instructions,
-
       input
-
     );
 
 
@@ -919,6 +1295,10 @@ Return exactly this JSON structure:
     parseAIJSON(
       aiText
     );
+
+
+  const now =
+    new Date().toISOString();
 
 
   const fields = {
@@ -934,91 +1314,68 @@ Return exactly this JSON structure:
       clean(note.content),
 
     "Learning Objectives":
-      clean(
-        note.learningObjectives
-      ),
+      clean(note.learningObjectives),
 
     "Key Terms":
-      clean(
-        note.keyTerms
-      ),
+      clean(note.keyTerms),
 
     "Examples":
-      clean(
-        note.examples
-      ),
+      clean(note.examples),
 
     "Worked Examples":
-      clean(
-        note.workedExamples
-      ),
+      clean(note.workedExamples),
 
     "Summary":
-      clean(
-        note.summary
-      ),
+      clean(note.summary),
 
     "Exam Tips":
-      clean(
-        note.examTips
-      ),
+      clean(note.examTips),
 
     "WAEC Focus":
-      clean(
-        note.waecFocus
-      ),
+      clean(note.waecFocus),
 
     "NECO Focus":
-      clean(
-        note.necoFocus
-      ),
+      clean(note.necoFocus),
 
     "UTME Focus":
-      clean(
-        note.utmeFocus
-      ),
+      clean(note.utmeFocus),
 
     "Version":
       "1.0",
 
-    // VERIFIED NoteBank status
     "Status":
       "AI Draft",
 
     "Created Date":
-      new Date().toISOString(),
+      now,
 
     "Updated Date":
-      new Date().toISOString()
+      now
 
   };
 
 
   // Linked Topic
 
-  if (
-    body.topicId
-  ) {
+  if (topicId) {
 
-    fields.Topic =
-      [body.topicId];
+    fields["Topic"] =
+      [topicId];
 
   }
 
 
-  // Linked teacher
+  // Linked Created By
 
-  if (
-    body.requestedBy
-  ) {
+  if (requestedBy) {
 
     fields["Created By"] =
-      [body.requestedBy];
+      [requestedBy];
 
   }
 
 
-  const created =
+  const createdNote =
     await createRecord(
 
       config,
@@ -1036,20 +1393,16 @@ Return exactly this JSON structure:
 
     {
 
-      requestedBy:
-        body.requestedBy,
-
-      subjectId:
-        body.subjectId,
-
-      topicId:
-        body.topicId,
-
-      classId:
-        body.classId,
+      requestedBy,
 
       contentType:
         "Note",
+
+      subjectId,
+
+      topicId,
+
+      classId,
 
       prompt:
         teacherPrompt,
@@ -1064,22 +1417,23 @@ Return exactly this JSON structure:
 
   return {
 
-    type:
-      "Note",
+    message:
+      "AI note generated successfully.",
 
-    noteRecordId:
-      created?.records?.[0]?.id ||
-      null,
+    note: {
 
-    noteId:
-      fields["Note ID"],
+      id:
+        createdNote
+          ?.records
+          ?.at(0)
+          ?.id || null,
 
-    status:
-      "AI Draft",
+      ...note,
 
-    note,
+      status:
+        "AI Draft"
 
-    examTypes
+    }
 
   };
 
@@ -1098,6 +1452,9 @@ async function generateQuestions(
   const subject =
     clean(body.subject);
 
+  const subjectId =
+    clean(body.subjectId);
+
   const topic =
     clean(body.topic);
 
@@ -1105,14 +1462,82 @@ async function generateQuestions(
     clean(body.className) ||
     "SS1";
 
+  const classId =
+    clean(body.classId);
+
   const programme =
     clean(body.programme) ||
     "General";
+
+  const requestedBy =
+    clean(body.requestedBy);
 
   const teacherPrompt =
     clean(
       body.teacherPrompt ||
       body.prompt
+    );
+
+  const examTypes =
+    normalizeExamTypes(
+      body.examTypes
+    );
+
+
+  const count =
+    Math.max(
+      1,
+      Math.min(
+        100,
+        Number(
+          body.numberOfQuestions ||
+          body.numberQuestions ||
+          body.count ||
+          1
+        )
+      )
+    );
+
+
+  const difficulty =
+    clean(
+      body.difficulty ||
+      "Medium"
+    );
+
+
+  const bloomLevel =
+    clean(
+      body.bloomLevel ||
+      "Apply"
+    );
+
+
+  const questionType =
+    normalizeQuestionType(
+      body.questionType ||
+      "MCQ"
+    );
+
+
+  const source =
+    clean(
+      body.source ||
+      "AI Generated"
+    );
+
+
+  const year =
+    Number(
+      body.year ||
+      2026
+    );
+
+
+  const marks =
+    Number(
+      body.marks ||
+      1
     );
 
 
@@ -1143,91 +1568,129 @@ async function generateQuestions(
   }
 
 
-  let count =
-    Number(
-      body.questionCount ||
-      body.count ||
-      20
+  // ----------------------------------------------------------
+  // CREATE ACTUAL ASSIGNMENTS
+  // ----------------------------------------------------------
+
+  const difficultyList =
+    getDifficultyList(
+      count,
+      difficulty
     );
 
 
-  count =
-    Math.min(
-      Math.max(
-        Math.floor(count),
-        1
-      ),
-      100
+  const bloomList =
+    getBloomList(
+      count,
+      bloomLevel
     );
 
 
-  const difficulty =
-    normalizeDifficulty(
-      body.difficulty ||
-      "Medium"
-    );
+  // ----------------------------------------------------------
+  // GENERATE IN BATCHES
+  //
+  // This prevents extremely large
+  // OpenAI responses.
+  // ----------------------------------------------------------
+
+  const generatedQuestions = [];
+
+  const allPrompts = [];
 
 
-  const bloomLevel =
-    normalizeBloom(
-      body.bloomLevel ||
-      "Apply"
-    );
+  for (
+    let start = 0;
+    start < count;
+    start += 10
+  ) {
+
+    const batchEnd =
+      Math.min(
+        start + 10,
+        count
+      );
 
 
-  const questionType =
-    normalizeQuestionType(
-      body.questionType ||
-      "MCQ"
-    );
+    const batchSize =
+      batchEnd - start;
 
 
-  const examTypes =
-    normalizeExamTypes(
-      body.examTypes
-    );
+    const batchAssignments =
+      [];
 
 
-  const instructions = `
+    for (
+      let i = 0;
+      i < batchSize;
+      i++
+    ) {
 
-You are the official AI examination
-question assistant for AIBINU FLEXIPREP
-EDUCONSULT.
+      const index =
+        start + i;
 
-The TEACHER'S PROMPT is the PRIMARY
-instruction.
 
-Generate original examination-style
-questions suitable for Nigerian students.
+      batchAssignments.push({
 
-Use WAEC, NECO and UTME style where
-requested.
+        number:
+          index + 1,
 
-Questions must be academically accurate.
+        difficulty:
+          difficultyList[index],
 
-For MCQs:
+        bloomLevel:
+          bloomList[index]
 
-- Four options only
-- Exactly one correct answer
-- Plausible distractors
-- No "All of the above"
-- No "None of the above"
-- Correct answer must match the option
-- Include explanation
-- Include Bloom level
-- Include difficulty
+      });
 
-Do not claim questions have been
-approved or published.
+    }
+
+
+    const assignmentText =
+      batchAssignments
+        .map(
+          item =>
+            `Question ${item.number}: Difficulty=${item.difficulty}; Bloom=${item.bloomLevel}`
+        )
+        .join("\n");
+
+
+    const instructions = `
+
+You are an expert Nigerian
+secondary-school examination
+question setter.
+
+Institution:
+
+AIBINU FLEXIPREP EDUCONSULT
+
+Standards:
+
+WAEC
+NECO
+UTME
+
+The teacher's prompt is important.
+
+However, the backend assignment
+for each question is FINAL.
+
+You MUST obey the exact
+difficulty and Bloom Level
+specified for every question.
+
+Do NOT substitute your own
+difficulty.
+
+Do NOT substitute your own
+Bloom Level.
 
 Return ONLY valid JSON.
 
 `;
 
 
-  const input = `
-
-AIBINU FLEXIPREP EDUCONSULT
+    const input = `
 
 SUBJECT:
 ${subject}
@@ -1244,26 +1707,53 @@ ${topic}
 EXAMINATION FOCUS:
 ${examTypes.join(", ")}
 
-NUMBER OF QUESTIONS:
-${count}
-
 QUESTION TYPE:
 ${questionType}
-
-DIFFICULTY:
-${difficulty}
-
-BLOOM LEVEL:
-${bloomLevel}
-
 
 TEACHER'S PROMPT:
 ${teacherPrompt}
 
 
-Generate exactly ${count} questions.
+GENERATE EXACTLY
+${batchSize} QUESTIONS.
 
-Return:
+
+MANDATORY QUESTION ASSIGNMENTS:
+
+${assignmentText}
+
+
+For MCQ questions:
+
+- Four options only.
+- Option A
+- Option B
+- Option C
+- Option D
+
+Exactly ONE option must be correct.
+
+Do NOT use:
+
+"All of the above"
+
+"None of the above"
+
+
+Distractors must be plausible.
+
+The correct answer must actually
+match the question.
+
+Provide a useful explanation.
+
+Questions should be appropriate
+for Nigerian secondary-school
+students and the selected
+examination focus.
+
+
+Return this exact JSON structure:
 
 {
   "questions": [
@@ -1274,266 +1764,371 @@ Return:
       "optionC": "",
       "optionD": "",
       "correctAnswer": "A",
+      "bloomLevel": "",
+      "difficulty": "",
       "explanation": "",
-      "bloomLevel": "${bloomLevel}",
-      "difficulty": "${difficulty}",
-      "questionType": "${questionType}",
+      "questionType": "MCQ",
       "marks": 1,
-      "examType": "WAEC",
-      "source": "AI Generated",
+      "source": "",
       "year": 2026
     }
   ]
 }
 
+IMPORTANT:
+
+Return exactly
+${batchSize} question objects.
+
+Preserve the order:
+
+Question 1
+Question 2
+Question 3
+...
+
 `;
 
 
-  const aiText =
-    await callOpenAI(
-
-      config,
-
-      instructions,
-
-      input
-
-    );
+    const aiText =
+      await callOpenAI(
+        config,
+        instructions,
+        input
+      );
 
 
-  const result =
-    parseAIJSON(
-      aiText
-    );
-
-
-  if (
-    !Array.isArray(
-      result.questions
-    )
-  ) {
-
-    throw new Error(
-      "AI did not return questions."
-    );
-
-  }
-
-
-  if (
-    result.questions.length !==
-    count
-  ) {
-
-    throw new Error(
-
-      `AI returned ${result.questions.length} questions instead of ${count}.`
-
-    );
-
-  }
-
-
-  const records = [];
-
-
-  for (
-    let i = 0;
-    i < result.questions.length;
-    i++
-  ) {
-
-    const q =
-      result.questions[i];
-
-
-    const correctAnswer =
-      clean(
-        q.correctAnswer
-      ).toUpperCase();
+    const parsed =
+      parseAIJSON(
+        aiText
+      );
 
 
     if (
-      ![
-        "A",
-        "B",
-        "C",
-        "D"
-      ].includes(
-        correctAnswer
+      !Array.isArray(
+        parsed.questions
       )
     ) {
 
       throw new Error(
+        "AI did not return a questions array."
+      );
 
-        `Question ${i + 1} has invalid correct answer.`
+    }
+
+
+    if (
+      parsed.questions.length !==
+      batchSize
+    ) {
+
+      throw new Error(
+
+        `AI returned ${parsed.questions.length} questions instead of ${batchSize}.`
 
       );
 
     }
 
 
-    const fields = {
+    for (
+      let i = 0;
+      i < parsed.questions.length;
+      i++
+    ) {
 
-      "Question ID":
-        makeId("Q"),
+      const q =
+        parsed.questions[i];
 
-      // VERIFIED: Topic is text
-      "Topic":
-        topic,
 
-      "Question":
-        clean(
-          q.question
-        ),
+      const globalIndex =
+        start + i;
 
-      "Option A":
-        clean(
-          q.optionA
-        ),
 
-      "Option B":
-        clean(
-          q.optionB
-        ),
+      // ------------------------------------------------------
+      // BACKEND VALUES ARE AUTHORITATIVE
+      // ------------------------------------------------------
 
-      "Option C":
-        clean(
-          q.optionC
-        ),
+      q.difficulty =
+        difficultyList[
+          globalIndex
+        ];
 
-      "Option D":
-        clean(
-          q.optionD
-        ),
 
-      "Correct Answer":
-        correctAnswer,
+      q.bloomLevel =
+        bloomList[
+          globalIndex
+        ];
 
-      "Bloom Level":
-        normalizeBloom(
-          q.bloomLevel ||
-          bloomLevel
-        ),
 
-      "Difficulty":
-        normalizeDifficulty(
-          q.difficulty ||
-          difficulty
-        ),
-
-      "Explanation":
-        clean(
-          q.explanation
-        ),
-
-      // VERIFIED CBT status
-      "Status":
-        "Draft",
-
-      // VERIFIED publication status
-      "Publication Status":
-        "Draft",
-
-      "Exam Type":
-        normalizeExamTypes(
-          q.examType ||
-          examTypes
-        ),
-
-      "Question Type":
+      q.questionType =
         normalizeQuestionType(
-          q.questionType ||
           questionType
-        ),
+        );
 
-      "Programme":
-        programme,
 
-      "Marks":
+      q.marks =
         Number(
           q.marks ||
-          body.marks ||
+          marks ||
           1
-        ),
+        );
 
-      "Source":
+
+      q.source =
         clean(
-          q.source
-        ) ||
-        "AI Generated",
+          q.source ||
+          source
+        );
 
-      "Year":
+
+      q.year =
         Number(
-          q.year
-        ) ||
-        new Date().getFullYear()
-
-    };
+          q.year ||
+          year
+        );
 
 
-    // Linked Subject
+      q.correctAnswer =
+        clean(
+          q.correctAnswer
+        ).toUpperCase();
 
-    if (
-      body.subjectId
-    ) {
 
-      fields.Subject =
-        [body.subjectId];
+      // ------------------------------------------------------
+      // VALIDATE ANSWER
+      // ------------------------------------------------------
+
+      if (
+        ![
+          "A",
+          "B",
+          "C",
+          "D"
+        ].includes(
+          q.correctAnswer
+        )
+      ) {
+
+        throw new Error(
+
+          `Invalid correct answer in Question ${globalIndex + 1}.`
+
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // VALIDATE QUESTION TEXT
+      // ------------------------------------------------------
+
+      if (
+        !clean(q.question)
+      ) {
+
+        throw new Error(
+
+          `Question ${globalIndex + 1} has no question text.`
+
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // VALIDATE OPTIONS
+      // ------------------------------------------------------
+
+      if (
+        !clean(q.optionA) ||
+        !clean(q.optionB) ||
+        !clean(q.optionC) ||
+        !clean(q.optionD)
+      ) {
+
+        throw new Error(
+
+          `Question ${globalIndex + 1} has incomplete options.`
+
+        );
+
+      }
+
+
+      generatedQuestions.push(
+        q
+      );
 
     }
 
 
-    // Linked Class
-
-    if (
-      body.classId
-    ) {
-
-      fields.Class =
-        [body.classId];
-
-    }
-
-
-    // Linked Teacher
-
-    if (
-      body.requestedBy
-    ) {
-
-      fields["Created By"] =
-        [body.requestedBy];
-
-    }
-
-
-    records.push(
-      fields
+    allPrompts.push(
+      input
     );
 
   }
 
 
-  // ----------------------------------------------------------
-  // SAVE QUESTIONS
-  // ----------------------------------------------------------
+  // ==========================================================
+  // PREPARE AIRTABLE RECORDS
+  // ==========================================================
 
-  const created =
+  const airtableRecords =
+    generatedQuestions.map(
+      (question, index) => {
+
+        const fields = {
+
+          "Question ID":
+            makeId("Q"),
+
+          "Topic":
+            topic,
+
+          "Question":
+            clean(
+              question.question
+            ),
+
+          "Option A":
+            clean(
+              question.optionA
+            ),
+
+          "Option B":
+            clean(
+              question.optionB
+            ),
+
+          "Option C":
+            clean(
+              question.optionC
+            ),
+
+          "Option D":
+            clean(
+              question.optionD
+            ),
+
+          "Correct Answer":
+            question.correctAnswer,
+
+          "Bloom Level":
+            normalizeBloom(
+              question.bloomLevel
+            ),
+
+          "Difficulty":
+            normalizeDifficulty(
+              question.difficulty
+            ),
+
+          "Explanation":
+            clean(
+              question.explanation
+            ),
+
+          "Status":
+            "Draft",
+
+          "Publication Status":
+            "Draft",
+
+          "Question Type":
+            normalizeQuestionType(
+              question.questionType
+            ),
+
+          "Programme":
+            programme,
+
+          "Marks":
+            Number(
+              question.marks ||
+              marks ||
+              1
+            ),
+
+          "Source":
+            clean(
+              question.source ||
+              source
+            ),
+
+          "Year":
+            Number(
+              question.year ||
+              year
+            ),
+
+          "Exam Type":
+            examTypes
+
+        };
+
+
+        // ------------------------------------------------------
+        // LINK SUBJECT
+        // ------------------------------------------------------
+
+        if (subjectId) {
+
+          fields["Subject"] =
+            [subjectId];
+
+        }
+
+
+        // ------------------------------------------------------
+        // LINK CLASS
+        // ------------------------------------------------------
+
+        if (classId) {
+
+          fields["Class"] =
+            [classId];
+
+        }
+
+
+        // ------------------------------------------------------
+        // LINK CREATOR
+        // ------------------------------------------------------
+
+        if (requestedBy) {
+
+          fields["Created By"] =
+            [requestedBy];
+
+        }
+
+
+        return fields;
+
+      }
+    );
+
+
+  // ==========================================================
+  // SAVE QUESTIONS
+  // ==========================================================
+
+  const createdQuestions =
     await createManyRecords(
 
       config,
 
       TABLES.QUESTIONS,
 
-      records
+      airtableRecords
 
     );
 
 
-  // ----------------------------------------------------------
-  // LOG AI JOB
-  // ----------------------------------------------------------
+  // ==========================================================
+  // LOG ONE AI JOB
+  // ==========================================================
 
   await logAIJob(
 
@@ -1541,179 +2136,68 @@ Return:
 
     {
 
-      requestedBy:
-        body.requestedBy,
-
-      subjectId:
-        body.subjectId,
-
-      topicId:
-        body.topicId,
-
-      classId:
-        body.classId,
+      requestedBy,
 
       contentType:
         "Question",
+
+      subjectId,
+
+      topicId:
+        null,
+
+      classId,
 
       prompt:
         teacherPrompt,
 
       aiOutput:
-        aiText
+        JSON.stringify(
+          generatedQuestions
+        )
 
     }
 
   );
 
 
+  // ==========================================================
+  // RETURN
+  // ==========================================================
+
   return {
 
-    type:
-      "Question",
+    message:
+      `${generatedQuestions.length} AI questions generated successfully.`,
 
     count:
-      created.length,
-
-    status:
-      "Draft",
+      generatedQuestions.length,
 
     questions:
-      result.questions,
+      generatedQuestions.map(
+        (question, index) => ({
 
-    recordIds:
-      created.map(
-        record =>
-          record.id
+          id:
+            createdQuestions[
+              index
+            ]?.id || null,
+
+          questionId:
+            airtableRecords[
+              index
+            ]["Question ID"],
+
+          ...question,
+
+          status:
+            "Draft",
+
+          publicationStatus:
+            "Draft"
+
+        })
       )
 
   };
-
-}
-
-
-// ============================================================
-// VERCEL SERVERLESS HANDLER
-// ============================================================
-
-export default async function handler(
-  req,
-  res
-) {
-
-  // ----------------------------------------------------------
-  // Only POST is allowed
-  // ----------------------------------------------------------
-
-  if (
-    req.method !== "POST"
-  ) {
-
-    return res.status(405).json({
-
-      success:
-        false,
-
-      error:
-        "Method not allowed. Use POST."
-
-    });
-
-  }
-
-
-  try {
-
-    const body =
-      req.body || {};
-
-
-    const contentType =
-      clean(
-        body.contentType
-      );
-
-
-    if (
-      contentType !== "Note" &&
-      contentType !== "Question"
-    ) {
-
-      return res.status(400).json({
-
-        success:
-          false,
-
-        error:
-          'contentType must be "Note" or "Question".'
-
-      });
-
-    }
-
-
-    const config =
-      getConfig();
-
-
-    let result;
-
-
-    if (
-      contentType === "Note"
-    ) {
-
-      result =
-        await generateNote(
-          config,
-          body
-        );
-
-    } else {
-
-      result =
-        await generateQuestions(
-          config,
-          body
-        );
-
-    }
-
-
-    return res.status(200).json({
-
-      success:
-        true,
-
-      model:
-        OPENAI_MODEL,
-
-      ...result
-
-    });
-
-  }
-
-
-  catch (error) {
-
-    console.error(
-      "AIBINU FLEXIPREP AI CONTENT ERROR:",
-      error
-    );
-
-
-    return res.status(500).json({
-
-      success:
-        false,
-
-      error:
-        error?.message ||
-        "AI content generation failed."
-
-    });
-
-  }
 
 }
