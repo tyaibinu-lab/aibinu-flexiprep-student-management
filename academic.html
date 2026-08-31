@@ -2250,83 +2250,510 @@ the secure backend will receive.
 
 Do NOT put an OpenAI API key here.
 */
+async function generateNoteDraft() {
 
-function generateNoteDraft(){
+  const subject =
+    $("aiNoteSubject")?.value?.trim() || "";
 
-try{
+  const className =
+    $("aiNoteClass")?.value?.trim() || "";
 
-const payload =
-buildNotePrompt();
+  const programme =
+    $("aiNoteProgramme")?.value?.trim() || "";
 
-currentAIType = "note";
+  const topic =
+    $("aiNoteTopic")?.value?.trim() || "";
 
-currentAIPayload =
-payload;
+  const teacherPrompt =
+    $("aiNotePrompt")?.value?.trim() || "";
 
-$("notePromptPreview")
-.textContent =
-JSON.stringify(
-payload,
-null,
-2
-);
+  const examTypes = [];
 
-$("noteAIResult")
-.classList.add("show");
+  document
+    .querySelectorAll(
+      '#noteAIForm input[type="checkbox"]:checked'
+    )
+    .forEach(cb => {
 
-show(
-"Note generation request prepared. Secure AI backend connection is required to generate the actual note.",
-true
-);
+      if (cb.value) {
+        examTypes.push(cb.value);
+      }
+
+    });
+
+
+  if (!subject) {
+    alert(
+      "Please select a subject."
+    );
+    return;
+  }
+
+
+  if (!className) {
+    alert(
+      "Please select a class."
+    );
+    return;
+  }
+
+
+  if (!topic) {
+    alert(
+      "Please enter/select a topic."
+    );
+    return;
+  }
+
+
+  if (!teacherPrompt) {
+    alert(
+      "Please enter the teacher's instruction/prompt."
+    );
+    return;
+  }
+
+
+  const payload = {
+
+    contentType:
+      "Note",
+
+    subject,
+
+    className,
+
+    programme,
+
+    topic,
+
+    examTypes:
+      examTypes.length
+        ? examTypes
+        : [
+            "WAEC",
+            "NECO",
+            "UTME"
+          ],
+
+    teacherPrompt
+
+  };
+
+
+  currentAIType =
+    "note";
+
+  currentAIPayload =
+    payload;
+
+
+  const resultBox =
+    $("noteAIResult");
+
+  const preview =
+    $("notePromptPreview");
+
+
+  if (resultBox) {
+    resultBox.classList.add(
+      "show"
+    );
+  }
+
+
+  if (preview) {
+    preview.textContent =
+      "⏳ Generating note with AI...";
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/ai-content",
+        {
+
+          method:
+            "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            )
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        `Server error: ${response.status}`
+      );
+
+    }
+
+
+    if (!data.success) {
+
+      throw new Error(
+        data.error ||
+        "AI note generation failed."
+      );
+
+    }
+
+
+    const note =
+      data.note;
+
+
+    if (!note) {
+
+      throw new Error(
+        "The AI returned no note."
+      );
+
+    }
+
+
+    currentAIResult = {
+
+      type:
+        "Note",
+
+      note,
+
+      raw:
+        data
+
+    };
+
+
+    if (preview) {
+
+      preview.textContent =
+
+        `TITLE\n\n` +
+
+        `${note.title || ""}\n\n` +
+
+        `LEARNING OBJECTIVES\n\n` +
+
+        `${note.learningObjectives || ""}\n\n` +
+
+        `KEY TERMS\n\n` +
+
+        `${note.keyTerms || ""}\n\n` +
+
+        `CONTENT\n\n` +
+
+        `${note.content || ""}\n\n` +
+
+        `EXAMPLES\n\n` +
+
+        `${note.examples || ""}\n\n` +
+
+        `WORKED EXAMPLES\n\n` +
+
+        `${note.workedExamples || ""}\n\n` +
+
+        `SUMMARY\n\n` +
+
+        `${note.summary || ""}\n\n` +
+
+        `EXAMINATION TIPS\n\n` +
+
+        `${note.examTips || ""}\n\n` +
+
+        `WAEC FOCUS\n\n` +
+
+        `${note.waecFocus || ""}\n\n` +
+
+        `NECO FOCUS\n\n` +
+
+        `${note.necoFocus || ""}\n\n` +
+
+        `UTME FOCUS\n\n` +
+
+        `${note.utmeFocus || ""}`;
+
+    }
+
+
+    alert(
+      "AI note generated successfully as DRAFT."
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "AI NOTE ERROR:",
+      error
+    );
+
+
+    if (preview) {
+
+      preview.textContent =
+        `❌ Generation failed:\n\n${error.message}`;
+
+    }
+
+
+    alert(
+      `Note generation failed:\n\n${error.message}`
+    );
+
+  }
 
 }
-catch(e){
-
-show(e.message,false);
 
 }
 
 }
 
 
-function generateQuestionDraft(){
+async function generateQuestionDraft() {
+  const subject =
+    $("aiQuestionSubject")?.value?.trim() || "";
 
-try{
+  const className =
+    $("aiQuestionClass")?.value?.trim() || "";
 
-const payload =
-buildQuestionPrompt();
+  const programme =
+    $("aiQuestionProgramme")?.value?.trim() || "";
 
-currentAIType = "question";
+  const topic =
+    $("aiQuestionTopic")?.value?.trim() || "";
 
-currentAIPayload =
-payload;
+  const count =
+    Math.max(
+      1,
+      Math.min(
+        100,
+        Number(
+          $("aiQuestionCount")?.value || 1
+        )
+      )
+    );
 
-$("questionPromptPreview")
-.textContent =
-JSON.stringify(
-payload,
-null,
-2
-);
+  const difficulty =
+    $("aiQuestionDifficulty")?.value ||
+    "Mixed";
 
-$("questionAIResult")
-.classList.add("show");
+  const bloomLevel =
+    $("aiQuestionBloom")?.value ||
+    "Mixed";
 
-show(
-"Question generation request prepared. Secure AI backend connection is required to generate the actual questions.",
-true
-);
+  const questionType =
+    $("aiQuestionType")?.value ||
+    "MCQ";
 
+  const teacherPrompt =
+    $("aiQuestionPrompt")?.value?.trim() || "";
+
+  const examTypes = [];
+
+  document
+    .querySelectorAll(
+      '#questionAIForm input[type="checkbox"]:checked'
+    )
+    .forEach(cb => {
+      if (cb.value) {
+        examTypes.push(cb.value);
+      }
+    });
+
+  if (!subject) {
+    alert("Please select a subject.");
+    return;
+  }
+
+  if (!className) {
+    alert("Please select a class.");
+    return;
+  }
+
+  if (!topic) {
+    alert("Please enter/select a topic.");
+    return;
+  }
+
+  if (!teacherPrompt) {
+    alert(
+      "Please enter the teacher's instruction/prompt."
+    );
+    return;
+  }
+
+  const payload = {
+    contentType: "Question",
+
+    subject,
+
+    className,
+
+    programme,
+
+    topic,
+
+    questionCount: count,
+
+    difficulty,
+
+    bloomLevel,
+
+    questionType,
+
+    examTypes:
+      examTypes.length
+        ? examTypes
+        : ["WAEC", "NECO", "UTME"],
+
+    teacherPrompt
+  };
+
+  currentAIType = "question";
+  currentAIPayload = payload;
+
+  const resultBox =
+    $("questionAIResult");
+
+  const preview =
+    $("questionPromptPreview");
+
+  if (resultBox) {
+    resultBox.classList.add("show");
+  }
+
+  if (preview) {
+    preview.textContent =
+      "⏳ Generating questions with AI...";
+  }
+
+  try {
+
+    const response = await fetch(
+      "/api/ai-content",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        `Server error: ${response.status}`
+      );
+    }
+
+    if (!data.success) {
+      throw new Error(
+        data.error ||
+        "AI question generation failed."
+      );
+    }
+
+    const questions =
+      Array.isArray(data.questions)
+        ? data.questions
+        : [];
+
+    if (!questions.length) {
+      throw new Error(
+        "The AI returned no questions."
+      );
+    }
+
+    currentAIResult = {
+      type: "Question",
+      questions,
+      raw: data
+    };
+
+    if (preview) {
+
+      preview.textContent =
+        questions
+          .map((q, index) => {
+
+            return (
+              `QUESTION ${index + 1}\n\n` +
+
+              `${q.question}\n\n` +
+
+              `A. ${q.optionA}\n` +
+              `B. ${q.optionB}\n` +
+              `C. ${q.optionC}\n` +
+              `D. ${q.optionD}\n\n` +
+
+              `Correct Answer: ${q.correctAnswer}\n` +
+
+              `Difficulty: ${q.difficulty}\n` +
+
+              `Bloom Level: ${q.bloomLevel}\n\n` +
+
+              `Explanation: ${q.explanation}\n\n` +
+
+              `${"─".repeat(50)}\n\n`
+            );
+
+          })
+          .join("");
+
+    }
+
+    alert(
+      `${questions.length} AI question${
+        questions.length === 1
+          ? ""
+          : "s"
+      } generated successfully as DRAFT.`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "AI QUESTION ERROR:",
+      error
+    );
+
+    if (preview) {
+      preview.textContent =
+        `❌ Generation failed:\n\n${error.message}`;
+    }
+
+    alert(
+      `Question generation failed:\n\n${error.message}`
+    );
+
+  }
 }
-catch(e){
-
-show(e.message,false);
-
-}
-
-}
-
-
 /* EDIT */
 
 function editNoteDraft(){
