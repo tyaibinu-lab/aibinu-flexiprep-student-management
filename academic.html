@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#08783f">
+
 <title>Aibinu Flexiprep | Academic Management</title>
 
 <style>
@@ -15,6 +16,7 @@
   --bg:#f4f7f5;
   --line:#dfe7e2;
   --danger:#b42318;
+  --white:#fff;
 }
 
 *{box-sizing:border-box}
@@ -122,9 +124,13 @@ h1{
   font-size:42px;
 }
 
+h2{
+  margin-top:0;
+}
+
 .muted{
   color:var(--muted);
-  font-size:20px;
+  font-size:18px;
 }
 
 .cards{
@@ -167,7 +173,6 @@ h1{
   margin:0 0 16px;
   overflow-x:auto;
   padding-bottom:3px;
-  scrollbar-width:thin;
 }
 
 .tabs button{
@@ -217,16 +222,11 @@ table{
   border-collapse:collapse;
 }
 
-th,
-td{
+th,td{
   text-align:left;
   padding:13px 10px;
   border-bottom:1px solid var(--line);
   vertical-align:middle;
-}
-
-th{
-  font-size:15px;
 }
 
 .badge{
@@ -239,7 +239,6 @@ th{
   color:var(--g);
 }
 
-/* Mobile record cards */
 .mobile-records{
   display:none;
 }
@@ -288,7 +287,7 @@ th{
   align-items:center;
   justify-content:center;
   padding:15px;
-  z-index:10;
+  z-index:100;
 }
 
 .modal.show{
@@ -299,7 +298,7 @@ th{
   background:#fff;
   padding:20px;
   border-radius:15px;
-  max-width:720px;
+  max-width:800px;
   width:100%;
   max-height:92vh;
   overflow:auto;
@@ -354,12 +353,140 @@ label{
   color:var(--muted);
 }
 
-@media(max-width:1000px){
+.ai-section{
+  display:none;
+}
 
+.ai-section.active{
+  display:block;
+}
+
+.ai-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.ai-title{
+  font-size:25px;
+  font-weight:800;
+}
+
+.ai-subtitle{
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.ai-form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.ai-form .full{
+  grid-column:1/-1;
+}
+
+.prompt-box{
+  min-height:170px;
+  resize:vertical;
+}
+
+.checkbox-row{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+  padding:10px 0;
+}
+
+.checkbox-row label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:600;
+}
+
+.checkbox-row input{
+  width:auto;
+}
+
+.ai-result{
+  margin-top:20px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:18px;
+  background:#f8fbf9;
+  display:none;
+}
+
+.ai-result.show{
+  display:block;
+}
+
+.ai-status{
+  padding:12px;
+  border-radius:10px;
+  background:#fff7df;
+  color:#765b00;
+  margin-bottom:15px;
+}
+
+.prompt-preview{
+  white-space:pre-wrap;
+  background:#fff;
+  border:1px solid var(--line);
+  padding:14px;
+  border-radius:10px;
+}
+
+.note-preview{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:18px;
+  line-height:1.7;
+}
+
+.question-preview{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:16px;
+  margin-top:12px;
+}
+
+.ai-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:15px;
+}
+
+.stat-strip{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.stat-mini{
+  background:#f4f8f5;
+  border:1px solid var(--line);
+  padding:15px;
+  border-radius:12px;
+}
+
+.stat-mini strong{
+  display:block;
+  font-size:24px;
+}
+
+@media(max-width:1000px){
   .cards{
     grid-template-columns:repeat(3,1fr);
   }
-
 }
 
 @media(max-width:700px){
@@ -391,11 +518,6 @@ label{
 
   h1{
     font-size:36px;
-    line-height:1.05;
-  }
-
-  .muted{
-    font-size:17px;
   }
 
   .head .primary{
@@ -404,16 +526,11 @@ label{
 
   .cards{
     grid-template-columns:1fr 1fr;
-    gap:10px;
   }
 
   .card{
     min-height:105px;
     padding:16px;
-  }
-
-  .card span{
-    font-size:15px;
   }
 
   .card strong{
@@ -429,47 +546,30 @@ label{
     grid-template-columns:1fr auto;
   }
 
-  /* Hide wide table on phones */
   .wrap{
     display:none;
   }
 
-  /* Show mobile cards */
   .mobile-records{
     display:block;
   }
 
-  .grid{
+  .grid,
+  .ai-form{
     grid-template-columns:1fr;
   }
 
-  .full{
+  .full,
+  .ai-form .full{
     grid-column:auto;
   }
 
+  .stat-strip{
+    grid-template-columns:1fr 1fr;
+  }
 }
 
 @media(max-width:480px){
-
-  .brand b{
-    font-size:16px;
-  }
-
-  .brand small{
-    font-size:12px;
-  }
-
-  h1{
-    font-size:32px;
-  }
-
-  .cards{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .record-grid{
-    grid-template-columns:1fr 1fr;
-  }
 
   .toolbar{
     grid-template-columns:1fr;
@@ -479,6 +579,9 @@ label{
     width:100%;
   }
 
+  .record-grid{
+    grid-template-columns:1fr 1fr;
+  }
 }
 </style>
 </head>
@@ -487,426 +590,841 @@ label{
 
 <header>
 
-  <div class="header-inner">
+<div class="header-inner">
 
-    <div class="brand">
+<div class="brand">
 
-      <div class="logo">
-        AF
-      </div>
+<div class="logo">AF</div>
 
-      <div>
-        <b>AIBINU FLEXIPREP</b>
+<div>
+<b>AIBINU FLEXIPREP</b>
 
-        <small>
-          EDUCONSULT · ACADEMIC MANAGEMENT
-        </small>
-      </div>
+<small>
+EDUCONSULT · ACADEMIC MANAGEMENT
+</small>
+</div>
 
-    </div>
+</div>
 
-    <nav>
+<nav>
 
-      <button
-        class="secondary"
-        type="button"
-        onclick="location.href='/'">
-        Student Management
-      </button>
+<button
+class="secondary"
+type="button"
+onclick="location.href='/'">
+Student Management
+</button>
 
-      <button
-        class="secondary"
-        type="button"
-        onclick="location.href='/finance.html'">
-        Payments
-      </button>
+<button
+class="secondary"
+type="button"
+onclick="location.href='/finance.html'">
+Payments
+</button>
 
-    </nav>
+</nav>
 
-  </div>
+</div>
 
 </header>
 
 
 <main>
 
-  <div class="head">
+<div class="head">
 
-    <div>
+<div>
 
-      <small>AIBINU FLEXIPREP</small>
+<small>AIBINU FLEXIPREP</small>
 
-      <h1>
-        Academic Management
-      </h1>
+<h1>Academic Management</h1>
 
-      <div class="muted">
-        Programmes, classes, subjects, teachers
-        and class–subject assignments.
-      </div>
+<div class="muted">
+Programmes, classes, subjects, teachers,
+assignments and NoteBank.
+</div>
 
-    </div>
+</div>
 
-    <button
-      class="primary"
-      type="button"
-      onclick="openForm()">
-      + Add Record
-    </button>
+<button
+class="primary"
+type="button"
+onclick="openForm()">
++ Add Record
+</button>
 
-  </div>
+</div>
 
 
-  <div id="msg"></div>
+<div id="msg"></div>
 
 
-  <!-- DASHBOARD COUNTERS -->
+<div class="cards">
 
-  <div class="cards">
+<div class="card">
+<span>Programmes</span>
+<strong id="countProgramme">0</strong>
+</div>
 
-    <div class="card">
-      <span>Programmes</span>
-      <strong id="countProgramme">0</strong>
-    </div>
+<div class="card">
+<span>Classes</span>
+<strong id="countClass">0</strong>
+</div>
 
-    <div class="card">
-      <span>Classes</span>
-      <strong id="countClass">0</strong>
-    </div>
+<div class="card">
+<span>Subjects</span>
+<strong id="countSubject">0</strong>
+</div>
 
-    <div class="card">
-      <span>Subjects</span>
-      <strong id="countSubject">0</strong>
-    </div>
+<div class="card">
+<span>Teachers</span>
+<strong id="countTeacher">0</strong>
+</div>
 
-    <div class="card">
-      <span>Teachers</span>
-      <strong id="countTeacher">0</strong>
-    </div>
+<div class="card">
+<span>Assignments</span>
+<strong id="countAssignment">0</strong>
+</div>
 
-    <div class="card">
-      <span>Assignments</span>
-      <strong id="countAssignment">0</strong>
-    </div>
-
-  </div>
+</div>
 
 
-  <!-- ACADEMIC RECORDS -->
+<section class="panel">
 
-  <section class="panel">
+<div class="tabs" id="tabs">
 
-    <div class="tabs" id="tabs">
+<button
+class="secondary active"
+type="button"
+data-type="All">
+All
+</button>
 
-      <button
-        class="secondary active"
-        type="button"
-        data-type="All">
-        All
-      </button>
+<button
+class="secondary"
+type="button"
+data-type="Programme">
+Programmes
+</button>
 
-      <button
-        class="secondary"
-        type="button"
-        data-type="Programme">
-        Programmes
-      </button>
+<button
+class="secondary"
+type="button"
+data-type="Class">
+Classes
+</button>
 
-      <button
-        class="secondary"
-        type="button"
-        data-type="Class">
-        Classes
-      </button>
+<button
+class="secondary"
+type="button"
+data-type="Subject">
+Subjects
+</button>
 
-      <button
-        class="secondary"
-        type="button"
-        data-type="Subject">
-        Subjects
-      </button>
+<button
+class="secondary"
+type="button"
+data-type="Teacher">
+Teachers
+</button>
 
-      <button
-        class="secondary"
-        type="button"
-        data-type="Teacher">
-        Teachers
-      </button>
+<button
+class="secondary"
+type="button"
+data-type="Assignment">
+Assignments
+</button>
 
-      <button
-        class="secondary"
-        type="button"
-        data-type="Assignment">
-        Assignments
-      </button>
+<button
+class="secondary"
+type="button"
+data-type="NoteBank">
+📚 NoteBank
+</button>
 
-    </div>
-
-
-    <div class="toolbar">
-
-      <div class="search">
-
-        <input
-          id="search"
-          type="search"
-          placeholder="Search records..."
-          autocomplete="off">
-
-      </div>
-
-      <button
-        class="secondary"
-        type="button"
-        onclick="loadData()">
-        ↻ Refresh
-      </button>
-
-    </div>
+</div>
 
 
-    <!-- DESKTOP TABLE -->
+<div class="toolbar">
 
-    <div class="wrap">
+<div class="search">
 
-      <table>
+<input
+id="search"
+type="search"
+placeholder="Search records..."
+autocomplete="off">
 
-        <thead>
+</div>
 
-          <tr>
-            <th>Type</th>
-            <th>Name</th>
-            <th>Code</th>
-            <th>Programme</th>
-            <th>Class</th>
-            <th>Subject</th>
-            <th>Teacher</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
+<button
+class="secondary"
+type="button"
+onclick="loadData()">
+↻ Refresh
+</button>
 
-        </thead>
-
-        <tbody id="rows"></tbody>
-
-      </table>
-
-    </div>
+</div>
 
 
-    <!-- MOBILE RECORDS -->
+<!-- EXISTING ACADEMIC RECORDS -->
 
-    <div
-      id="mobileRecords"
-      class="mobile-records">
-    </div>
+<div id="academicRecords">
 
-  </section>
+<div class="wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Code</th>
+<th>Programme</th>
+<th>Class</th>
+<th>Subject</th>
+<th>Teacher</th>
+<th>Status</th>
+<th></th>
+</tr>
+
+</thead>
+
+<tbody id="rows"></tbody>
+
+</table>
+
+</div>
+
+<div
+id="mobileRecords"
+class="mobile-records">
+</div>
+
+</div>
+
+
+<!-- NOTEBANK -->
+
+<div
+id="noteBank"
+class="ai-section">
+
+<div class="ai-header">
+
+<div>
+
+<div class="ai-title">
+📚 Aibinu Flexiprep NoteBank
+</div>
+
+<div class="ai-subtitle">
+Teacher-controlled AI content creation and question generation.
+</div>
+
+</div>
+
+</div>
+
+
+<div class="stat-strip">
+
+<div class="stat-mini">
+<span>Draft Notes</span>
+<strong id="nbDraftNotes">0</strong>
+</div>
+
+<div class="stat-mini">
+<span>Pending Review</span>
+<strong id="nbPending">0</strong>
+</div>
+
+<div class="stat-mini">
+<span>Published</span>
+<strong id="nbPublished">0</strong>
+</div>
+
+<div class="stat-mini">
+<span>AI Jobs</span>
+<strong id="nbAIJobs">0</strong>
+</div>
+
+</div>
+
+
+<div class="tabs">
+
+<button
+id="noteCreatorTab"
+class="secondary active"
+type="button"
+onclick="showAITool('note')">
+✨ AI Note Creator
+</button>
+
+<button
+id="questionCreatorTab"
+class="secondary"
+type="button"
+onclick="showAITool('question')">
+✨ AI Question Generator
+</button>
+
+</div>
+
+
+<!-- NOTE CREATOR -->
+
+<div
+id="noteCreator"
+class="ai-section active">
+
+<h2>AI Note Creator</h2>
+
+<div class="muted">
+Select the academic context, then tell the AI exactly how you want the note prepared.
+</div>
+
+<div class="ai-form">
+
+<div>
+<label>Subject</label>
+
+<select id="aiNoteSubject">
+<option value="">Select subject</option>
+<option>Physics</option>
+<option>Chemistry</option>
+<option>Biology</option>
+<option>Mathematics</option>
+<option>English</option>
+</select>
+</div>
+
+
+<div>
+<label>Class</label>
+
+<select id="aiNoteClass">
+<option value="">Select class</option>
+<option>SS1</option>
+<option>SS2</option>
+<option>SS3</option>
+</select>
+</div>
+
+
+<div>
+<label>Programme</label>
+
+<select id="aiNoteProgramme">
+<option value="">Select programme</option>
+<option>WAEC</option>
+<option>NECO</option>
+<option>UTME</option>
+<option>IJMB</option>
+<option>JUPEB</option>
+</select>
+</div>
+
+
+<div>
+<label>Topic</label>
+
+<input
+id="aiNoteTopic"
+placeholder="e.g. Uniformly Accelerated Motion">
+</div>
+
+
+<div class="full">
+
+<label>Examination Focus</label>
+
+<div class="checkbox-row">
+
+<label>
+<input
+type="checkbox"
+value="WAEC"
+class="noteExam"
+checked>
+WAEC
+</label>
+
+<label>
+<input
+type="checkbox"
+value="NECO"
+class="noteExam"
+checked>
+NECO
+</label>
+
+<label>
+<input
+type="checkbox"
+value="UTME"
+class="noteExam"
+checked>
+UTME
+</label>
+
+</div>
+
+</div>
+
+
+<div class="full">
+
+<label>
+Your Instruction / Prompt
+</label>
+
+<textarea
+id="aiNotePrompt"
+class="prompt-box"
+placeholder="Tell the AI exactly how you want the note prepared. Example: Prepare a comprehensive but easy-to-understand note. Start from the basic concept, use real-life examples, include worked calculations, common mistakes and examination tips..."></textarea>
+
+<div class="hint">
+The teacher's prompt controls how the content is prepared. The selected academic fields provide structured context.
+</div>
+
+</div>
+
+
+<div class="full">
+
+<button
+class="primary"
+type="button"
+onclick="generateNoteDraft()">
+✨ Generate Note Draft
+</button>
+
+</div>
+
+</div>
+
+
+<div
+id="noteAIResult"
+class="ai-result">
+
+<div class="ai-status">
+AI output will remain a <b>DRAFT</b> until the teacher reviews and submits it for approval.
+</div>
+
+<div
+id="notePromptPreview"
+class="prompt-preview">
+</div>
+
+<div class="ai-actions">
+
+<button
+class="secondary"
+onclick="editNoteDraft()">
+Edit Draft
+</button>
+
+<button
+class="primary"
+onclick="submitNoteForApproval()">
+Submit for Approval
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- QUESTION CREATOR -->
+
+<div
+id="questionCreator"
+class="ai-section">
+
+<h2>AI Question Generator</h2>
+
+<div class="muted">
+Generate examination-style questions using the teacher's own prompt.
+</div>
+
+<div class="ai-form">
+
+<div>
+<label>Subject</label>
+
+<select id="aiQuestionSubject">
+<option value="">Select subject</option>
+<option>Physics</option>
+<option>Chemistry</option>
+<option>Biology</option>
+<option>Mathematics</option>
+<option>English</option>
+</select>
+</div>
+
+
+<div>
+<label>Class</label>
+
+<select id="aiQuestionClass">
+<option value="">Select class</option>
+<option>SS1</option>
+<option>SS2</option>
+<option>SS3</option>
+</select>
+</div>
+
+
+<div>
+<label>Programme</label>
+
+<select id="aiQuestionProgramme">
+<option value="">Select programme</option>
+<option>WAEC</option>
+<option>NECO</option>
+<option>UTME</option>
+</select>
+</div>
+
+
+<div>
+<label>Topic</label>
+
+<input
+id="aiQuestionTopic"
+placeholder="e.g. Uniformly Accelerated Motion">
+</div>
+
+
+<div>
+<label>Number of Questions</label>
+
+<input
+id="aiQuestionCount"
+type="number"
+min="1"
+max="100"
+value="20">
+</div>
+
+
+<div>
+<label>Difficulty</label>
+
+<select id="aiQuestionDifficulty">
+
+<option>Mixed</option>
+<option>Easy</option>
+<option>Medium</option>
+<option>Hard</option>
+
+</select>
+</div>
+
+
+<div>
+<label>Bloom Level</label>
+
+<select id="aiQuestionBloom">
+
+<option>Mixed</option>
+<option>Remember</option>
+<option>Understand</option>
+<option>Apply</option>
+<option>Analyze</option>
+<option>Evaluate</option>
+<option>Create</option>
+
+</select>
+</div>
+
+
+<div>
+
+<label>Question Type</label>
+
+<select id="aiQuestionType">
+
+<option>MCQ</option>
+<option>Calculation</option>
+<option>Conceptual</option>
+<option>Mixed</option>
+
+</select>
+
+</div>
+
+
+<div class="full">
+
+<label>Examination Focus</label>
+
+<div class="checkbox-row">
+
+<label>
+<input
+type="checkbox"
+value="WAEC"
+class="questionExam"
+checked>
+WAEC
+</label>
+
+<label>
+<input
+type="checkbox"
+value="NECO"
+class="questionExam"
+checked>
+NECO
+</label>
+
+<label>
+<input
+type="checkbox"
+value="UTME"
+class="questionExam"
+checked>
+UTME
+</label>
+
+</div>
+
+</div>
+
+
+<div class="full">
+
+<label>
+Your Instruction / Prompt
+</label>
+
+<textarea
+id="aiQuestionPrompt"
+class="prompt-box"
+placeholder="Example: Generate challenging calculation questions for strong SS2 students. Include real-life applications, plausible distractors and detailed explanations. Follow the style of the selected examinations."></textarea>
+
+</div>
+
+
+<div class="full">
+
+<button
+class="primary"
+type="button"
+onclick="generateQuestionDraft()">
+✨ Generate Question Draft
+</button>
+
+</div>
+
+</div>
+
+
+<div
+id="questionAIResult"
+class="ai-result">
+
+<div class="ai-status">
+AI-generated questions remain <b>DRAFT</b> until reviewed and approved.
+</div>
+
+<div
+id="questionPromptPreview"
+class="prompt-preview">
+</div>
+
+<div class="ai-actions">
+
+<button
+class="secondary"
+onclick="editQuestionDraft()">
+Edit Draft
+</button>
+
+<button
+class="primary"
+onclick="submitQuestionsForApproval()">
+Submit for Approval
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
 
 </main>
 
 
 <!-- ADD / EDIT MODAL -->
 
-<div id="modal" class="modal">
+<div
+id="modal"
+class="modal">
 
-  <div class="dialog">
+<div class="dialog">
 
-    <h2 id="formTitle">
-      Add Academic Record
-    </h2>
+<h2 id="formTitle">
+Add Academic Record
+</h2>
 
-    <div id="formMsg"></div>
+<div id="formMsg"></div>
 
+<form id="academicForm">
 
-    <form id="academicForm">
+<div class="grid">
 
-      <div class="grid">
 
+<div>
 
-        <!-- RECORD TYPE -->
+<label>Record Type</label>
 
-        <div>
+<select
+id="type"
+required>
 
-          <label>
-            Record Type
-          </label>
+<option value="Programme">
+Programme
+</option>
 
-          <select
-            id="type"
-            required>
+<option value="Class">
+Class
+</option>
 
-            <option value="Programme">
-              Programme
-            </option>
+<option value="Subject">
+Subject
+</option>
 
-            <option value="Class">
-              Class
-            </option>
+<option value="Teacher">
+Teacher
+</option>
 
-            <option value="Subject">
-              Subject
-            </option>
+<option value="Assignment">
+Assignment
+</option>
 
-            <option value="Teacher">
-              Teacher
-            </option>
+</select>
 
-            <option value="Assignment">
-              Assignment
-            </option>
+</div>
 
-          </select>
 
-        </div>
+<div id="nameWrap">
 
+<label id="nameLabel">Name</label>
 
-        <!-- NAME -->
+<input id="name">
 
-        <div id="nameWrap">
+</div>
 
-          <label id="nameLabel">
-            Name
-          </label>
 
-          <input id="name">
+<div id="codeWrap">
 
-        </div>
+<label>Code</label>
 
+<input id="code">
 
-        <!-- CODE -->
+</div>
 
-        <div id="codeWrap">
 
-          <label>
-            Code
-          </label>
+<div id="programmeWrap">
 
-          <input id="code">
+<label>Programme</label>
 
-        </div>
+<select id="programme"></select>
 
+</div>
 
-        <!-- PROGRAMME -->
 
-        <div id="programmeWrap">
+<div id="classWrap">
 
-          <label>
-            Programme
-          </label>
+<label>Class</label>
 
-          <select id="programme"></select>
+<select id="className"></select>
 
-        </div>
+</div>
 
 
-        <!-- CLASS -->
+<div id="subjectWrap">
 
-        <div id="classWrap">
+<label>Subject</label>
 
-          <label>
-            Class
-          </label>
+<select id="subject"></select>
 
-          <select id="className"></select>
+</div>
 
-        </div>
 
+<div id="teacherWrap">
 
-        <!-- SUBJECT -->
+<label>Teacher</label>
 
-        <div id="subjectWrap">
+<select id="teacher"></select>
 
-          <label>
-            Subject
-          </label>
+</div>
 
-          <select id="subject"></select>
 
-        </div>
+<div>
 
+<label>Status</label>
 
-        <!-- TEACHER -->
+<select id="status">
 
-        <div id="teacherWrap">
+<option>Active</option>
+<option>Inactive</option>
 
-          <label>
-            Teacher
-          </label>
+</select>
 
-          <select id="teacher"></select>
+</div>
 
-        </div>
 
+<div class="full">
 
-        <!-- STATUS -->
+<label>Notes</label>
 
-        <div>
+<textarea
+id="notes"
+rows="3"></textarea>
 
-          <label>
-            Status
-          </label>
+</div>
 
-          <select id="status">
+</div>
 
-            <option>
-              Active
-            </option>
 
-            <option>
-              Inactive
-            </option>
+<div class="hint">
+For an Assignment, select an existing Class, Subject and Teacher.
+</div>
 
-          </select>
 
-        </div>
+<div class="actions">
 
+<button
+type="button"
+class="secondary"
+onclick="closeForm()">
+Cancel
+</button>
 
-        <!-- NOTES -->
+<button
+type="submit"
+class="primary">
+Save Record
+</button>
 
-        <div class="full">
+</div>
 
-          <label>
-            Notes
-          </label>
+</form>
 
-          <textarea
-            id="notes"
-            rows="3"></textarea>
-
-        </div>
-
-      </div>
-
-
-      <div class="hint">
-
-        For an Assignment, select an existing
-        Class, Subject and Teacher.
-
-      </div>
-
-
-      <div class="actions">
-
-        <button
-          type="button"
-          class="secondary"
-          onclick="closeForm()">
-          Cancel
-        </button>
-
-        <button
-          type="submit"
-          class="primary">
-          Save Record
-        </button>
-
-      </div>
-
-    </form>
-
-  </div>
+</div>
 
 </div>
 
@@ -917,1021 +1435,1132 @@ let records = [];
 let currentType = "All";
 let editing = null;
 
+let currentAIType = null;
+let currentAIPayload = null;
 
-/* SHORT DOM SELECTOR */
 
 const $ = id =>
-  document.getElementById(id);
+document.getElementById(id);
 
-
-/* HTML ESCAPE */
 
 const esc = s =>
-  String(s ?? "").replace(
-    /[&<>"']/g,
-    c => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#39;"
-    }[c])
-  );
+String(s ?? "").replace(
+/[&<>"']/g,
+c => ({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+}[c])
+);
 
 
-/* REMOVE INVALID / EMPTY RECORDS */
+function cleanRecords(data){
 
-const cleanRecords = data =>
-  (Array.isArray(data) ? data : [])
-  .filter(r => {
+return (Array.isArray(data) ? data : [])
+.filter(r => {
 
-    if(!r || !r.type)
-      return false;
+if(!r || !r.type)
+return false;
 
-    /*
-      Hide incomplete Programme,
-      Class, Subject and Teacher records.
-    */
+if(
+r.type !== "Assignment" &&
+!String(r.name || "").trim()
+)
+return false;
 
-    if(
-      r.type !== "Assignment" &&
-      !String(r.name || "").trim()
-    ){
-      return false;
-    }
+if(
+r.type === "Assignment" &&
+(
+!String(r.className || "").trim() ||
+!String(r.subject || "").trim() ||
+!String(r.teacher || "").trim()
+)
+)
+return false;
 
+return true;
 
-    /*
-      An Assignment must have
-      Class + Subject + Teacher.
-    */
+});
 
-    if(
-      r.type === "Assignment" &&
-      (
-        !String(r.className || "").trim() ||
-        !String(r.subject || "").trim() ||
-        !String(r.teacher || "").trim()
-      )
-    ){
-      return false;
-    }
-
-    return true;
-
-  });
+}
 
 
-/* DISPLAY NAME */
+function displayName(r){
 
-const displayName = r =>
+if(r.type === "Assignment"){
 
-  r.type === "Assignment"
+return [
+r.className,
+r.subject,
+r.teacher
+]
+.filter(Boolean)
+.join(" — ");
 
-    ? [
-        r.className,
-        r.subject,
-        r.teacher
-      ]
-      .filter(Boolean)
-      .join(" — ")
+}
 
-    : (r.name || "");
+return r.name || "";
 
+}
 
-/* LOAD DATA FROM API */
 
 async function loadData(){
 
-  try{
+try{
 
-    const r =
-      await fetch(
-        "/api/academic",
-        {
-          cache:"no-store"
-        }
-      );
+const r =
+await fetch(
+"/api/academic",
+{
+cache:"no-store"
+}
+);
 
+const d =
+await r.json();
 
-    const d =
-      await r.json();
+if(!r.ok){
 
-
-    if(!r.ok){
-
-      throw Error(
-        d.error?.message ||
-        d.error ||
-        "Unable to load records"
-      );
-
-    }
-
-
-    records =
-      cleanRecords(
-        d.records || []
-      );
-
-
-    populate();
-
-    render();
-
-    show("", true);
-
-
-  }catch(e){
-
-    show(
-      e.message,
-      false
-    );
-
-  }
+throw Error(
+d.error?.message ||
+d.error ||
+"Unable to load records"
+);
 
 }
 
+records =
+cleanRecords(
+d.records || []
+);
 
-/* UNIQUE ACTIVE RECORDS */
+populate();
+render();
+
+show("",true);
+
+}
+catch(e){
+
+show(e.message,false);
+
+}
+
+}
+
 
 function unique(type){
 
-  const seen =
-    new Set();
+const seen = new Set();
 
+return records
 
-  return records
+.filter(r =>
+r.type === type &&
+r.status !== "Inactive" &&
+String(r.name || "").trim()
+)
 
-    .filter(r =>
-      r.type === type &&
-      r.status !== "Inactive" &&
-      String(r.name || "").trim()
-    )
+.filter(r => {
 
-    .filter(r => {
+const k =
+r.name.trim().toLowerCase();
 
-      const k =
-        r.name
-          .trim()
-          .toLowerCase();
+if(seen.has(k))
+return false;
 
+seen.add(k);
 
-      if(seen.has(k))
-        return false;
+return true;
 
+})
 
-      seen.add(k);
-
-      return true;
-
-    })
-
-    .sort(
-      (a,b) =>
-        a.name.localeCompare(
-          b.name
-        )
-    );
+.sort(
+(a,b) =>
+a.name.localeCompare(b.name)
+);
 
 }
 
-
-/* FILL SELECT */
 
 function fill(
-  id,
-  type,
-  placeholder
+id,
+type,
+placeholder
 ){
 
-  const e = $(id);
+const e = $(id);
 
-  const old = e.value;
+e.innerHTML =
+"<option value=''>" +
+placeholder +
+"</option>" +
 
-
-  e.innerHTML =
-    "<option value=''>" +
-    placeholder +
-    "</option>" +
-
-    unique(type)
-
-      .map(r =>
-        "<option value='" +
-        esc(r.name) +
-        "'>" +
-        esc(r.name) +
-        "</option>"
-      )
-
-      .join("");
-
-
-  if(
-    [...e.options]
-      .some(
-        o =>
-          o.value === old
-      )
-  ){
-
-    e.value = old;
-
-  }
+unique(type)
+.map(r =>
+"<option value='" +
+esc(r.name) +
+"'>" +
+esc(r.name) +
+"</option>"
+)
+.join("");
 
 }
 
-
-/* POPULATE FORM SELECTS */
 
 function populate(){
 
-  fill(
-    "programme",
-    "Programme",
-    "Select programme"
-  );
+fill(
+"programme",
+"Programme",
+"Select programme"
+);
 
+fill(
+"className",
+"Class",
+"Select class"
+);
 
-  fill(
-    "className",
-    "Class",
-    "Select class"
-  );
+fill(
+"subject",
+"Subject",
+"Select subject"
+);
 
-
-  fill(
-    "subject",
-    "Subject",
-    "Select subject"
-  );
-
-
-  fill(
-    "teacher",
-    "Teacher",
-    "Select teacher"
-  );
+fill(
+"teacher",
+"Teacher",
+"Select teacher"
+);
 
 }
 
 
-/* SEARCH */
+function matchesSearch(r,q){
 
-function matchesSearch(
-  r,
-  q
-){
+if(!q)
+return true;
 
-  if(!q)
-    return true;
-
-
-  return `
-    ${r.type || ""}
-    ${r.name || ""}
-    ${r.code || ""}
-    ${r.programme || ""}
-    ${r.className || ""}
-    ${r.subject || ""}
-    ${r.teacher || ""}
-  `
-  .toLowerCase()
-  .includes(q);
+return `
+${r.type || ""}
+${r.name || ""}
+${r.code || ""}
+${r.programme || ""}
+${r.className || ""}
+${r.subject || ""}
+${r.teacher || ""}
+`
+.toLowerCase()
+.includes(q);
 
 }
 
-
-/* FILTER */
 
 function filteredRecords(){
 
-  const q =
-    $("search")
-      .value
-      .toLowerCase()
-      .trim();
+const q =
+$("search")
+.value
+.toLowerCase()
+.trim();
 
-
-  return records.filter(
-    r =>
-      (
-        currentType === "All" ||
-        r.type === currentType
-      ) &&
-      matchesSearch(r, q)
-  );
+return records.filter(
+r =>
+(
+currentType === "All" ||
+r.type === currentType
+) &&
+matchesSearch(r,q)
+);
 
 }
 
-
-/* RENDER */
 
 function render(){
 
-  [
-    "Programme",
-    "Class",
-    "Subject",
-    "Teacher",
-    "Assignment"
-  ]
-  .forEach(t => {
+[
+"Programme",
+"Class",
+"Subject",
+"Teacher",
+"Assignment"
+]
+.forEach(t => {
 
-    const valid =
-      records.filter(
-        r =>
-          r.type === t
-      );
+const valid =
+records.filter(
+r => r.type === t
+);
 
+$("count" + t)
+.textContent =
+valid.length;
 
-    $("count" + t)
-      .textContent =
-        valid.length;
+});
 
-  });
 
+if(currentType === "NoteBank")
+return;
 
-  const data =
-    filteredRecords();
 
+const data =
+filteredRecords();
 
-  /*
-    DESKTOP TABLE
-  */
 
-  $("rows").innerHTML =
-    data.map(r => `
+$("rows").innerHTML =
+data.map(r => `
 
-      <tr>
+<tr>
 
-        <td>
-          ${esc(r.type)}
-        </td>
+<td>${esc(r.type)}</td>
 
-        <td>
-          <b>
-            ${esc(displayName(r))}
-          </b>
-        </td>
+<td>
+<b>${esc(displayName(r))}</b>
+</td>
 
-        <td>
-          ${esc(r.code)}
-        </td>
+<td>${esc(r.code)}</td>
 
-        <td>
-          ${esc(r.programme)}
-        </td>
+<td>${esc(r.programme)}</td>
 
-        <td>
-          ${esc(r.className)}
-        </td>
+<td>${esc(r.className)}</td>
 
-        <td>
-          ${esc(r.subject)}
-        </td>
+<td>${esc(r.subject)}</td>
 
-        <td>
-          ${esc(r.teacher)}
-        </td>
+<td>${esc(r.teacher)}</td>
 
-        <td>
-          <span class="badge">
-            ${esc(r.status || "Active")}
-          </span>
-        </td>
+<td>
+<span class="badge">
+${esc(r.status || "Active")}
+</span>
+</td>
 
-        <td>
+<td>
 
-          <button
-            type="button"
-            class="secondary"
-            onclick="editRecord('${esc(r.airtableId)}')">
+<button
+type="button"
+class="secondary"
+onclick="editRecord('${esc(r.airtableId)}')">
 
-            Edit
+Edit
 
-          </button>
+</button>
 
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-    `)
-    .join("")
+`)
+.join("")
 
-    ||
+||
 
-    `
-      <tr>
-        <td
-          colspan="9"
-          class="empty">
+`
+<tr>
+<td colspan="9" class="empty">
+No academic records found.
+</td>
+</tr>
+`;
 
-          No academic records found.
 
-        </td>
-      </tr>
-    `;
+$("mobileRecords").innerHTML =
+data.map(r => `
 
+<div class="record-card">
 
-  /*
-    MOBILE CARDS
-  */
+<div class="record-title">
+${esc(displayName(r))}
+</div>
 
-  $("mobileRecords").innerHTML =
-    data.map(r => `
+<div class="record-grid">
 
-      <div class="record-card">
+<div class="record-field">
+<small>Type</small>
+<div>${esc(r.type)}</div>
+</div>
 
-        <div class="record-title">
-          ${esc(displayName(r))}
-        </div>
+<div class="record-field">
+<small>Code</small>
+<div>${esc(r.code)}</div>
+</div>
 
+<div class="record-field">
+<small>Programme</small>
+<div>${esc(r.programme)}</div>
+</div>
 
-        <div class="record-grid">
+<div class="record-field">
+<small>Class</small>
+<div>${esc(r.className)}</div>
+</div>
 
-          <div class="record-field">
+<div class="record-field">
+<small>Subject</small>
+<div>${esc(r.subject)}</div>
+</div>
 
-            <small>
-              Type
-            </small>
+<div class="record-field">
+<small>Teacher</small>
+<div>${esc(r.teacher)}</div>
+</div>
 
-            <div>
-              ${esc(r.type)}
-            </div>
+</div>
 
-          </div>
+<div class="record-action">
 
+<button
+type="button"
+class="secondary"
+onclick="editRecord('${esc(r.airtableId)}')">
 
-          <div class="record-field">
+Edit
 
-            <small>
-              Code
-            </small>
+</button>
 
-            <div>
-              ${esc(r.code)}
-            </div>
+</div>
 
-          </div>
+</div>
 
-
-          <div class="record-field">
-
-            <small>
-              Programme
-            </small>
-
-            <div>
-              ${esc(r.programme)}
-            </div>
-
-          </div>
-
-
-          <div class="record-field">
-
-            <small>
-              Class
-            </small>
-
-            <div>
-              ${esc(r.className)}
-            </div>
-
-          </div>
-
-
-          <div class="record-field">
-
-            <small>
-              Subject
-            </small>
-
-            <div>
-              ${esc(r.subject)}
-            </div>
-
-          </div>
-
-
-          <div class="record-field">
-
-            <small>
-              Teacher
-            </small>
-
-            <div>
-              ${esc(r.teacher)}
-            </div>
-
-          </div>
-
-
-          <div class="record-field">
-
-            <small>
-              Status
-            </small>
-
-            <div>
-
-              <span class="badge">
-                ${esc(r.status || "Active")}
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="record-action">
-
-          <button
-            type="button"
-            class="secondary"
-            onclick="editRecord('${esc(r.airtableId)}')">
-
-            Edit
-
-          </button>
-
-        </div>
-
-      </div>
-
-    `)
-    .join("")
-
-    ||
-
-    `
-      <div class="empty">
-        No academic records found.
-      </div>
-    `;
+`)
+.join("");
 
 }
 
-
-/* FORM DISPLAY */
 
 function toggle(){
 
-  const t =
-    $("type").value;
+const t =
+$("type").value;
 
+const assignment =
+t === "Assignment";
 
-  const isAssignment =
-    t === "Assignment";
+$("nameWrap").style.display =
+assignment ? "none" : "block";
 
+$("codeWrap").style.display =
+(
+t === "Programme" ||
+t === "Subject"
+)
+? "block"
+: "none";
 
-  $("nameWrap")
-    .style.display =
-      isAssignment
-        ? "none"
-        : "block";
+[
+"programmeWrap",
+"classWrap",
+"subjectWrap",
+"teacherWrap"
+]
+.forEach(x => {
 
+$(x).style.display =
+assignment
+? "block"
+: "none";
 
-  $("codeWrap")
-    .style.display =
-      (
-        t === "Programme" ||
-        t === "Subject"
-      )
-      ? "block"
-      : "none";
+});
 
+$("name").required =
+!assignment;
 
-  [
-    "programmeWrap",
-    "classWrap",
-    "subjectWrap",
-    "teacherWrap"
-  ]
-  .forEach(x => {
+$("className").required =
+assignment;
 
-    $(x).style.display =
-      isAssignment
-        ? "block"
-        : "none";
+$("subject").required =
+assignment;
 
-  });
+$("teacher").required =
+assignment;
 
-
-  $("name").required =
-    !isAssignment;
-
-
-  $("className").required =
-    isAssignment;
-
-
-  $("subject").required =
-    isAssignment;
-
-
-  $("teacher").required =
-    isAssignment;
-
-
-  $("nameLabel")
-    .textContent = t;
+$("nameLabel").textContent =
+t;
 
 }
 
 
-/* OPEN FORM */
+function openForm(r=null){
 
-function openForm(r = null){
+editing = r;
 
-  editing = r;
+$("formTitle").textContent =
+r
+? "Edit Academic Record"
+: "Add Academic Record";
 
+$("formMsg").textContent = "";
 
-  $("formTitle")
-    .textContent =
-      r
-        ? "Edit Academic Record"
-        : "Add Academic Record";
+$("academicForm").reset();
 
+if(r){
 
-  $("formMsg").textContent = "";
+$("type").value =
+r.type;
 
-  $("formMsg").className = "";
+$("name").value =
+r.name || "";
 
+$("code").value =
+r.code || "";
 
-  $("academicForm").reset();
+$("programme").value =
+r.programme || "";
 
+$("className").value =
+r.className || "";
 
-  if(r){
+$("subject").value =
+r.subject || "";
 
-    $("type").value =
-      r.type;
+$("teacher").value =
+r.teacher || "";
 
+$("status").value =
+r.status || "Active";
 
-    $("name").value =
-      r.name || "";
-
-
-    $("code").value =
-      r.code || "";
-
-
-    $("programme").value =
-      r.programme || "";
-
-
-    $("className").value =
-      r.className || "";
-
-
-    $("subject").value =
-      r.subject || "";
-
-
-    $("teacher").value =
-      r.teacher || "";
-
-
-    $("status").value =
-      r.status || "Active";
-
-
-    $("notes").value =
-      r.notes || "";
-
-  }
-
-
-  toggle();
-
-
-  $("modal")
-    .classList
-    .add("show");
+$("notes").value =
+r.notes || "";
 
 }
 
+toggle();
 
-/* CLOSE FORM */
+$("modal")
+.classList
+.add("show");
+
+}
+
 
 function closeForm(){
 
-  $("modal")
-    .classList
-    .remove("show");
+$("modal")
+.classList
+.remove("show");
 
-
-  editing = null;
+editing = null;
 
 }
 
-
-/* EDIT RECORD */
 
 function editRecord(id){
 
-  const r =
-    records.find(
-      x =>
-        x.airtableId === id
-    );
+const r =
+records.find(
+x => x.airtableId === id
+);
 
-
-  if(r)
-    openForm(r);
+if(r)
+openForm(r);
 
 }
 
 
-/* MESSAGE */
+function show(t,ok){
 
-function show(t, ok){
+const m =
+$("msg");
 
-  const m =
-    $("msg");
+m.className =
+t
+? "msg " + (ok ? "ok" : "err")
+: "msg";
 
-
-  m.className =
-    t
-      ? "msg " +
-        (
-          ok
-            ? "ok"
-            : "err"
-        )
-      : "msg";
-
-
-  m.textContent = t;
+m.textContent = t;
 
 }
 
 
-/*
-  TAB FUNCTION
-  There is ONLY ONE
-  click handler.
-*/
-
-function setTab(
-  type,
-  button
-){
-
-  currentType = type;
-
-
-  document
-    .querySelectorAll(
-      "[data-type]"
-    )
-    .forEach(
-      x =>
-        x.classList
-          .remove("active")
-    );
-
-
-  button
-    .classList
-    .add("active");
-
-
-  render();
-
-}
-
-
-/*
-  SINGLE TAB CLICK HANDLER
-
-  This replaces the duplicate
-  handlers in the old version.
-*/
+/* MAIN TAB HANDLER */
 
 $("tabs")
-  .addEventListener(
-    "click",
-    function(e){
+.addEventListener(
+"click",
+function(e){
 
-      const button =
-        e.target.closest(
-          "[data-type]"
-        );
+const button =
+e.target.closest(
+"[data-type]"
+);
+
+if(!button)
+return;
+
+e.preventDefault();
+
+currentType =
+button.dataset.type;
+
+document
+.querySelectorAll(
+"#tabs [data-type]"
+)
+.forEach(
+x =>
+x.classList.remove("active")
+);
+
+button.classList.add("active");
 
 
-      if(!button)
-        return;
+if(currentType === "NoteBank"){
+
+$("academicRecords")
+.style.display = "none";
+
+$("noteBank")
+.classList.add("active");
+
+}
+else{
+
+$("academicRecords")
+.style.display = "block";
+
+$("noteBank")
+.classList.remove("active");
+
+render();
+
+}
+
+}
+);
 
 
-      e.preventDefault();
+/* AI TOOL SWITCHER */
+
+function showAITool(type){
+
+const note =
+$("noteCreator");
+
+const question =
+$("questionCreator");
+
+const noteTab =
+$("noteCreatorTab");
+
+const questionTab =
+$("questionCreatorTab");
 
 
-      setTab(
-        button.dataset.type,
-        button
-      );
+if(type === "note"){
 
-    }
-  );
+note.classList.add("active");
+question.classList.remove("active");
+
+noteTab.classList.add("active");
+questionTab.classList.remove("active");
+
+}
+else{
+
+note.classList.remove("active");
+question.classList.add("active");
+
+noteTab.classList.remove("active");
+questionTab.classList.add("active");
+
+}
+
+}
+
+
+/* BUILD NOTE PROMPT */
+
+function buildNotePrompt(){
+
+const subject =
+$("aiNoteSubject").value;
+
+const cls =
+$("aiNoteClass").value;
+
+const programme =
+$("aiNoteProgramme").value;
+
+const topic =
+$("aiNoteTopic").value.trim();
+
+const teacherPrompt =
+$("aiNotePrompt").value.trim();
+
+const exams =
+[...document.querySelectorAll(".noteExam:checked")]
+.map(x => x.value);
+
+if(
+!subject ||
+!cls ||
+!topic ||
+!teacherPrompt
+){
+
+throw Error(
+"Select Subject, Class, Topic and enter the teacher prompt."
+);
+
+}
+
+return {
+
+contentType:"Note",
+
+subject,
+
+className:cls,
+
+programme,
+
+topic,
+
+examTypes:exams,
+
+teacherPrompt,
+
+systemContext:`
+Create academic content for Aibinu Flexiprep Educonsult.
+
+Subject: ${subject}
+Class: ${cls}
+Programme: ${programme || "General"}
+Topic: ${topic}
+Examination focus: ${exams.join(", ")}
+
+The teacher's prompt is the primary instruction.
+
+Content must be suitable for the selected academic level and examination context.
+
+Do not publish the content.
+Return it as a teacher-review draft.
+`
+
+};
+
+}
+
+
+/* BUILD QUESTION PROMPT */
+
+function buildQuestionPrompt(){
+
+const subject =
+$("aiQuestionSubject").value;
+
+const cls =
+$("aiQuestionClass").value;
+
+const programme =
+$("aiQuestionProgramme").value;
+
+const topic =
+$("aiQuestionTopic").value.trim();
+
+const count =
+Number($("aiQuestionCount").value);
+
+const difficulty =
+$("aiQuestionDifficulty").value;
+
+const bloom =
+$("aiQuestionBloom").value;
+
+const questionType =
+$("aiQuestionType").value;
+
+const teacherPrompt =
+$("aiQuestionPrompt").value.trim();
+
+const exams =
+[...document.querySelectorAll(".questionExam:checked")]
+.map(x => x.value);
+
+if(
+!subject ||
+!cls ||
+!topic ||
+!teacherPrompt
+){
+
+throw Error(
+"Select Subject, Class, Topic and enter the teacher prompt."
+);
+
+}
+
+return {
+
+contentType:"Question",
+
+subject,
+
+className:cls,
+
+programme,
+
+topic,
+
+examTypes:exams,
+
+questionCount:count,
+
+difficulty,
+
+bloomLevel:bloom,
+
+questionType,
+
+teacherPrompt,
+
+systemContext:`
+Create examination-style questions for Aibinu Flexiprep Educonsult.
+
+Subject: ${subject}
+Class: ${cls}
+Programme: ${programme || "General"}
+Topic: ${topic}
+Exam types: ${exams.join(", ")}
+Number: ${count}
+Difficulty: ${difficulty}
+Bloom level: ${bloom}
+Question type: ${questionType}
+
+The teacher's prompt is the primary instruction.
+
+Return structured questions suitable for teacher review.
+
+Do not approve or publish the questions.
+`
+
+};
+
+}
+
+
+/*
+CURRENT DEMO GENERATION
+
+This prepares the exact payload that
+the secure backend will receive.
+
+Do NOT put an OpenAI API key here.
+*/
+
+function generateNoteDraft(){
+
+try{
+
+const payload =
+buildNotePrompt();
+
+currentAIType = "note";
+
+currentAIPayload =
+payload;
+
+$("notePromptPreview")
+.textContent =
+JSON.stringify(
+payload,
+null,
+2
+);
+
+$("noteAIResult")
+.classList.add("show");
+
+show(
+"Note generation request prepared. Secure AI backend connection is required to generate the actual note.",
+true
+);
+
+}
+catch(e){
+
+show(e.message,false);
+
+}
+
+}
+
+
+function generateQuestionDraft(){
+
+try{
+
+const payload =
+buildQuestionPrompt();
+
+currentAIType = "question";
+
+currentAIPayload =
+payload;
+
+$("questionPromptPreview")
+.textContent =
+JSON.stringify(
+payload,
+null,
+2
+);
+
+$("questionAIResult")
+.classList.add("show");
+
+show(
+"Question generation request prepared. Secure AI backend connection is required to generate the actual questions.",
+true
+);
+
+}
+catch(e){
+
+show(e.message,false);
+
+}
+
+}
+
+
+/* EDIT */
+
+function editNoteDraft(){
+
+$("aiNotePrompt").focus();
+
+show(
+"Edit the teacher prompt and generate again when ready.",
+true
+);
+
+}
+
+
+function editQuestionDraft(){
+
+$("aiQuestionPrompt").focus();
+
+show(
+"Edit the teacher prompt and generate again when ready.",
+true
+);
+
+}
+
+
+/*
+APPROVAL PLACEHOLDERS
+
+These will call the secure backend
+once the AI API endpoint is implemented.
+*/
+
+function submitNoteForApproval(){
+
+if(!currentAIPayload){
+
+show(
+"Generate a note draft first.",
+false
+);
+
+return;
+
+}
+
+show(
+"Note draft is ready for the secure NoteBank approval workflow.",
+true
+);
+
+}
+
+
+function submitQuestionsForApproval(){
+
+if(!currentAIPayload){
+
+show(
+"Generate questions first.",
+false
+);
+
+return;
+
+}
+
+show(
+"Question draft is ready for the secure Question Review workflow.",
+true
+);
+
+}
 
 
 /* FORM TYPE */
 
 $("type")
-  .addEventListener(
-    "change",
-    toggle
-  );
+.addEventListener(
+"change",
+toggle
+);
 
 
 /* SEARCH */
 
 $("search")
-  .addEventListener(
-    "input",
-    render
-  );
+.addEventListener(
+"input",
+render
+);
 
 
-/* SAVE */
+/* SAVE ACADEMIC RECORD */
 
 $("academicForm")
-  .addEventListener(
-    "submit",
-    async e => {
+.addEventListener(
+"submit",
+async e => {
 
-      e.preventDefault();
+e.preventDefault();
 
+if(
+$("type").value === "Assignment" &&
+(
+!$("className").value ||
+!$("subject").value ||
+!$("teacher").value
+)
+){
 
-      /*
-        ASSIGNMENT VALIDATION
-      */
+$("formMsg").className =
+"msg err";
 
-      if(
-        $("type").value ===
-          "Assignment" &&
+$("formMsg").textContent =
+"Select Class, Subject and Teacher.";
 
-        (
-          !$("className").value ||
-          !$("subject").value ||
-          !$("teacher").value
-        )
-      ){
+return;
 
-        $("formMsg")
-          .className =
-            "msg err";
-
-
-        $("formMsg")
-          .textContent =
-            "Select Class, Subject and Teacher.";
+}
 
 
-        return;
+const body = {
 
-      }
+type:
+$("type").value,
 
+name:
+$("name").value.trim(),
 
-      const body = {
+code:
+$("code").value.trim(),
 
-        type:
-          $("type").value,
+programme:
+$("programme").value,
 
-        name:
-          $("name")
-            .value
-            .trim(),
+className:
+$("className").value,
 
-        code:
-          $("code")
-            .value
-            .trim(),
+subject:
+$("subject").value,
 
-        programme:
-          $("programme").value,
+teacher:
+$("teacher").value,
 
-        className:
-          $("className").value,
+status:
+$("status").value,
 
-        subject:
-          $("subject").value,
+notes:
+$("notes").value.trim()
 
-        teacher:
-          $("teacher").value,
-
-        status:
-          $("status").value,
-
-        notes:
-          $("notes")
-            .value
-            .trim()
-
-      };
+};
 
 
-      if(editing){
+if(editing){
 
-        body.airtableId =
-          editing.airtableId;
+body.airtableId =
+editing.airtableId;
 
-      }
-
-
-      try{
-
-        const r =
-          await fetch(
-            "/api/academic",
-            {
-              method:
-                editing
-                  ? "PUT"
-                  : "POST",
-
-              headers:{
-                "Content-Type":
-                  "application/json"
-              },
-
-              body:
-                JSON.stringify(body)
-            }
-          );
+}
 
 
-        const d =
-          await r.json();
+try{
+
+const r =
+await fetch(
+"/api/academic",
+{
+
+method:
+editing
+? "PUT"
+: "POST",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:
+JSON.stringify(body)
+
+}
+);
+
+const d =
+await r.json();
+
+if(!r.ok){
+
+throw Error(
+d.error?.message ||
+d.error ||
+"Save failed"
+);
+
+}
+
+closeForm();
+
+await loadData();
+
+show(
+"Academic record saved successfully.",
+true
+);
+
+}
+catch(x){
+
+$("formMsg").className =
+"msg err";
+
+$("formMsg").textContent =
+x.message;
+
+}
+
+}
+);
 
 
-        if(!r.ok){
-
-          throw Error(
-            d.error?.message ||
-            d.error ||
-            "Save failed"
-          );
-
-        }
-
-
-        closeForm();
-
-
-        await loadData();
-
-
-        show(
-          "Academic record saved successfully.",
-          true
-        );
-
-
-      }catch(x){
-
-        $("formMsg")
-          .className =
-            "msg err";
-
-
-        $("formMsg")
-          .textContent =
-            x.message;
-
-      }
-
-    }
-  );
-
-
-/*
-  CLOSE MODAL WHEN USER
-  TAPS OUTSIDE THE FORM
-*/
+/* CLOSE MODAL */
 
 $("modal")
-  .addEventListener(
-    "click",
-    e => {
+.addEventListener(
+"click",
+e => {
 
-      if(
-        e.target ===
-        $("modal")
-      ){
+if(e.target === $("modal"))
+closeForm();
 
-        closeForm();
-
-      }
-
-    }
-  );
+}
+);
 
 
 /* INITIALIZE */
