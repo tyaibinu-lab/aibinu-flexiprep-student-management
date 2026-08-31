@@ -50,7 +50,7 @@ const TABLES = {
 // VERCEL HANDLER
 // ============================================================
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
 
   // ----------------------------------------------------------
   // CORS
