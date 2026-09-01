@@ -3727,12 +3727,16 @@ function editQuestionDraft(){
    APPROVAL PLACEHOLDERS
    ===================================================== */
 
-function submitNoteForApproval(){
+/* ============================================================
+   NOTEBANK DRAFT EDITOR
+   ============================================================ */
 
-  if(
+function editNoteDraft() {
+
+  if (
     !currentAIResult ||
-    currentAIResult.type !== "Note"
-  ){
+    !currentAIResult.note
+  ) {
 
     show(
       "Generate a note draft first.",
@@ -3744,23 +3748,441 @@ function submitNoteForApproval(){
   }
 
 
-  show(
-    "Note draft is ready for the secure NoteBank approval workflow.",
-    true
-  );
+  const note =
+    currentAIResult.note;
+
+
+  const resultBox =
+    $("noteAIResult");
+
+  if (!resultBox) {
+    return;
+  }
+
+
+  /* ----------------------------------------------------------
+     CREATE EDITOR
+     ---------------------------------------------------------- */
+
+  let editor =
+    $("noteDraftEditor");
+
+
+  if (!editor) {
+
+    editor =
+      document.createElement("div");
+
+    editor.id =
+      "noteDraftEditor";
+
+    editor.style.marginTop =
+      "20px";
+
+
+    resultBox.appendChild(
+      editor
+    );
+
+  }
+
+
+  editor.innerHTML = `
+
+    <div
+      style="
+        border:1px solid var(--line);
+        border-radius:14px;
+        padding:18px;
+        background:#fff;
+      "
+    >
+
+      <h2>
+        ✏️ Edit Note Draft
+      </h2>
+
+      <p class="muted">
+        Review and correct the AI-generated note
+        before submitting it for approval.
+      </p>
+
+
+      <div class="grid">
+
+        <div class="full">
+
+          <label>
+            Title
+          </label>
+
+          <input
+            id="editNoteTitle"
+            value="${esc(note.title || "")}"
+          >
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Learning Objectives
+          </label>
+
+          <textarea
+            id="editNoteLearningObjectives"
+            rows="6"
+          >${esc(
+            note.learningObjectives || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Key Terms
+          </label>
+
+          <textarea
+            id="editNoteKeyTerms"
+            rows="5"
+          >${esc(
+            note.keyTerms || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Main Content
+          </label>
+
+          <textarea
+            id="editNoteContent"
+            rows="16"
+          >${esc(
+            note.content || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Examples
+          </label>
+
+          <textarea
+            id="editNoteExamples"
+            rows="7"
+          >${esc(
+            note.examples || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Worked Examples
+          </label>
+
+          <textarea
+            id="editNoteWorkedExamples"
+            rows="10"
+          >${esc(
+            note.workedExamples || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Formulae
+          </label>
+
+          <textarea
+            id="editNoteFormulae"
+            rows="6"
+          >${esc(
+            note.formulae || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Applications
+          </label>
+
+          <textarea
+            id="editNoteApplications"
+            rows="6"
+          >${esc(
+            note.applications || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Common Misconceptions
+          </label>
+
+          <textarea
+            id="editNoteMisconceptions"
+            rows="6"
+          >${esc(
+            note.commonMisconceptions || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Summary
+          </label>
+
+          <textarea
+            id="editNoteSummary"
+            rows="7"
+          >${esc(
+            note.summary || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Examination Tips
+          </label>
+
+          <textarea
+            id="editNoteExamTips"
+            rows="7"
+          >${esc(
+            note.examTips || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div>
+
+          <label>
+            WAEC Focus
+          </label>
+
+          <textarea
+            id="editNoteWaec"
+            rows="7"
+          >${esc(
+            note.waecFocus || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div>
+
+          <label>
+            NECO Focus
+          </label>
+
+          <textarea
+            id="editNoteNeco"
+            rows="7"
+          >${esc(
+            note.necoFocus || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div>
+
+          <label>
+            UTME Focus
+          </label>
+
+          <textarea
+            id="editNoteUtme"
+            rows="7"
+          >${esc(
+            note.utmeFocus || ""
+          )}</textarea>
+
+        </div>
+
+
+        <div class="full">
+
+          <label>
+            Diagrams
+          </label>
+
+          <textarea
+            id="editNoteDiagrams"
+            rows="6"
+            placeholder="Describe diagrams that should appear in the final note."
+          >${esc(
+            note.diagrams || ""
+          )}</textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="ai-actions">
+
+        <button
+          type="button"
+          class="secondary"
+          onclick="cancelNoteEdit()"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary"
+          onclick="saveNoteDraft()"
+        >
+          💾 Save Draft
+        </button>
+
+
+        <button
+          type="button"
+          class="primary"
+          onclick="saveAndSubmitNote()"
+        >
+          📤 Submit for Approval
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  editor.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 
 }
 
 
-function submitQuestionsForApproval(){
+/* ============================================================
+   CANCEL EDIT
+   ============================================================ */
 
-  if(
+function cancelNoteEdit() {
+
+  const editor =
+    $("noteDraftEditor");
+
+  if (editor) {
+
+    editor.remove();
+
+  }
+
+}
+
+
+/* ============================================================
+   COLLECT EDITED NOTE
+   ============================================================ */
+
+function collectEditedNote() {
+
+  return {
+
+    title:
+      $("editNoteTitle")?.value.trim() || "",
+
+    learningObjectives:
+      $("editNoteLearningObjectives")?.value.trim() || "",
+
+    keyTerms:
+      $("editNoteKeyTerms")?.value.trim() || "",
+
+    content:
+      $("editNoteContent")?.value.trim() || "",
+
+    examples:
+      $("editNoteExamples")?.value.trim() || "",
+
+    workedExamples:
+      $("editNoteWorkedExamples")?.value.trim() || "",
+
+    formulae:
+      $("editNoteFormulae")?.value.trim() || "",
+
+    applications:
+      $("editNoteApplications")?.value.trim() || "",
+
+    commonMisconceptions:
+      $("editNoteMisconceptions")?.value.trim() || "",
+
+    summary:
+      $("editNoteSummary")?.value.trim() || "",
+
+    examTips:
+      $("editNoteExamTips")?.value.trim() || "",
+
+    waecFocus:
+      $("editNoteWaec")?.value.trim() || "",
+
+    necoFocus:
+      $("editNoteNeco")?.value.trim() || "",
+
+    utmeFocus:
+      $("editNoteUtme")?.value.trim() || "",
+
+    diagrams:
+      $("editNoteDiagrams")?.value.trim() || ""
+
+  };
+
+}
+
+
+/* ============================================================
+   SAVE NOTE DRAFT
+   ============================================================ */
+
+async function saveNoteDraft() {
+
+  if (
     !currentAIResult ||
-    currentAIResult.type !== "Question"
-  ){
+    !currentAIResult.note
+  ) {
 
     show(
-      "Generate questions first.",
+      "No note draft is currently available.",
       false
     );
 
@@ -3769,10 +4191,474 @@ function submitQuestionsForApproval(){
   }
 
 
-  show(
-    "Question draft is ready for the secure Question Review workflow.",
-    true
-  );
+  const note =
+    currentAIResult.note;
+
+
+  const noteId =
+    note["Note ID"] ||
+    note.noteId ||
+    currentAIResult.raw?.note?.["Note ID"] ||
+    currentAIResult.raw?.note?.noteId;
+
+
+  if (!noteId) {
+
+    show(
+      "The Note ID could not be found. Generate the note again.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  const edited =
+    collectEditedNote();
+
+
+  if (!edited.title) {
+
+    show(
+      "Note title is required.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/note-reviews",
+        {
+
+          method: "PATCH",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              noteId,
+
+              action:
+                "save",
+
+              "Title":
+                edited.title,
+
+              "Learning Objectives":
+                edited.learningObjectives,
+
+              "Key Terms":
+                edited.keyTerms,
+
+              "Content":
+                edited.content,
+
+              "Examples":
+                edited.examples,
+
+              "Worked Examples":
+                edited.workedExamples,
+
+              "Formulae":
+                edited.formulae,
+
+              "Applications":
+                edited.applications,
+
+              "Common Misconceptions":
+                edited.commonMisconceptions,
+
+              "Summary":
+                edited.summary,
+
+              "Exam Tips":
+                edited.examTips,
+
+              "WAEC Focus":
+                edited.waecFocus,
+
+              "NECO Focus":
+                edited.necoFocus,
+
+              "UTME Focus":
+                edited.utmeFocus,
+
+              "Diagrams":
+                edited.diagrams
+
+            })
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data?.error ||
+        "Unable to save note."
+      );
+
+    }
+
+
+    /* ------------------------------------------------------
+       UPDATE LOCAL RESULT
+       ------------------------------------------------------ */
+
+    currentAIResult.note =
+      {
+
+        ...currentAIResult.note,
+
+        ...edited
+
+      };
+
+
+    show(
+      "Note draft saved successfully.",
+      true
+    );
+
+
+    alert(
+      "Note draft saved successfully."
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "SAVE NOTE ERROR:",
+      error
+    );
+
+
+    show(
+      error.message ||
+      "Unable to save note.",
+      false
+    );
+
+
+    alert(
+      "Save failed:\n\n" +
+      (
+        error.message ||
+        "Unknown error"
+      )
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   SAVE THEN SUBMIT
+   ============================================================ */
+
+async function saveAndSubmitNote() {
+
+  if (
+    !currentAIResult ||
+    !currentAIResult.note
+  ) {
+
+    show(
+      "Generate a note draft first.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  const note =
+    currentAIResult.note;
+
+
+  const noteId =
+    note["Note ID"] ||
+    note.noteId ||
+    currentAIResult.raw?.note?.["Note ID"] ||
+    currentAIResult.raw?.note?.noteId;
+
+
+  if (!noteId) {
+
+    show(
+      "The Note ID could not be found.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  const edited =
+    collectEditedNote();
+
+
+  if (!edited.title) {
+
+    show(
+      "Note title is required.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    /* ------------------------------------------------------
+       SAVE FIRST
+       ------------------------------------------------------ */
+
+    const saveResponse =
+      await fetch(
+        "/api/note-reviews",
+        {
+
+          method: "PATCH",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              noteId,
+
+              action:
+                "save",
+
+              "Title":
+                edited.title,
+
+              "Learning Objectives":
+                edited.learningObjectives,
+
+              "Key Terms":
+                edited.keyTerms,
+
+              "Content":
+                edited.content,
+
+              "Examples":
+                edited.examples,
+
+              "Worked Examples":
+                edited.workedExamples,
+
+              "Formulae":
+                edited.formulae,
+
+              "Applications":
+                edited.applications,
+
+              "Common Misconceptions":
+                edited.commonMisconceptions,
+
+              "Summary":
+                edited.summary,
+
+              "Exam Tips":
+                edited.examTips,
+
+              "WAEC Focus":
+                edited.waecFocus,
+
+              "NECO Focus":
+                edited.necoFocus,
+
+              "UTME Focus":
+                edited.utmeFocus,
+
+              "Diagrams":
+                edited.diagrams
+
+            })
+
+        }
+      );
+
+
+    const saveData =
+      await saveResponse.json();
+
+
+    if (!saveResponse.ok) {
+
+      throw new Error(
+        saveData?.error ||
+        "Unable to save the note."
+      );
+
+    }
+
+
+    /* ------------------------------------------------------
+       SUBMIT
+       ------------------------------------------------------ */
+
+    const submitResponse =
+      await fetch(
+        "/api/note-reviews",
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              noteId,
+
+              action:
+                "submit"
+
+            })
+
+        }
+      );
+
+
+    const submitData =
+      await submitResponse.json();
+
+
+    if (!submitResponse.ok) {
+
+      throw new Error(
+        submitData?.error ||
+        "Unable to submit note for approval."
+      );
+
+    }
+
+
+    /* ------------------------------------------------------
+       UPDATE LOCAL DATA
+       ------------------------------------------------------ */
+
+    currentAIResult.note =
+      {
+
+        ...currentAIResult.note,
+
+        ...edited,
+
+        status:
+          "Under Review"
+
+      };
+
+
+    /* ------------------------------------------------------
+       UPDATE UI
+       ------------------------------------------------------ */
+
+    const status =
+      $("noteAIResult")
+        ?.querySelector(
+          ".ai-status"
+        );
+
+
+    if (status) {
+
+      status.innerHTML =
+        "📤 Note successfully submitted for approval. " +
+        "Current status: <b>UNDER REVIEW</b>.";
+
+    }
+
+
+    const editor =
+      $("noteDraftEditor");
+
+
+    if (editor) {
+
+      editor.remove();
+
+    }
+
+
+    show(
+      "Note submitted successfully for approval.",
+      true
+    );
+
+
+    alert(
+      "Note submitted for approval.\n\nStatus: UNDER REVIEW"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "SUBMIT NOTE ERROR:",
+      error
+    );
+
+
+    show(
+      error.message ||
+      "Unable to submit note.",
+      false
+    );
+
+
+    alert(
+      "Submission failed:\n\n" +
+      (
+        error.message ||
+        "Unknown error"
+      )
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   BACKWARD COMPATIBILITY
+   ============================================================ */
+
+function submitNoteForApproval() {
+
+  saveAndSubmitNote();
 
 }
 
