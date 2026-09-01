@@ -162,19 +162,21 @@ export default async function handler(req, res) {
        ===================================================== */
 
     const linkedQuestionIds =
-      linkedQuestions.map(item => {
+      linkedQuestions
+        .map(item => {
 
-        if (typeof item === "string") {
-          return item;
-        }
+          if (typeof item === "string") {
+            return item;
+          }
 
-        if (item && item.id) {
-          return item.id;
-        }
+          if (item && item.id) {
+            return item.id;
+          }
 
-        return null;
+          return null;
 
-      }).filter(Boolean);
+        })
+        .filter(Boolean);
 
 
     console.log(
@@ -184,21 +186,61 @@ export default async function handler(req, res) {
 
 
     /* =====================================================
-       5. MATCH QUESTIONS
+       5. MATCH ONLY PUBLISHED QUESTIONS
        ===================================================== */
 
     const matchedRecords =
       allQuestions.filter(record => {
 
-        return linkedQuestionIds.includes(
-          record.id
+        /*
+         * The question must first be linked
+         * to this CBT examination.
+         */
+
+        if (
+          !linkedQuestionIds.includes(
+            record.id
+          )
+        ) {
+          return false;
+        }
+
+
+        /*
+         * The question must also be published.
+         *
+         * Draft       -> NOT visible
+         * Under Review -> NOT visible
+         * Rejected    -> NOT visible
+         * Approved    -> NOT visible until Published
+         * Published   -> VISIBLE
+         */
+
+        const fields =
+          record.fields || {};
+
+        const publicationStatus =
+          String(
+            fields["Publication Status"] || ""
+          )
+            .trim()
+            .toLowerCase();
+
+        return (
+          publicationStatus ===
+          "published"
         );
 
       });
 
 
     console.log(
-      "Questions actually found:",
+      "Linked questions:",
+      linkedQuestionIds.length
+    );
+
+    console.log(
+      "Published questions available:",
       matchedRecords.length
     );
 
@@ -252,6 +294,10 @@ export default async function handler(req, res) {
 
           status:
             f["Status"] ||
+            "",
+
+          publicationStatus:
+            f["Publication Status"] ||
             ""
 
         };
@@ -260,7 +306,7 @@ export default async function handler(req, res) {
 
 
     /* =====================================================
-       7. RETURN ARRAY TO REACT APP
+       7. RETURN QUESTIONS TO REACT APP
        ===================================================== */
 
     return res.status(200).json(
@@ -278,5 +324,6 @@ export default async function handler(req, res) {
       error: "Failed to load CBT questions",
       details: error.message
     });
+
   }
 }
