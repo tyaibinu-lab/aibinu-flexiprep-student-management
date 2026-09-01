@@ -25,11 +25,14 @@
 //   AIRTABLE_BASE_ID
 // ============================================================
 
+
 const AIRTABLE_API =
   "https://api.airtable.com/v0";
 
+
 const OPENAI_API =
   "https://api.openai.com/v1/responses";
+
 
 const OPENAI_MODEL =
   process.env.OPENAI_MODEL || "gpt-5.6-luna";
@@ -40,9 +43,16 @@ const OPENAI_MODEL =
 // ============================================================
 
 const TABLES = {
-  AI_JOBS: "tbldFSYwYcTMtMm9A",
-  NOTES: "tblsEjHgHA7vhPgm0",
-  QUESTIONS: "tblWz5hU4tpVvMJbF"
+
+  AI_JOBS:
+    "tbldFSYwYcTMtMm9A",
+
+  NOTES:
+    "tblsEjHgHA7vhPgm0",
+
+  QUESTIONS:
+    "tblWz5hU4tpVvMJbF"
+
 };
 
 
@@ -51,6 +61,7 @@ const TABLES = {
 // ============================================================
 
 export default async function handler(req, res) {
+
 
   // ----------------------------------------------------------
   // CORS
@@ -73,7 +84,11 @@ export default async function handler(req, res) {
 
 
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+
+    return res
+      .status(200)
+      .end();
+
   }
 
 
@@ -84,16 +99,30 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
 
     return res.status(200).json({
+
       success: true,
+
       service:
         "AIBINU Flexiprep AI Content API",
-      model: OPENAI_MODEL,
+
+      model:
+        OPENAI_MODEL,
+
       airtableConfigured:
-        Boolean(process.env.AIRTABLE_PAT),
+        Boolean(
+          process.env.AIRTABLE_PAT
+        ),
+
       baseConfigured:
-        Boolean(process.env.AIRTABLE_BASE_ID),
+        Boolean(
+          process.env.AIRTABLE_BASE_ID
+        ),
+
       openaiConfigured:
-        Boolean(process.env.OPENAI_API_KEY)
+        Boolean(
+          process.env.OPENAI_API_KEY
+        )
+
     });
 
   }
@@ -106,8 +135,12 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
 
     return res.status(405).json({
+
       success: false,
-      error: "Method not allowed."
+
+      error:
+        "Method not allowed."
+
     });
 
   }
@@ -115,7 +148,9 @@ export default async function handler(req, res) {
 
   try {
 
-    const config = getConfig();
+    const config =
+      getConfig();
+
 
     const body =
       req.body || {};
@@ -145,9 +180,13 @@ export default async function handler(req, res) {
           body
         );
 
+
       return res.status(200).json({
+
         success: true,
+
         ...result
+
       });
 
     }
@@ -169,18 +208,25 @@ export default async function handler(req, res) {
           body
         );
 
+
       return res.status(200).json({
+
         success: true,
+
         ...result
+
       });
 
     }
 
 
     return res.status(400).json({
+
       success: false,
+
       error:
         "Invalid contentType. Use Note or Question."
+
     });
 
 
@@ -190,6 +236,7 @@ export default async function handler(req, res) {
       "AI CONTENT API ERROR:",
       error
     );
+
 
     return res.status(500).json({
 
@@ -203,7 +250,7 @@ export default async function handler(req, res) {
 
   }
 
-};
+}
 
 
 // ============================================================
@@ -285,6 +332,7 @@ function clean(value) {
 
   }
 
+
   return String(value).trim();
 
 }
@@ -294,7 +342,9 @@ function makeId(prefix) {
 
   return (
     `${prefix}-${Date.now()}-` +
-    `${Math.floor(Math.random() * 100000)}`
+    `${Math.floor(
+      Math.random() * 100000
+    )}`
   );
 
 }
@@ -307,17 +357,21 @@ function makeId(prefix) {
 function normalizeDifficulty(value) {
 
   const valid = [
+
     "Easy",
     "Medium",
     "Hard"
+
   ];
 
 
   const found =
     valid.find(
+
       item =>
         item.toLowerCase() ===
         clean(value).toLowerCase()
+
     );
 
 
@@ -329,20 +383,24 @@ function normalizeDifficulty(value) {
 function normalizeBloom(value) {
 
   const valid = [
+
     "Remember",
     "Understand",
     "Apply",
     "Analyze",
     "Evaluate",
     "Create"
+
   ];
 
 
   const found =
     valid.find(
+
       item =>
         item.toLowerCase() ===
         clean(value).toLowerCase()
+
     );
 
 
@@ -354,19 +412,23 @@ function normalizeBloom(value) {
 function normalizeQuestionType(value) {
 
   const valid = [
+
     "MCQ",
     "Theory",
     "Calculation",
     "Practical",
     "Objective"
+
   ];
 
 
   const found =
     valid.find(
+
       item =>
         item.toLowerCase() ===
         clean(value).toLowerCase()
+
     );
 
 
@@ -378,12 +440,14 @@ function normalizeQuestionType(value) {
 function normalizeExamTypes(value) {
 
   const valid = [
+
     "WAEC",
     "NECO",
     "UTME",
     "General",
     "IJMB",
     "JUPEB"
+
   ];
 
 
@@ -409,12 +473,16 @@ function normalizeExamTypes(value) {
 
   const result =
     values.filter(
+
       item =>
         valid.some(
+
           validItem =>
             validItem.toLowerCase() ===
             String(item).toLowerCase()
+
         )
+
     );
 
 
@@ -452,8 +520,7 @@ function createBalancedList(
   }
 
 
-  // Shuffle so the questions
-  // do not appear in obvious order.
+  // Shuffle
 
   for (
     let i = result.length - 1;
@@ -502,21 +569,26 @@ function getDifficultyList(
     return Array(
       count
     ).fill(
+
       normalizeDifficulty(
         value || "Medium"
       )
+
     );
 
   }
 
 
   return createBalancedList(
+
     count,
+
     [
       "Easy",
       "Medium",
       "Hard"
     ]
+
   );
 
 }
@@ -540,16 +612,20 @@ function getBloomList(
     return Array(
       count
     ).fill(
+
       normalizeBloom(
         value || "Apply"
       )
+
     );
 
   }
 
 
   return createBalancedList(
+
     count,
+
     [
       "Remember",
       "Understand",
@@ -558,6 +634,7 @@ function getBloomList(
       "Evaluate",
       "Create"
     ]
+
   );
 
 }
@@ -597,7 +674,9 @@ async function airtableRequest(
   };
 
 
-  if (body !== undefined) {
+  if (
+    body !== undefined
+  ) {
 
     options.body =
       JSON.stringify(body);
@@ -627,7 +706,10 @@ async function airtableRequest(
   } catch {
 
     data = {
-      raw: text
+
+      raw:
+        text
+
     };
 
   }
@@ -741,7 +823,8 @@ async function createManyRecords(
               })
             ),
 
-          typecast: true
+          typecast:
+            true
 
         }
 
@@ -770,6 +853,21 @@ async function createManyRecords(
 
 // ============================================================
 // OPENAI RESPONSES API
+//
+// IMPORTANT FIX:
+//
+// When using:
+//
+// text.format.type = "json_object"
+//
+// the request must explicitly tell the model to return JSON.
+//
+// We therefore include JSON in BOTH:
+//   1. instructions
+//   2. input
+//
+// This fixes the error:
+// "Response input messages must contain the word 'json'..."
 // ============================================================
 
 async function callOpenAI(
@@ -778,6 +876,38 @@ async function callOpenAI(
   input
 ) {
 
+
+  const safeInstructions = `
+
+${instructions}
+
+IMPORTANT JSON OUTPUT REQUIREMENT:
+
+Return the response as valid JSON.
+
+The response must be JSON only.
+
+Do not use Markdown code fences.
+
+Do not write explanations outside
+the JSON object.
+
+`;
+
+
+  const safeInput = `
+
+IMPORTANT:
+The required response format is JSON.
+
+${input}
+
+REMINDER:
+Return valid JSON only.
+
+`;
+
+
   const response =
     await fetch(
 
@@ -785,7 +915,8 @@ async function callOpenAI(
 
       {
 
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
 
@@ -806,9 +937,11 @@ async function callOpenAI(
             store:
               false,
 
-            instructions,
+            instructions:
+              safeInstructions,
 
-            input,
+            input:
+              safeInput,
 
             text: {
 
@@ -828,8 +961,29 @@ async function callOpenAI(
     );
 
 
-  const data =
-    await response.json();
+  const responseText =
+    await response.text();
+
+
+  let data;
+
+
+  try {
+
+    data =
+      JSON.parse(
+        responseText
+      );
+
+  } catch {
+
+    throw new Error(
+
+      `OpenAI returned an invalid response: ${responseText.slice(0, 500)}`
+
+    );
+
+  }
 
 
   if (!response.ok) {
@@ -855,7 +1009,9 @@ async function callOpenAI(
     data.output_text
   ) {
 
-    return data.output_text;
+    return data
+      .output_text
+      .trim();
 
   }
 
@@ -929,18 +1085,22 @@ function parseAIJSON(text) {
 
   const cleaned =
     clean(text)
+
       .replace(
         /^```json/i,
         ""
       )
+
       .replace(
         /^```/i,
         ""
       )
+
       .replace(
         /```$/i,
         ""
       )
+
       .trim();
 
 
@@ -952,7 +1112,7 @@ function parseAIJSON(text) {
 
   } catch (_) {
 
-    // Continue.
+    // Continue
 
   }
 
@@ -974,15 +1134,17 @@ function parseAIJSON(text) {
     try {
 
       return JSON.parse(
+
         cleaned.slice(
           first,
           last + 1
         )
+
       );
 
     } catch (_) {
 
-      // Continue.
+      // Continue
 
     }
 
@@ -1113,34 +1275,45 @@ async function generateNote(
   const subject =
     clean(body.subject);
 
+
   const subjectId =
     clean(body.subjectId);
+
 
   const topic =
     clean(body.topic);
 
+
   const topicId =
     clean(body.topicId);
+
 
   const className =
     clean(body.className) ||
     "SS1";
 
+
   const classId =
     clean(body.classId);
+
 
   const programme =
     clean(body.programme) ||
     "General";
 
+
   const requestedBy =
     clean(body.requestedBy);
 
+
   const teacherPrompt =
     clean(
+
       body.teacherPrompt ||
       body.prompt
+
     );
+
 
   const examTypes =
     normalizeExamTypes(
@@ -1223,6 +1396,8 @@ Return ONLY valid JSON.
 
   const input = `
 
+RESPONSE FORMAT: JSON
+
 INSTITUTION:
 AIBINU FLEXIPREP EDUCONSULT
 
@@ -1264,7 +1439,7 @@ The note must contain:
 12. UTME focus
 
 
-Return exactly:
+Return exactly this JSON structure:
 
 {
   "title": "",
@@ -1280,14 +1455,20 @@ Return exactly:
   "utmeFocus": ""
 }
 
+Return JSON only.
+
 `;
 
 
   const aiText =
     await callOpenAI(
+
       config,
+
       instructions,
+
       input
+
     );
 
 
@@ -1314,7 +1495,9 @@ Return exactly:
       clean(note.content),
 
     "Learning Objectives":
-      clean(note.learningObjectives),
+      clean(
+        note.learningObjectives
+      ),
 
     "Key Terms":
       clean(note.keyTerms),
@@ -1323,7 +1506,9 @@ Return exactly:
       clean(note.examples),
 
     "Worked Examples":
-      clean(note.workedExamples),
+      clean(
+        note.workedExamples
+      ),
 
     "Summary":
       clean(note.summary),
@@ -1426,7 +1611,8 @@ Return exactly:
         createdNote
           ?.records
           ?.at(0)
-          ?.id || null,
+          ?.id ||
+        null,
 
       ...note,
 
@@ -1452,31 +1638,41 @@ async function generateQuestions(
   const subject =
     clean(body.subject);
 
+
   const subjectId =
     clean(body.subjectId);
 
+
   const topic =
     clean(body.topic);
+
 
   const className =
     clean(body.className) ||
     "SS1";
 
+
   const classId =
     clean(body.classId);
+
 
   const programme =
     clean(body.programme) ||
     "General";
 
+
   const requestedBy =
     clean(body.requestedBy);
 
+
   const teacherPrompt =
     clean(
+
       body.teacherPrompt ||
       body.prompt
+
     );
+
 
   const examTypes =
     normalizeExamTypes(
@@ -1486,58 +1682,79 @@ async function generateQuestions(
 
   const count =
     Math.max(
+
       1,
+
       Math.min(
+
         100,
+
         Number(
+
           body.numberOfQuestions ||
           body.numberQuestions ||
           body.count ||
+          body.questionCount ||
           1
+
         )
+
       )
+
     );
 
 
   const difficulty =
     clean(
+
       body.difficulty ||
       "Medium"
+
     );
 
 
   const bloomLevel =
     clean(
+
       body.bloomLevel ||
       "Apply"
+
     );
 
 
   const questionType =
     normalizeQuestionType(
+
       body.questionType ||
       "MCQ"
+
     );
 
 
   const source =
     clean(
+
       body.source ||
       "AI Generated"
+
     );
 
 
   const year =
     Number(
+
       body.year ||
       2026
+
     );
 
 
   const marks =
     Number(
+
       body.marks ||
       1
+
     );
 
 
@@ -1574,28 +1791,34 @@ async function generateQuestions(
 
   const difficultyList =
     getDifficultyList(
+
       count,
+
       difficulty
+
     );
 
 
   const bloomList =
     getBloomList(
+
       count,
+
       bloomLevel
+
     );
 
 
   // ----------------------------------------------------------
   // GENERATE IN BATCHES
-  //
-  // This prevents extremely large
-  // OpenAI responses.
   // ----------------------------------------------------------
 
-  const generatedQuestions = [];
+  const generatedQuestions =
+    [];
 
-  const allPrompts = [];
+
+  const allPrompts =
+    [];
 
 
   for (
@@ -1606,8 +1829,11 @@ async function generateQuestions(
 
     const batchEnd =
       Math.min(
+
         start + 10,
+
         count
+
       );
 
 
@@ -1647,10 +1873,15 @@ async function generateQuestions(
 
     const assignmentText =
       batchAssignments
+
         .map(
+
           item =>
+
             `Question ${item.number}: Difficulty=${item.difficulty}; Bloom=${item.bloomLevel}`
+
         )
+
         .join("\n");
 
 
@@ -1691,6 +1922,8 @@ Return ONLY valid JSON.
 
 
     const input = `
+
+RESPONSE FORMAT: JSON
 
 SUBJECT:
 ${subject}
@@ -1787,14 +2020,20 @@ Question 2
 Question 3
 ...
 
+Return JSON only.
+
 `;
 
 
     const aiText =
       await callOpenAI(
+
         config,
+
         instructions,
+
         input
+
       );
 
 
@@ -1869,23 +2108,29 @@ Question 3
 
       q.marks =
         Number(
+
           q.marks ||
           marks ||
           1
+
         );
 
 
       q.source =
         clean(
+
           q.source ||
           source
+
         );
 
 
       q.year =
         Number(
+
           q.year ||
           year
+
         );
 
 
@@ -1941,10 +2186,15 @@ Question 3
       // ------------------------------------------------------
 
       if (
+
         !clean(q.optionA) ||
+
         !clean(q.optionB) ||
+
         !clean(q.optionC) ||
+
         !clean(q.optionD)
+
       ) {
 
         throw new Error(
@@ -1976,7 +2226,8 @@ Question 3
 
   const airtableRecords =
     generatedQuestions.map(
-      (question, index) => {
+
+      (question) => {
 
         const fields = {
 
@@ -2107,6 +2358,7 @@ Question 3
         return fields;
 
       }
+
     );
 
 
@@ -2174,13 +2426,16 @@ Question 3
       generatedQuestions.length,
 
     questions:
+
       generatedQuestions.map(
+
         (question, index) => ({
 
           id:
             createdQuestions[
               index
-            ]?.id || null,
+            ]?.id ||
+            null,
 
           questionId:
             airtableRecords[
@@ -2196,6 +2451,7 @@ Question 3
             "Draft"
 
         })
+
       )
 
   };
