@@ -3007,88 +3007,252 @@ Do not approve or publish the questions.
    AI NOTE GENERATOR
    ===================================================== */
 
-async function generateNoteDraft(){
 
-  try{
+      async function generateNoteDraft() {
 
-    const payload =
-      buildNotePrompt();
+  const subject =
+    $("aiNoteSubject")?.value?.trim() || "";
 
+  const className =
+    $("aiNoteClass")?.value?.trim() || "";
 
-    currentAIType =
-      "note";
+  const programme =
+    $("aiNoteProgramme")?.value?.trim() || "";
 
-    currentAIPayload =
-      payload;
+  const topic =
+    $("aiNoteTopic")?.value?.trim() || "";
 
-
-    const resultBox =
-      $("noteAIResult");
-
-    const preview =
-      $("notePromptPreview");
+  const teacherPrompt =
+    $("aiNotePrompt")?.value?.trim() || "";
 
 
-    resultBox.classList.add(
-      "show"
+  /* =====================================================
+     GET SELECTED EXAMINATION TYPES
+     ===================================================== */
+
+  const examTypes = [];
+
+  document
+    .querySelectorAll(".noteExam:checked")
+    .forEach(cb => {
+
+      if (cb.value) {
+        examTypes.push(cb.value);
+      }
+
+    });
+
+
+  /* =====================================================
+     VALIDATION
+     ===================================================== */
+
+  if (!subject) {
+    alert("Please select a subject.");
+    return;
+  }
+
+  if (!className) {
+    alert("Please select a class.");
+    return;
+  }
+
+  if (!topic) {
+    alert("Please enter a topic.");
+    return;
+  }
+
+  if (!teacherPrompt) {
+    alert(
+      "Please enter the teacher's instruction/prompt."
+    );
+    return;
+  }
+
+
+  /* =====================================================
+     BUILD PAYLOAD
+     ===================================================== */
+
+  const payload = {
+
+    contentType: "Note",
+
+    subject: subject,
+
+    className: className,
+
+    programme: programme,
+
+    topic: topic,
+
+    examTypes:
+      examTypes.length > 0
+        ? examTypes
+        : ["WAEC", "NECO", "UTME"],
+
+    teacherPrompt: teacherPrompt
+
+  };
+
+
+  /* =====================================================
+     SAVE CURRENT AI STATE
+     ===================================================== */
+
+  currentAIType = "note";
+
+  currentAIPayload = payload;
+
+
+  const resultBox =
+    $("noteAIResult");
+
+  const preview =
+    $("notePromptPreview");
+
+
+  const generateButton =
+    document.querySelector(
+      'button[onclick="generateNoteDraft()"]'
     );
 
 
-    preview.textContent =
-      "⏳ Generating note with AI...";
+  /* =====================================================
+     SHOW RESULT AREA
+     ===================================================== */
 
+  if (resultBox) {
+
+    resultBox.classList.add("show");
+
+  }
+
+
+  /* =====================================================
+     DISABLE BUTTON WHILE GENERATING
+     ===================================================== */
+
+  if (generateButton) {
+
+    generateButton.disabled = true;
+
+    generateButton.dataset.originalText =
+      generateButton.textContent;
+
+    generateButton.textContent =
+      "⏳ Generating Note...";
+
+    generateButton.style.opacity =
+      "0.65";
+
+    generateButton.style.cursor =
+      "wait";
+
+  }
+
+
+  /* =====================================================
+     SHOW LOADING MESSAGE
+     ===================================================== */
+
+  if (preview) {
+
+    preview.textContent =
+      "⏳ Generating your NoteBank draft with AI...\n\n" +
+      "Subject: " + subject + "\n" +
+      "Class: " + className + "\n" +
+      "Programme: " + (programme || "General") + "\n" +
+      "Topic: " + topic + "\n\n" +
+      "Please wait...";
+
+  }
+
+
+  try {
+
+    /* ===================================================
+       CALL SECURE BACKEND
+       =================================================== */
 
     const response =
       await fetch(
         "/api/ai-content",
         {
 
-          method:"POST",
+          method: "POST",
 
-          headers:{
+          headers: {
             "Content-Type":
               "application/json"
           },
 
           body:
-            JSON.stringify(
-              payload
-            )
+            JSON.stringify(payload)
 
         }
       );
 
 
-    const data =
-      await safeJson(response);
+    /* ===================================================
+       SAFELY READ SERVER RESPONSE
+       =================================================== */
 
+    let data = null;
 
-    if(!response.ok){
+    try {
+
+      data =
+        await response.json();
+
+    } catch (jsonError) {
 
       throw new Error(
-        data.error ||
-        data.message ||
+        "The server returned an invalid response."
+      );
+
+    }
+
+
+    /* ===================================================
+       SERVER ERROR
+       =================================================== */
+
+    if (!response.ok) {
+
+      throw new Error(
+        data?.error ||
+        data?.message ||
         `Server error: ${response.status}`
       );
 
     }
 
 
-    if(!data.success){
+    /* ===================================================
+       APPLICATION ERROR
+       =================================================== */
+
+    if (!data || data.success !== true) {
 
       throw new Error(
-        data.error ||
+        data?.error ||
+        data?.message ||
         "AI note generation failed."
       );
 
     }
 
 
+    /* ===================================================
+       GET GENERATED NOTE
+       =================================================== */
+
     const note =
       data.note;
 
 
-    if(!note){
+    if (!note) {
 
       throw new Error(
         "The AI returned no note."
@@ -3097,99 +3261,250 @@ async function generateNoteDraft(){
     }
 
 
+    /* ===================================================
+       SAVE AI RESULT
+       =================================================== */
+
     currentAIResult = {
 
-      type:"Note",
+      type: "Note",
 
-      note,
+      note: note,
 
-      raw:data
+      raw: data
 
     };
 
 
-    preview.textContent =
+    /* ===================================================
+       FORMAT NOTE FOR PREVIEW
+       =================================================== */
 
-      `TITLE\n\n` +
+    const title =
+      note.title || "";
 
-      `${note.title || ""}\n\n` +
+    const learningObjectives =
+      note.learningObjectives || "";
 
-      `LEARNING OBJECTIVES\n\n` +
+    const keyTerms =
+      note.keyTerms || "";
 
-      `${note.learningObjectives || ""}\n\n` +
+    const content =
+      note.content || "";
 
-      `KEY TERMS\n\n` +
+    const examples =
+      note.examples || "";
 
-      `${note.keyTerms || ""}\n\n` +
+    const workedExamples =
+      note.workedExamples || "";
 
-      `CONTENT\n\n` +
+    const summary =
+      note.summary || "";
 
-      `${note.content || ""}\n\n` +
+    const examTips =
+      note.examTips || "";
 
-      `EXAMPLES\n\n` +
+    const waecFocus =
+      note.waecFocus || "";
 
-      `${note.examples || ""}\n\n` +
+    const necoFocus =
+      note.necoFocus || "";
 
-      `WORKED EXAMPLES\n\n` +
+    const utmeFocus =
+      note.utmeFocus || "";
 
-      `${note.workedExamples || ""}\n\n` +
 
-      `SUMMARY\n\n` +
+    /* ===================================================
+       DISPLAY GENERATED NOTE
+       =================================================== */
 
-      `${note.summary || ""}\n\n` +
+    if (preview) {
 
-      `EXAMINATION TIPS\n\n` +
+      preview.textContent =
 
-      `${note.examTips || ""}\n\n` +
+        "📚 AIBINU FLEXIPREP NOTEBANK\n\n" +
 
-      `WAEC FOCUS\n\n` +
+        "STATUS: DRAFT\n\n" +
 
-      `${note.waecFocus || ""}\n\n` +
+        "TITLE\n\n" +
+        title +
+        "\n\n" +
 
-      `NECO FOCUS\n\n` +
+        "LEARNING OBJECTIVES\n\n" +
+        learningObjectives +
+        "\n\n" +
 
-      `${note.necoFocus || ""}\n\n` +
+        "KEY TERMS\n\n" +
+        keyTerms +
+        "\n\n" +
 
-      `UTME FOCUS\n\n` +
+        "CONTENT\n\n" +
+        content +
+        "\n\n" +
 
-      `${note.utmeFocus || ""}`;
+        "EXAMPLES\n\n" +
+        examples +
+        "\n\n" +
+
+        "WORKED EXAMPLES\n\n" +
+        workedExamples +
+        "\n\n" +
+
+        "SUMMARY\n\n" +
+        summary +
+        "\n\n" +
+
+        "EXAMINATION TIPS\n\n" +
+        examTips +
+        "\n\n" +
+
+        "WAEC FOCUS\n\n" +
+        waecFocus +
+        "\n\n" +
+
+        "NECO FOCUS\n\n" +
+        necoFocus +
+        "\n\n" +
+
+        "UTME FOCUS\n\n" +
+        utmeFocus;
+
+    }
+
+
+    /* ===================================================
+       UPDATE STATUS MESSAGE
+       =================================================== */
+
+    const status =
+      resultBox?.querySelector(
+        ".ai-status"
+      );
+
+    if (status) {
+
+      status.innerHTML =
+        "✅ AI note generated successfully. " +
+        "The content is currently a <b>DRAFT</b> " +
+        "and has not been published.";
+
+    }
+
+
+    /* ===================================================
+       RESTORE GENERATE BUTTON
+       =================================================== */
+
+    if (generateButton) {
+
+      generateButton.disabled = false;
+
+      generateButton.textContent =
+        generateButton.dataset.originalText ||
+        "✨ Generate Note Draft";
+
+      generateButton.style.opacity =
+        "1";
+
+      generateButton.style.cursor =
+        "pointer";
+
+    }
+
+
+    /* ===================================================
+       SUCCESS MESSAGE
+       =================================================== */
+
+    show(
+      "AI note generated successfully as DRAFT. Review it before submitting for approval.",
+      true
+    );
 
 
     alert(
       "AI note generated successfully as DRAFT."
     );
 
-  }
-  catch(error){
+
+  } catch (error) {
+
+    /* ===================================================
+       ERROR HANDLING
+       =================================================== */
 
     console.error(
-      "AI NOTE ERROR:",
+      "AI NOTE GENERATION ERROR:",
       error
     );
 
 
-    const preview =
-      $("notePromptPreview");
+    if (preview) {
+
+      preview.textContent =
+        "❌ NOTE GENERATION FAILED\n\n" +
+        error.message +
+        "\n\nPlease check the server/API configuration and try again.";
+
+    }
 
 
-    preview.textContent =
-      `❌ Generation failed:\n\n${error.message}`;
+    const status =
+      resultBox?.querySelector(
+        ".ai-status"
+      );
+
+    if (status) {
+
+      status.innerHTML =
+        "❌ Note generation failed. " +
+        "The draft was not created.";
+
+    }
 
 
-    $("noteAIResult")
-      .classList
-      .add("show");
+    show(
+      error.message ||
+      "Note generation failed.",
+      false
+    );
 
 
     alert(
-      `Note generation failed:\n\n${error.message}`
+      "Note generation failed:\n\n" +
+      (
+        error.message ||
+        "Unknown error"
+      )
     );
+
+
+  } finally {
+
+    /* ===================================================
+       ALWAYS RESTORE BUTTON
+       =================================================== */
+
+    if (generateButton) {
+
+      generateButton.disabled = false;
+
+      generateButton.textContent =
+        generateButton.dataset.originalText ||
+        "✨ Generate Note Draft";
+
+      generateButton.style.opacity =
+        "1";
+
+      generateButton.style.cursor =
+        "pointer";
+
+    }
 
   }
 
 }
-
-
+  
 /* =====================================================
    AI QUESTION GENERATOR
    ===================================================== */
