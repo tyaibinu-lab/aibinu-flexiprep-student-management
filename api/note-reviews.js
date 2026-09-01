@@ -2,25 +2,6 @@
 // AIBINU FLEXIPREP EDUCONSULT
 // NOTEBANK REVIEW / APPROVAL API
 // api/note-reviews.js
-//
-// Workflow:
-//
-// AI Draft
-//    ↓
-// Edit Draft
-//    ↓
-// Save Draft
-//    ↓
-// Submit for Approval
-//    ↓
-// Pending Review
-//    ↓
-// Admin Approves
-//    ↓
-// Published
-//
-// This file does NOT generate AI content.
-// It manages the NoteBank review workflow.
 // ============================================================
 
 const AIRTABLE_API =
@@ -29,44 +10,41 @@ const AIRTABLE_API =
 const NOTES_TABLE =
   "tblsEjHgHA7vhPgm0";
 
+// IMPORTANT:
+// Replace this with the actual Airtable ID of your
+// NoteBank_Approvals table if different.
+const APPROVALS_TABLE =
+  "tblJHGCDxEpdjm46y";
+
 
 // ============================================================
-// HELPER — CONFIGURATION
+// CONFIGURATION
 // ============================================================
 
 function getConfig() {
 
-  const {
-    AIRTABLE_PAT,
-    AIRTABLE_TOKEN,
-    AIRTABLE_BASE_ID
-  } = process.env;
-
-
   const token =
-    AIRTABLE_PAT ||
-    AIRTABLE_TOKEN;
+    process.env.AIRTABLE_PAT ||
+    process.env.AIRTABLE_TOKEN;
 
+  const baseId =
+    process.env.AIRTABLE_BASE_ID;
 
-  if (!token || !AIRTABLE_BASE_ID) {
-
+  if (!token || !baseId) {
     throw new Error(
       "Airtable environment variables are missing."
     );
-
   }
-
 
   return {
     token,
-    baseId: AIRTABLE_BASE_ID
+    baseId
   };
-
 }
 
 
 // ============================================================
-// HELPER — AIRTABLE REQUEST
+// AIRTABLE REQUEST
 // ============================================================
 
 async function airtableRequest(
@@ -81,60 +59,42 @@ async function airtableRequest(
     baseId
   } = getConfig();
 
-
-  const url =
-    `${AIRTABLE_API}/${baseId}/${table}${query}`;
-
-
-  const options = {
-
-    method,
-
-    headers: {
-
-      Authorization:
-        `Bearer ${token}`,
-
-      "Content-Type":
-        "application/json"
-
-    }
-
-  };
-
-
-  if (body !== null) {
-
-    options.body =
-      JSON.stringify(body);
-
-  }
-
-
   const response =
     await fetch(
-      url,
-      options
+      `${AIRTABLE_API}/${baseId}/${table}${query}`,
+      {
+        method,
+
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+
+          "Content-Type":
+            "application/json"
+        },
+
+        ...(body !== null
+          ? {
+              body:
+                JSON.stringify(body)
+            }
+          : {})
+      }
     );
 
 
   const text =
     await response.text();
 
-
   let data;
 
   try {
-
     data =
       JSON.parse(text);
-
   } catch {
-
     data = {
       raw: text
     };
-
   }
 
 
@@ -145,35 +105,30 @@ async function airtableRequest(
       data
     );
 
-
     throw new Error(
       data?.error?.message ||
       data?.error?.type ||
       `Airtable request failed (${response.status})`
     );
-
   }
 
 
   return data;
-
 }
 
 
 // ============================================================
-// FIND NOTE
+// FIND NOTE BY NOTE ID
 // ============================================================
 
 async function findNote(noteId) {
 
   let offset = null;
 
-
   do {
 
     let query =
       "?pageSize=100";
-
 
     if (offset) {
 
@@ -192,29 +147,17 @@ async function findNote(noteId) {
       );
 
 
-    const records =
-      data.records || [];
-
-
     const found =
-      records.find(record => {
-
-        const f =
-          record.fields || {};
-
-
-        return (
-          String(f["Note ID"] || "") ===
-          String(noteId)
-        );
-
-      });
+      (data.records || []).find(
+        record =>
+          String(
+            record.fields?.["Note ID"] || ""
+          ) === String(noteId)
+      );
 
 
     if (found) {
-
       return found;
-
     }
 
 
@@ -226,7 +169,6 @@ async function findNote(noteId) {
 
 
   return null;
-
 }
 
 
@@ -240,55 +182,47 @@ async function updateNote(
 ) {
 
   return airtableRequest(
-
     `${NOTES_TABLE}/${recordId}`,
-
     "PATCH",
-
     {
       fields
     }
-
   );
-
 }
 
 
 // ============================================================
-// STATUS NORMALIZATION
+// CREATE APPROVAL RECORD
 // ============================================================
 
-function normalizeStatus(value) {
+async function createApproval(
+  fields
+) {
 
-  const valid = [
+  return airtableRequest(
+    APPROVALS_TABLE,
+    "POST",
+    {
+      records: [
+        {
+          fields
+        }
+      ],
 
-    "AI Draft",
-    "Draft",
-    "Pending Review",
-    "Under Review",
-    "Approved",
-    "Published",
-    "Rejected",
-    "Archived"
-
-  ];
-
-
-  const valueText =
-    String(value || "")
-      .trim()
-      .toLowerCase();
+      typecast: true
+    }
+  );
+}
 
 
-  const found =
-    valid.find(
-      item =>
-        item.toLowerCase() ===
-        valueText
-    );
+// ============================================================
+// CURRENT DATE
+// ============================================================
 
+function now() {
 
-  return found || null;
+  return new Date()
+    .toISOString();
 
 }
 
@@ -337,18 +271,20 @@ export default async function handler(
 
 
     /* ======================================================
-       CONFIG CHECK
+       CHECK CONFIGURATION
        ====================================================== */
 
     getConfig();
 
 
-    /* ======================================================
-       REQUEST METHOD
-       ====================================================== */
+    const body =
+      req.body || {};
 
-    const method =
-      req.method;
+
+    const noteId =
+      req.query?.noteId ||
+      body.noteId ||
+      body["Note ID"];
 
 
     /* ======================================================
@@ -356,12 +292,9 @@ export default async function handler(
        ====================================================== */
 
     if (
-      method === "GET"
+      req.method ===
+      "GET"
     ) {
-
-      const noteId =
-        req.query?.noteId;
-
 
       if (!noteId) {
 
@@ -416,17 +349,8 @@ export default async function handler(
 
 
     /* ======================================================
-       READ REQUEST BODY
+       NOTE ID REQUIRED FOR WRITE OPERATIONS
        ====================================================== */
-
-    const body =
-      req.body || {};
-
-
-    const noteId =
-      body.noteId ||
-      body["Note ID"];
-
 
     if (!noteId) {
 
@@ -475,455 +399,120 @@ export default async function handler(
       "AI Draft";
 
 
-    /* ======================================================
-       SAVE DRAFT
-       ====================================================== */
-
-    if (
-      method === "PUT" ||
-      method === "PATCH"
-    ) {
-
-      const action =
-        String(
-          body.action ||
-          "save"
-        )
-        .toLowerCase();
-
-
-      /* ====================================================
-         SUBMIT FOR APPROVAL
-         ==================================================== */
-
-      if (
-        action ===
-        "submit"
-      ) {
-
-        if (
-          currentStatus !==
-            "AI Draft" &&
-          currentStatus !==
-            "Draft"
-        ) {
-
-          return res.status(400).json({
-
-            success: false,
-
-            error:
-              `This note cannot be submitted from status "${currentStatus}".`
-
-          });
-
-        }
-
-
-        const updated =
-          await updateNote(
-
-            note.id,
-
-            {
-
-              "Status":
-                "Pending Review",
-
-              "Updated Date":
-                new Date()
-                  .toISOString()
-
-            }
-
-          );
-
-
-        return res.status(200).json({
-
-          success: true,
-
-          message:
-            "Note submitted for approval.",
-
-          status:
-            "Pending Review",
-
-          note: {
-
-            airtableId:
-              updated.id,
-
-            ...(updated.fields || {})
-
-          }
-
-        });
-
-      }
-
-
-      /* ====================================================
-         SAVE EDITED DRAFT
-         ==================================================== */
-
-      if (
-        action ===
+    const action =
+      String(
+        body.action ||
         "save"
-      ) {
-
-        const allowedFields = [
-
-          "Title",
-
-          "Learning Objectives",
-
-          "Key Terms",
-
-          "Content",
-
-          "Examples",
-
-          "Worked Examples",
-
-          "Summary",
-
-          "Exam Tips",
-
-          "WAEC Focus",
-
-          "NECO Focus",
-
-          "UTME Focus",
-
-          "Updated Date"
-
-        ];
-
-
-        const fields = {};
-
-
-        for (
-          const field
-          of allowedFields
-        ) {
-
-          if (
-            Object.prototype
-              .hasOwnProperty
-              .call(
-                body,
-                field
-              )
-          ) {
-
-            fields[field] =
-              body[field];
-
-          }
-
-        }
-
-
-        fields["Updated Date"] =
-          new Date()
-            .toISOString();
-
-
-        const updated =
-          await updateNote(
-
-            note.id,
-
-            fields
-
-          );
-
-
-        return res.status(200).json({
-
-          success: true,
-
-          message:
-            "Note draft saved successfully.",
-
-          status:
-            currentStatus,
-
-          note: {
-
-            airtableId:
-              updated.id,
-
-            ...(updated.fields || {})
-
-          }
-
-        });
-
-      }
-
-
-      return res.status(400).json({
-
-        success: false,
-
-        error:
-          "Invalid action. Use 'save' or 'submit'."
-
-      });
-
-    }
+      )
+      .trim()
+      .toLowerCase();
 
 
     /* ======================================================
-       POST ACTIONS
+       SAVE EDITED DRAFT
        ====================================================== */
 
     if (
-      method === "POST"
+      (
+        req.method === "PUT" ||
+        req.method === "PATCH"
+      ) &&
+      action === "save"
     ) {
 
-      const action =
-        String(
-          body.action ||
-          ""
-        )
-        .toLowerCase();
+      const editableFields = [
+
+        "Title",
+
+        "Learning Objectives",
+
+        "Key Terms",
+
+        "Content",
+
+        "Examples",
+
+        "Worked Examples",
+
+        "Summary",
+
+        "Exam Tips",
+
+        "WAEC Focus",
+
+        "NECO Focus",
+
+        "UTME Focus",
+
+        "Formulae",
+
+        "Applications",
+
+        "Common Misconceptions",
+
+        "Diagrams",
+
+        "Teacher Prompt",
+
+        "Review Comment"
+
+      ];
 
 
-      /* ====================================================
-         SUBMIT
-         ==================================================== */
+      const fields = {};
 
-      if (
-        action ===
-        "submit"
+
+      for (
+        const field
+        of editableFields
       ) {
 
         if (
-          currentStatus !==
-            "AI Draft" &&
-          currentStatus !==
-            "Draft"
+          Object.prototype
+            .hasOwnProperty
+            .call(
+              body,
+              field
+            )
         ) {
 
-          return res.status(400).json({
-
-            success: false,
-
-            error:
-              `Cannot submit note from status "${currentStatus}".`
-
-          });
+          fields[field] =
+            body[field];
 
         }
-
-
-        const updated =
-          await updateNote(
-
-            note.id,
-
-            {
-
-              "Status":
-                "Pending Review",
-
-              "Updated Date":
-                new Date()
-                  .toISOString()
-
-            }
-
-          );
-
-
-        return res.status(200).json({
-
-          success: true,
-
-          message:
-            "Note submitted for approval.",
-
-          status:
-            "Pending Review",
-
-          note: {
-
-            airtableId:
-              updated.id,
-
-            ...(updated.fields || {})
-
-          }
-
-        });
 
       }
 
 
-      /* ====================================================
-         APPROVE
-         ==================================================== */
-
-      if (
-        action ===
-        "approve"
-      ) {
-
-        if (
-          currentStatus !==
-            "Pending Review" &&
-          currentStatus !==
-            "Under Review" &&
-          currentStatus !==
-            "Approved"
-        ) {
-
-          return res.status(400).json({
-
-            success: false,
-
-            error:
-              `Cannot approve note from status "${currentStatus}".`
-
-          });
-
-        }
+      fields["Updated Date"] =
+        now();
 
 
-        const approvedBy =
-          body.approvedBy ||
-          "";
+      const updated =
+        await updateNote(
+          note.id,
+          fields
+        );
 
 
-        const fields = {
+      return res.status(200).json({
 
-          "Status":
-            "Published",
+        success: true,
 
-          "Updated Date":
-            new Date()
-              .toISOString(),
+        message:
+          "Note draft saved successfully.",
 
-          "Approved Date":
-            new Date()
-              .toISOString()
+        status:
+          currentStatus,
 
-        };
+        note: {
 
+          airtableId:
+            updated.id,
 
-        if (approvedBy) {
-
-          fields[
-            "Approved By"
-          ] = approvedBy;
+          ...(updated.fields || {})
 
         }
-
-
-        const updated =
-          await updateNote(
-
-            note.id,
-
-            fields
-
-          );
-
-
-        return res.status(200).json({
-
-          success: true,
-
-          message:
-            "Note approved and published.",
-
-          status:
-            "Published",
-
-          note: {
-
-            airtableId:
-              updated.id,
-
-            ...(updated.fields || {})
-
-          }
-
-        });
-
-      }
-
-
-      /* ====================================================
-         REJECT
-         ==================================================== */
-
-      if (
-        action ===
-        "reject"
-      ) {
-
-        const reason =
-          body.reason ||
-          "Revision required.";
-
-
-        const updated =
-          await updateNote(
-
-            note.id,
-
-            {
-
-              "Status":
-                "Draft",
-
-              "Updated Date":
-                new Date()
-                  .toISOString(),
-
-              "Review Comment":
-                reason
-
-            }
-
-          );
-
-
-        return res.status(200).json({
-
-          success: true,
-
-          message:
-            "Note returned for revision.",
-
-          status:
-            "Draft",
-
-          note: {
-
-            airtableId:
-              updated.id,
-
-            ...(updated.fields || {})
-
-          }
-
-        });
-
-      }
-
-
-      return res.status(400).json({
-
-        success: false,
-
-        error:
-          "Invalid action."
 
       });
 
@@ -931,15 +520,371 @@ export default async function handler(
 
 
     /* ======================================================
-       METHOD NOT ALLOWED
+       SUBMIT FOR APPROVAL
        ====================================================== */
 
-    return res.status(405).json({
+    if (
+      (
+        req.method === "POST" ||
+        req.method === "PUT" ||
+        req.method === "PATCH"
+      ) &&
+      action === "submit"
+    ) {
+
+      const allowedStatuses = [
+
+        "AI Draft",
+
+        "Draft",
+
+        "Changes Requested"
+
+      ];
+
+
+      if (
+        !allowedStatuses.includes(
+          currentStatus
+        )
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          error:
+            `Cannot submit note from status "${currentStatus}".`
+
+        });
+
+      }
+
+
+      const submittedBy =
+        body.submittedBy ||
+        body.createdBy ||
+        body.teacherId ||
+        "";
+
+
+      const version =
+        String(
+          currentFields["Version"] ||
+          "1"
+        );
+
+
+      /* ----------------------------------------------------
+         CHANGE NOTE STATUS
+         ---------------------------------------------------- */
+
+      const updated =
+        await updateNote(
+
+          note.id,
+
+          {
+
+            "Status":
+              "Under Review",
+
+            "Updated Date":
+              now()
+
+          }
+
+        );
+
+
+      /* ----------------------------------------------------
+         CREATE APPROVAL RECORD
+         ---------------------------------------------------- */
+
+      const approvalFields = {
+
+        "Approval ID":
+          `APR-${Date.now()}-${Math.floor(
+            Math.random() * 100000
+          )}`,
+
+        "Note":
+          [note.id],
+
+        "Submission Date":
+          now(),
+
+        "Status":
+          "Pending",
+
+        "Version":
+          version
+
+      };
+
+
+      if (submittedBy) {
+
+        approvalFields[
+          "Submitted By"
+        ] =
+          Array.isArray(
+            submittedBy
+          )
+            ? submittedBy
+            : [submittedBy];
+
+      }
+
+
+      let approval;
+
+      try {
+
+        approval =
+          await createApproval(
+            approvalFields
+          );
+
+      } catch (approvalError) {
+
+        /* --------------------------------------------------
+           ROLLBACK NOTE STATUS
+           -------------------------------------------------- */
+
+        try {
+
+          await updateNote(
+
+            note.id,
+
+            {
+
+              "Status":
+                currentStatus,
+
+              "Updated Date":
+                now()
+
+            }
+
+          );
+
+        } catch (rollbackError) {
+
+          console.error(
+            "Rollback failed:",
+            rollbackError
+          );
+
+        }
+
+
+        throw new Error(
+
+          "Approval record could not be created. " +
+          "The note was returned to its previous status. " +
+          approvalError.message
+
+        );
+
+      }
+
+
+      return res.status(200).json({
+
+        success: true,
+
+        message:
+          "Note submitted for approval.",
+
+        status:
+          "Under Review",
+
+        approvalId:
+          approval
+            ?.records?.[0]?.id ||
+          null,
+
+        note: {
+
+          airtableId:
+            updated.id,
+
+          ...(updated.fields || {})
+
+        }
+
+      });
+
+    }
+
+
+    /* ======================================================
+       ADMIN APPROVE
+       ====================================================== */
+
+    if (
+      req.method === "POST" &&
+      action === "approve"
+    ) {
+
+      if (
+        currentStatus !==
+          "Under Review" &&
+        currentStatus !==
+          "Approved"
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          error:
+            `Cannot approve note from status "${currentStatus}".`
+
+        });
+
+      }
+
+
+      const approvedBy =
+        body.approvedBy ||
+        body.reviewer ||
+        "";
+
+
+      const fields = {
+
+        "Status":
+          "Published",
+
+        "Updated Date":
+          now(),
+
+        "Approved Date":
+          now()
+
+      };
+
+
+      if (approvedBy) {
+
+        fields[
+          "Approved By"
+        ] =
+          Array.isArray(
+            approvedBy
+          )
+            ? approvedBy
+            : [approvedBy];
+
+      }
+
+
+      const updated =
+        await updateNote(
+
+          note.id,
+
+          fields
+
+        );
+
+
+      return res.status(200).json({
+
+        success: true,
+
+        message:
+          "Note approved and published.",
+
+        status:
+          "Published",
+
+        note: {
+
+          airtableId:
+            updated.id,
+
+          ...(updated.fields || {})
+
+        }
+
+      });
+
+    }
+
+
+    /* ======================================================
+       ADMIN REQUEST CHANGES
+       ====================================================== */
+
+    if (
+      req.method === "POST" &&
+      action === "reject"
+    ) {
+
+      const reason =
+        body.reason ||
+        "Revision required.";
+
+
+      const updated =
+        await updateNote(
+
+          note.id,
+
+          {
+
+            "Status":
+              "Changes Requested",
+
+            "Review Comment":
+              reason,
+
+            "Updated Date":
+              now()
+
+          }
+
+        );
+
+
+      return res.status(200).json({
+
+        success: true,
+
+        message:
+          "Note returned for revision.",
+
+        status:
+          "Changes Requested",
+
+        note: {
+
+          airtableId:
+            updated.id,
+
+          ...(updated.fields || {})
+
+        }
+
+      });
+
+    }
+
+
+    /* ======================================================
+       INVALID ACTION
+       ====================================================== */
+
+    return res.status(400).json({
 
       success: false,
 
       error:
-        "Method not allowed."
+        "Invalid action. Use save, submit, approve or reject."
 
     });
 
