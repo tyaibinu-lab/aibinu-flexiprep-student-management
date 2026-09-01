@@ -1,1434 +1,3 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#08783f">
-
-<title>Aibinu Flexiprep | Academic Management</title>
-
-<style>
-:root{
-  --g:#08783f;
-  --gold:#d7a62a;
-  --ink:#17382b;
-  --muted:#6c7872;
-  --bg:#f4f7f5;
-  --line:#dfe7e2;
-  --danger:#b42318;
-  --white:#fff;
-}
-
-*{box-sizing:border-box}
-
-html{scroll-behavior:smooth}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-}
-
-button,input,select,textarea{
-  font:inherit;
-}
-
-button{
-  border:0;
-  border-radius:10px;
-  padding:11px 15px;
-  font-weight:700;
-  cursor:pointer;
-  touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;
-}
-
-button:active{
-  transform:translateY(1px);
-}
-
-.primary{
-  background:var(--gold);
-  color:var(--ink);
-}
-
-.secondary{
-  background:#fff;
-  color:var(--g);
-  border:1px solid var(--line);
-}
-
-header{
-  background:var(--g);
-  color:#fff;
-  padding:16px 5%;
-}
-
-.header-inner{
-  max-width:1200px;
-  margin:auto;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-  flex-wrap:wrap;
-}
-
-.brand{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
-.logo{
-  background:var(--gold);
-  color:var(--g);
-  padding:11px;
-  border-radius:10px;
-  font-weight:800;
-  font-size:20px;
-}
-
-.brand b{
-  font-size:18px;
-}
-
-.brand small{
-  display:block;
-  opacity:.82;
-  margin-top:3px;
-}
-
-nav{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-main{
-  max-width:1200px;
-  margin:24px auto;
-  padding:0 16px;
-}
-
-.head{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  gap:15px;
-}
-
-h1{
-  margin:5px 0;
-  font-size:42px;
-}
-
-h2{
-  margin-top:0;
-}
-
-.muted{
-  color:var(--muted);
-  font-size:18px;
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:12px;
-  margin-top:22px;
-}
-
-.card,
-.panel{
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:20px;
-}
-
-.card{
-  min-height:125px;
-}
-
-.card span{
-  display:block;
-  font-size:17px;
-}
-
-.card strong{
-  display:block;
-  font-size:34px;
-  margin-top:10px;
-}
-
-.panel{
-  margin-top:20px;
-}
-
-.tabs{
-  display:flex;
-  gap:8px;
-  margin:0 0 16px;
-  overflow-x:auto;
-  padding-bottom:3px;
-}
-
-.tabs button{
-  flex:0 0 auto;
-  white-space:nowrap;
-}
-
-.tabs button.active{
-  background:var(--g);
-  color:#fff;
-}
-
-.toolbar{
-  display:flex;
-  gap:10px;
-  margin:14px 0 18px;
-}
-
-.search{
-  flex:1;
-}
-
-input,
-select,
-textarea{
-  width:100%;
-  padding:12px;
-  border:1px solid #ccd8d1;
-  border-radius:9px;
-  background:#fff;
-  color:var(--ink);
-}
-
-input:focus,
-select:focus,
-textarea:focus{
-  outline:2px solid #b9ddca;
-  border-color:var(--g);
-}
-
-.wrap{
-  overflow-x:auto;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th,td{
-  text-align:left;
-  padding:13px 10px;
-  border-bottom:1px solid var(--line);
-  vertical-align:middle;
-}
-
-.badge{
-  display:inline-block;
-  padding:5px 9px;
-  border-radius:99px;
-  font-size:12px;
-  font-weight:700;
-  background:#e5f5eb;
-  color:var(--g);
-}
-
-.mobile-records{
-  display:none;
-}
-
-.record-card{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:14px;
-  margin-bottom:10px;
-  background:#fff;
-}
-
-.record-title{
-  font-weight:800;
-  font-size:18px;
-  margin-bottom:10px;
-}
-
-.record-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px 14px;
-}
-
-.record-field small{
-  display:block;
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:2px;
-}
-
-.record-field div{
-  word-break:break-word;
-}
-
-.record-action{
-  margin-top:12px;
-  text-align:right;
-}
-
-.modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:#0008;
-  align-items:center;
-  justify-content:center;
-  padding:15px;
-  z-index:100;
-}
-
-.modal.show{
-  display:flex;
-}
-
-.dialog{
-  background:#fff;
-  padding:20px;
-  border-radius:15px;
-  max-width:800px;
-  width:100%;
-  max-height:92vh;
-  overflow:auto;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-
-.full{
-  grid-column:1/-1;
-}
-
-label{
-  font-weight:700;
-  font-size:14px;
-  display:block;
-  margin-bottom:5px;
-}
-
-.actions{
-  text-align:right;
-  margin-top:15px;
-}
-
-.msg{
-  padding:10px;
-  border-radius:8px;
-  margin:10px 0;
-}
-
-.err{
-  background:#fde9e7;
-  color:var(--danger);
-}
-
-.ok{
-  background:#e5f5eb;
-  color:var(--g);
-}
-
-.hint{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:5px;
-}
-
-.empty{
-  padding:20px 5px;
-  color:var(--muted);
-}
-
-.ai-section{
-  display:none;
-}
-
-.ai-section.active{
-  display:block;
-}
-
-.ai-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  margin-bottom:20px;
-}
-
-.ai-title{
-  font-size:25px;
-  font-weight:800;
-}
-
-.ai-subtitle{
-  color:var(--muted);
-  margin-top:4px;
-}
-
-.ai-form{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-
-.ai-form .full{
-  grid-column:1/-1;
-}
-
-.prompt-box{
-  min-height:170px;
-  resize:vertical;
-}
-
-.checkbox-row{
-  display:flex;
-  gap:15px;
-  flex-wrap:wrap;
-  padding:10px 0;
-}
-
-.checkbox-row label{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  font-weight:600;
-}
-
-.checkbox-row input{
-  width:auto;
-}
-
-.ai-result{
-  margin-top:20px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:18px;
-  background:#f8fbf9;
-  display:none;
-}
-
-.ai-result.show{
-  display:block;
-}
-
-.ai-status{
-  padding:12px;
-  border-radius:10px;
-  background:#fff7df;
-  color:#765b00;
-  margin-bottom:15px;
-}
-
-.prompt-preview{
-  white-space:pre-wrap;
-  background:#fff;
-  border:1px solid var(--line);
-  padding:14px;
-  border-radius:10px;
-}
-
-.note-preview{
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:18px;
-  line-height:1.7;
-}
-
-.question-preview{
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:16px;
-  margin-top:12px;
-}
-
-.ai-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:15px;
-}
-
-.stat-strip{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  margin-bottom:20px;
-}
-
-.stat-mini{
-  background:#f4f8f5;
-  border:1px solid var(--line);
-  padding:15px;
-  border-radius:12px;
-}
-
-.stat-mini strong{
-  display:block;
-  font-size:24px;
-}
-
-@media(max-width:1000px){
-  .cards{
-    grid-template-columns:repeat(3,1fr);
-  }
-}
-
-@media(max-width:700px){
-
-  header{
-    padding:14px 16px;
-  }
-
-  .header-inner{
-    display:block;
-  }
-
-  nav{
-    margin-top:14px;
-  }
-
-  nav button{
-    flex:1;
-  }
-
-  main{
-    margin:18px auto;
-    padding:0 14px;
-  }
-
-  .head{
-    display:block;
-  }
-
-  h1{
-    font-size:36px;
-  }
-
-  .head .primary{
-    margin-top:12px;
-  }
-
-  .cards{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .card{
-    min-height:105px;
-    padding:16px;
-  }
-
-  .card strong{
-    font-size:30px;
-  }
-
-  .panel{
-    padding:14px;
-  }
-
-  .toolbar{
-    display:grid;
-    grid-template-columns:1fr auto;
-  }
-
-  .wrap{
-    display:none;
-  }
-
-  .mobile-records{
-    display:block;
-  }
-
-  .grid,
-  .ai-form{
-    grid-template-columns:1fr;
-  }
-
-  .full,
-  .ai-form .full{
-    grid-column:auto;
-  }
-
-  .stat-strip{
-    grid-template-columns:1fr 1fr;
-  }
-}
-
-@media(max-width:480px){
-
-  .toolbar{
-    grid-template-columns:1fr;
-  }
-
-  .toolbar button{
-    width:100%;
-  }
-
-  .record-grid{
-    grid-template-columns:1fr 1fr;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<header>
-
-<div class="header-inner">
-
-<div class="brand">
-
-<div class="logo">AF</div>
-
-<div>
-<b>AIBINU FLEXIPREP</b>
-
-<small>
-EDUCONSULT · ACADEMIC MANAGEMENT
-</small>
-</div>
-
-</div>
-
-<nav>
-
-<button
-class="secondary"
-type="button"
-onclick="location.href='/'">
-Student Management
-</button>
-
-<button
-class="secondary"
-type="button"
-onclick="location.href='/finance.html'">
-Payments
-</button>
-
-</nav>
-
-</div>
-
-</header>
-
-
-<main>
-
-<div class="head">
-
-<div>
-
-<small>AIBINU FLEXIPREP</small>
-
-<h1>Academic Management</h1>
-
-<div class="muted">
-Programmes, classes, subjects, teachers,
-assignments and NoteBank.
-</div>
-
-</div>
-
-<button
-class="primary"
-type="button"
-onclick="openForm()">
-+ Add Record
-</button>
-
-</div>
-
-
-<div id="msg"></div>
-
-
-<div class="cards">
-
-<div class="card">
-<span>Programmes</span>
-<strong id="countProgramme">0</strong>
-</div>
-
-<div class="card">
-<span>Classes</span>
-<strong id="countClass">0</strong>
-</div>
-
-<div class="card">
-<span>Subjects</span>
-<strong id="countSubject">0</strong>
-</div>
-
-<div class="card">
-<span>Teachers</span>
-<strong id="countTeacher">0</strong>
-</div>
-
-<div class="card">
-<span>Assignments</span>
-<strong id="countAssignment">0</strong>
-</div>
-
-</div>
-
-
-<section class="panel">
-
-<div class="tabs" id="tabs">
-
-<button
-class="secondary active"
-type="button"
-data-type="All">
-All
-</button>
-
-<button
-class="secondary"
-type="button"
-data-type="Programme">
-Programmes
-</button>
-
-<button
-class="secondary"
-type="button"
-data-type="Class">
-Classes
-</button>
-
-<button
-class="secondary"
-type="button"
-data-type="Subject">
-Subjects
-</button>
-
-<button
-class="secondary"
-type="button"
-data-type="Teacher">
-Teachers
-</button>
-
-<button
-class="secondary"
-type="button"
-data-type="Assignment">
-Assignments
-</button>
-
-<button
-class="secondary"
-type="button"
-data-type="NoteBank">
-📚 NoteBank
-</button>
-
-</div>
-
-
-<div class="toolbar">
-
-<div class="search">
-
-<input
-id="search"
-type="search"
-placeholder="Search records..."
-autocomplete="off">
-
-</div>
-
-<button
-class="secondary"
-type="button"
-onclick="loadData()">
-↻ Refresh
-</button>
-
-</div>
-
-
-<!-- EXISTING ACADEMIC RECORDS -->
-
-<div id="academicRecords">
-
-<div class="wrap">
-
-<table>
-
-<thead>
-
-<tr>
-<th>Type</th>
-<th>Name</th>
-<th>Code</th>
-<th>Programme</th>
-<th>Class</th>
-<th>Subject</th>
-<th>Teacher</th>
-<th>Status</th>
-<th></th>
-</tr>
-
-</thead>
-
-<tbody id="rows"></tbody>
-
-</table>
-
-</div>
-
-<div
-id="mobileRecords"
-class="mobile-records">
-</div>
-
-</div>
-
-
-<!-- NOTEBANK -->
-
-<div
-id="noteBank"
-class="ai-section">
-
-<div class="ai-header">
-
-<div>
-
-<div class="ai-title">
-📚 Aibinu Flexiprep NoteBank
-</div>
-
-<div class="ai-subtitle">
-Teacher-controlled AI content creation and question generation.
-</div>
-
-</div>
-
-</div>
-
-
-<div class="stat-strip">
-
-<div class="stat-mini">
-<span>Draft Notes</span>
-<strong id="nbDraftNotes">0</strong>
-</div>
-
-<div class="stat-mini">
-<span>Pending Review</span>
-<strong id="nbPending">0</strong>
-</div>
-
-<div class="stat-mini">
-<span>Published</span>
-<strong id="nbPublished">0</strong>
-</div>
-
-<div class="stat-mini">
-<span>AI Jobs</span>
-<strong id="nbAIJobs">0</strong>
-</div>
-
-</div>
-
-
-<div class="tabs">
-
-<button
-id="noteCreatorTab"
-class="secondary active"
-type="button"
-onclick="showAITool('note')">
-✨ AI Note Creator
-</button>
-
-<button
-id="questionCreatorTab"
-class="secondary"
-type="button"
-onclick="showAITool('question')">
-✨ AI Question Generator
-</button>
-
-</div>
-
-
-<!-- NOTE CREATOR -->
-
-<div
-id="noteCreator"
-class="ai-section active">
-
-<h2>AI Note Creator</h2>
-
-<div class="muted">
-Select the academic context, then tell the AI exactly how you want the note prepared.
-</div>
-
-<div class="ai-form">
-
-<div>
-<label>Subject</label>
-
-<select id="aiNoteSubject">
-<option value="">Select subject</option>
-<option>Physics</option>
-<option>Chemistry</option>
-<option>Biology</option>
-<option>Mathematics</option>
-<option>English</option>
-</select>
-</div>
-
-
-<div>
-<label>Class</label>
-
-<select id="aiNoteClass">
-<option value="">Select class</option>
-<option>SS1</option>
-<option>SS2</option>
-<option>SS3</option>
-</select>
-</div>
-
-
-<div>
-<label>Programme</label>
-
-<select id="aiNoteProgramme">
-<option value="">Select programme</option>
-<option>WAEC</option>
-<option>NECO</option>
-<option>UTME</option>
-<option>IJMB</option>
-<option>JUPEB</option>
-</select>
-</div>
-
-
-<div>
-<label>Topic</label>
-
-<input
-id="aiNoteTopic"
-placeholder="e.g. Uniformly Accelerated Motion">
-</div>
-
-
-<div class="full">
-
-<label>Examination Focus</label>
-
-<div class="checkbox-row">
-
-<label>
-<input
-type="checkbox"
-value="WAEC"
-class="noteExam"
-checked>
-WAEC
-</label>
-
-<label>
-<input
-type="checkbox"
-value="NECO"
-class="noteExam"
-checked>
-NECO
-</label>
-
-<label>
-<input
-type="checkbox"
-value="UTME"
-class="noteExam"
-checked>
-UTME
-</label>
-
-</div>
-
-</div>
-
-
-<div class="full">
-
-<label>
-Your Instruction / Prompt
-</label>
-
-<textarea
-id="aiNotePrompt"
-class="prompt-box"
-placeholder="Tell the AI exactly how you want the note prepared. Example: Prepare a comprehensive but easy-to-understand note. Start from the basic concept, use real-life examples, include worked calculations, common mistakes and examination tips..."></textarea>
-
-<div class="hint">
-The teacher's prompt controls how the content is prepared. The selected academic fields provide structured context.
-</div>
-
-</div>
-
-
-<div class="full">
-
-<button
-class="primary"
-type="button"
-onclick="generateNoteDraft()">
-✨ Generate Note Draft
-</button>
-
-</div>
-
-</div>
-
-
-<div
-id="noteAIResult"
-class="ai-result">
-
-<div class="ai-status">
-AI output will remain a <b>DRAFT</b> until the teacher reviews and submits it for approval.
-</div>
-
-<div
-id="notePromptPreview"
-class="prompt-preview">
-</div>
-
-<div class="ai-actions">
-
-<button
-class="secondary"
-onclick="editNoteDraft()">
-Edit Draft
-</button>
-
-<button
-class="primary"
-onclick="submitNoteForApproval()">
-Submit for Approval
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- QUESTION CREATOR -->
-
-<div
-id="questionCreator"
-class="ai-section">
-
-<h2>AI Question Generator</h2>
-
-<div class="muted">
-Generate examination-style questions using the teacher's own prompt.
-</div>
-
-<div class="ai-form">
-
-<div>
-<label>Subject</label>
-
-<select id="aiQuestionSubject">
-<option value="">Select subject</option>
-<option>Physics</option>
-<option>Chemistry</option>
-<option>Biology</option>
-<option>Mathematics</option>
-<option>English</option>
-</select>
-</div>
-
-
-<div>
-<label>Class</label>
-
-<select id="aiQuestionClass">
-<option value="">Select class</option>
-<option>SS1</option>
-<option>SS2</option>
-<option>SS3</option>
-</select>
-</div>
-
-
-<div>
-<label>Programme</label>
-
-<select id="aiQuestionProgramme">
-<option value="">Select programme</option>
-<option>WAEC</option>
-<option>NECO</option>
-<option>UTME</option>
-</select>
-</div>
-
-
-<div>
-<label>Topic</label>
-
-<input
-id="aiQuestionTopic"
-placeholder="e.g. Uniformly Accelerated Motion">
-</div>
-
-
-<div>
-<label>Number of Questions</label>
-
-<input
-id="aiQuestionCount"
-type="number"
-min="1"
-max="100"
-value="20">
-</div>
-
-
-<div>
-<label>Difficulty</label>
-
-<select id="aiQuestionDifficulty">
-
-<option>Mixed</option>
-<option>Easy</option>
-<option>Medium</option>
-<option>Hard</option>
-
-</select>
-</div>
-
-
-<div>
-<label>Bloom Level</label>
-
-<select id="aiQuestionBloom">
-
-<option>Mixed</option>
-<option>Remember</option>
-<option>Understand</option>
-<option>Apply</option>
-<option>Analyze</option>
-<option>Evaluate</option>
-<option>Create</option>
-
-</select>
-</div>
-
-
-<div>
-
-<label>Question Type</label>
-
-<select id="aiQuestionType">
-
-<option>MCQ</option>
-<option>Calculation</option>
-<option>Conceptual</option>
-<option>Mixed</option>
-
-</select>
-
-</div>
-
-
-<div class="full">
-
-<label>Examination Focus</label>
-
-<div class="checkbox-row">
-
-<label>
-<input
-type="checkbox"
-value="WAEC"
-class="questionExam"
-checked>
-WAEC
-</label>
-
-<label>
-<input
-type="checkbox"
-value="NECO"
-class="questionExam"
-checked>
-NECO
-</label>
-
-<label>
-<input
-type="checkbox"
-value="UTME"
-class="questionExam"
-checked>
-UTME
-</label>
-
-</div>
-
-</div>
-
-
-<div class="full">
-
-<label>
-Your Instruction / Prompt
-</label>
-
-<textarea
-id="aiQuestionPrompt"
-class="prompt-box"
-placeholder="Example: Generate challenging calculation questions for strong SS2 students. Include real-life applications, plausible distractors and detailed explanations. Follow the style of the selected examinations."></textarea>
-
-</div>
-
-
-<div class="full">
-
-<button
-class="primary"
-type="button"
-onclick="generateQuestionDraft()">
-✨ Generate Question Draft
-</button>
-
-</div>
-
-</div>
-
-
-<div
-id="questionAIResult"
-class="ai-result">
-
-<div class="ai-status">
-AI-generated questions remain <b>DRAFT</b> until reviewed and approved.
-</div>
-
-<div
-id="questionPromptPreview"
-class="prompt-preview">
-</div>
-
-<div class="ai-actions">
-
-<button
-class="secondary"
-onclick="editQuestionDraft()">
-Edit Draft
-</button>
-
-<button
-class="primary"
-onclick="submitQuestionsForApproval()">
-Submit for Approval
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-</main>
-
-
-<!-- ADD / EDIT MODAL -->
-
-<div
-id="modal"
-class="modal">
-
-<div class="dialog">
-
-<h2 id="formTitle">
-Add Academic Record
-</h2>
-
-<div id="formMsg"></div>
-
-<form id="academicForm">
-
-<div class="grid">
-
-
-<div>
-
-<label>Record Type</label>
-
-<select
-id="type"
-required>
-
-<option value="Programme">
-Programme
-</option>
-
-<option value="Class">
-Class
-</option>
-
-<option value="Subject">
-Subject
-</option>
-
-<option value="Teacher">
-Teacher
-</option>
-
-<option value="Assignment">
-Assignment
-</option>
-
-</select>
-
-</div>
-
-
-<div id="nameWrap">
-
-<label id="nameLabel">Name</label>
-
-<input id="name">
-
-</div>
-
-
-<div id="codeWrap">
-
-<label>Code</label>
-
-<input id="code">
-
-</div>
-
-
-<div id="programmeWrap">
-
-<label>Programme</label>
-
-<select id="programme"></select>
-
-</div>
-
-
-<div id="classWrap">
-
-<label>Class</label>
-
-<select id="className"></select>
-
-</div>
-
-
-<div id="subjectWrap">
-
-<label>Subject</label>
-
-<select id="subject"></select>
-
-</div>
-
-
-<div id="teacherWrap">
-
-<label>Teacher</label>
-
-<select id="teacher"></select>
-
-</div>
-
-
-<div>
-
-<label>Status</label>
-
-<select id="status">
-
-<option>Active</option>
-<option>Inactive</option>
-
-</select>
-
-</div>
-
-
-<div class="full">
-
-<label>Notes</label>
-
-<textarea
-id="notes"
-rows="3"></textarea>
-
-</div>
-
-</div>
-
-
-<div class="hint">
-For an Assignment, select an existing Class, Subject and Teacher.
-</div>
-
-
-<div class="actions">
-
-<button
-type="button"
-class="secondary"
-onclick="closeForm()">
-Cancel
-</button>
-
-<button
-type="submit"
-class="primary">
-Save Record
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-
 <script>
 
 let records = [];
@@ -1437,700 +6,909 @@ let editing = null;
 
 let currentAIType = null;
 let currentAIPayload = null;
+let currentAIResult = null;
 
+
+/* =====================================================
+   BASIC HELPERS
+   ===================================================== */
 
 const $ = id =>
-document.getElementById(id);
+  document.getElementById(id);
 
 
 const esc = s =>
-String(s ?? "").replace(
-/[&<>"']/g,
-c => ({
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#39;"
-}[c])
-);
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c])
+  );
 
 
-function cleanRecords(data){
+function safeJson(response) {
 
-return (Array.isArray(data) ? data : [])
-.filter(r => {
+  const contentType =
+    response.headers.get("content-type") || "";
 
-if(!r || !r.type)
-return false;
+  if (
+    !contentType
+      .toLowerCase()
+      .includes("application/json")
+  ) {
 
-if(
-r.type !== "Assignment" &&
-!String(r.name || "").trim()
-)
-return false;
+    return response.text().then(text => {
 
-if(
-r.type === "Assignment" &&
-(
-!String(r.className || "").trim() ||
-!String(r.subject || "").trim() ||
-!String(r.teacher || "").trim()
-)
-)
-return false;
+      throw new Error(
+        `Server returned non-JSON response (${response.status}).`
+      );
 
-return true;
+    });
 
-});
+  }
+
+  return response.json();
 
 }
 
 
-function displayName(r){
+/* =====================================================
+   CLEAN ACADEMIC RECORDS
+   ===================================================== */
 
-if(r.type === "Assignment"){
+function cleanRecords(data) {
 
-return [
-r.className,
-r.subject,
-r.teacher
-]
-.filter(Boolean)
-.join(" — ");
+  return (Array.isArray(data) ? data : [])
+    .filter(r => {
 
-}
+      if (!r || !r.type)
+        return false;
 
-return r.name || "";
+      if (
+        r.type !== "Assignment" &&
+        !String(r.name || "").trim()
+      )
+        return false;
 
-}
+      if (
+        r.type === "Assignment" &&
+        (
+          !String(r.className || "").trim() ||
+          !String(r.subject || "").trim() ||
+          !String(r.teacher || "").trim()
+        )
+      )
+        return false;
 
+      return true;
 
-async function loadData(){
-
-try{
-
-const r =
-await fetch(
-"/api/academic",
-{
-cache:"no-store"
-}
-);
-
-const d =
-await r.json();
-
-if(!r.ok){
-
-throw Error(
-d.error?.message ||
-d.error ||
-"Unable to load records"
-);
-
-}
-
-records =
-cleanRecords(
-d.records || []
-);
-
-populate();
-render();
-
-show("",true);
-
-}
-catch(e){
-
-show(e.message,false);
-
-}
+    });
 
 }
 
 
-function unique(type){
+/* =====================================================
+   DISPLAY NAME
+   ===================================================== */
 
-const seen = new Set();
+function displayName(r) {
 
-return records
+  if (r.type === "Assignment") {
 
-.filter(r =>
-r.type === type &&
-r.status !== "Inactive" &&
-String(r.name || "").trim()
-)
+    return [
+      r.className,
+      r.subject,
+      r.teacher
+    ]
+      .filter(Boolean)
+      .join(" — ");
 
-.filter(r => {
+  }
 
-const k =
-r.name.trim().toLowerCase();
-
-if(seen.has(k))
-return false;
-
-seen.add(k);
-
-return true;
-
-})
-
-.sort(
-(a,b) =>
-a.name.localeCompare(b.name)
-);
+  return r.name || "";
 
 }
 
+
+/* =====================================================
+   LOAD ACADEMIC DATA
+   ===================================================== */
+
+async function loadData() {
+
+  try {
+
+    const r =
+      await fetch(
+        "/api/academic",
+        {
+          cache: "no-store"
+        }
+      );
+
+    const d =
+      await safeJson(r);
+
+    if (!r.ok) {
+
+      throw new Error(
+        d.error?.message ||
+        d.error ||
+        "Unable to load records"
+      );
+
+    }
+
+    records =
+      cleanRecords(
+        d.records || []
+      );
+
+    populate();
+    render();
+
+    show("", true);
+
+  }
+  catch (e) {
+
+    console.error(
+      "ACADEMIC LOAD ERROR:",
+      e
+    );
+
+    show(
+      e.message ||
+      "Unable to load academic records.",
+      false
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   UNIQUE RECORDS
+   ===================================================== */
+
+function unique(type) {
+
+  const seen = new Set();
+
+  return records
+
+    .filter(r =>
+      r.type === type &&
+      r.status !== "Inactive" &&
+      String(r.name || "").trim()
+    )
+
+    .filter(r => {
+
+      const k =
+        r.name
+          .trim()
+          .toLowerCase();
+
+      if (seen.has(k))
+        return false;
+
+      seen.add(k);
+
+      return true;
+
+    })
+
+    .sort(
+      (a, b) =>
+        a.name.localeCompare(b.name)
+    );
+
+}
+
+
+/* =====================================================
+   FILL SELECT
+   ===================================================== */
 
 function fill(
-id,
-type,
-placeholder
-){
+  id,
+  type,
+  placeholder
+) {
 
-const e = $(id);
+  const e = $(id);
 
-e.innerHTML =
-"<option value=''>" +
-placeholder +
-"</option>" +
+  if (!e)
+    return;
 
-unique(type)
-.map(r =>
-"<option value='" +
-esc(r.name) +
-"'>" +
-esc(r.name) +
-"</option>"
-)
-.join("");
+  e.innerHTML =
+    "<option value=''>" +
+    placeholder +
+    "</option>" +
 
-}
-
-
-function populate(){
-
-fill(
-"programme",
-"Programme",
-"Select programme"
-);
-
-fill(
-"className",
-"Class",
-"Select class"
-);
-
-fill(
-"subject",
-"Subject",
-"Select subject"
-);
-
-fill(
-"teacher",
-"Teacher",
-"Select teacher"
-);
+    unique(type)
+      .map(r =>
+        "<option value='" +
+        esc(r.name) +
+        "'>" +
+        esc(r.name) +
+        "</option>"
+      )
+      .join("");
 
 }
 
 
-function matchesSearch(r,q){
+/* =====================================================
+   POPULATE ACADEMIC SELECTS
+   ===================================================== */
 
-if(!q)
-return true;
+function populate() {
 
-return `
-${r.type || ""}
-${r.name || ""}
-${r.code || ""}
-${r.programme || ""}
-${r.className || ""}
-${r.subject || ""}
-${r.teacher || ""}
-`
-.toLowerCase()
-.includes(q);
+  fill(
+    "programme",
+    "Programme",
+    "Select programme"
+  );
 
-}
+  fill(
+    "className",
+    "Class",
+    "Select class"
+  );
 
+  fill(
+    "subject",
+    "Subject",
+    "Select subject"
+  );
 
-function filteredRecords(){
-
-const q =
-$("search")
-.value
-.toLowerCase()
-.trim();
-
-return records.filter(
-r =>
-(
-currentType === "All" ||
-r.type === currentType
-) &&
-matchesSearch(r,q)
-);
+  fill(
+    "teacher",
+    "Teacher",
+    "Select teacher"
+  );
 
 }
 
 
-function render(){
+/* =====================================================
+   SEARCH
+   ===================================================== */
 
-[
-"Programme",
-"Class",
-"Subject",
-"Teacher",
-"Assignment"
-]
-.forEach(t => {
+function matchesSearch(r, q) {
 
-const valid =
-records.filter(
-r => r.type === t
-);
+  if (!q)
+    return true;
 
-$("count" + t)
-.textContent =
-valid.length;
-
-});
-
-
-if(currentType === "NoteBank")
-return;
-
-
-const data =
-filteredRecords();
-
-
-$("rows").innerHTML =
-data.map(r => `
-
-<tr>
-
-<td>${esc(r.type)}</td>
-
-<td>
-<b>${esc(displayName(r))}</b>
-</td>
-
-<td>${esc(r.code)}</td>
-
-<td>${esc(r.programme)}</td>
-
-<td>${esc(r.className)}</td>
-
-<td>${esc(r.subject)}</td>
-
-<td>${esc(r.teacher)}</td>
-
-<td>
-<span class="badge">
-${esc(r.status || "Active")}
-</span>
-</td>
-
-<td>
-
-<button
-type="button"
-class="secondary"
-onclick="editRecord('${esc(r.airtableId)}')">
-
-Edit
-
-</button>
-
-</td>
-
-</tr>
-
-`)
-.join("")
-
-||
-
-`
-<tr>
-<td colspan="9" class="empty">
-No academic records found.
-</td>
-</tr>
-`;
-
-
-$("mobileRecords").innerHTML =
-data.map(r => `
-
-<div class="record-card">
-
-<div class="record-title">
-${esc(displayName(r))}
-</div>
-
-<div class="record-grid">
-
-<div class="record-field">
-<small>Type</small>
-<div>${esc(r.type)}</div>
-</div>
-
-<div class="record-field">
-<small>Code</small>
-<div>${esc(r.code)}</div>
-</div>
-
-<div class="record-field">
-<small>Programme</small>
-<div>${esc(r.programme)}</div>
-</div>
-
-<div class="record-field">
-<small>Class</small>
-<div>${esc(r.className)}</div>
-</div>
-
-<div class="record-field">
-<small>Subject</small>
-<div>${esc(r.subject)}</div>
-</div>
-
-<div class="record-field">
-<small>Teacher</small>
-<div>${esc(r.teacher)}</div>
-</div>
-
-</div>
-
-<div class="record-action">
-
-<button
-type="button"
-class="secondary"
-onclick="editRecord('${esc(r.airtableId)}')">
-
-Edit
-
-</button>
-
-</div>
-
-</div>
-
-`)
-.join("");
+  return `
+    ${r.type || ""}
+    ${r.name || ""}
+    ${r.code || ""}
+    ${r.programme || ""}
+    ${r.className || ""}
+    ${r.subject || ""}
+    ${r.teacher || ""}
+  `
+    .toLowerCase()
+    .includes(q);
 
 }
 
 
-function toggle(){
+function filteredRecords() {
 
-const t =
-$("type").value;
+  const q =
+    $("search")
+      .value
+      .toLowerCase()
+      .trim();
 
-const assignment =
-t === "Assignment";
-
-$("nameWrap").style.display =
-assignment ? "none" : "block";
-
-$("codeWrap").style.display =
-(
-t === "Programme" ||
-t === "Subject"
-)
-? "block"
-: "none";
-
-[
-"programmeWrap",
-"classWrap",
-"subjectWrap",
-"teacherWrap"
-]
-.forEach(x => {
-
-$(x).style.display =
-assignment
-? "block"
-: "none";
-
-});
-
-$("name").required =
-!assignment;
-
-$("className").required =
-assignment;
-
-$("subject").required =
-assignment;
-
-$("teacher").required =
-assignment;
-
-$("nameLabel").textContent =
-t;
+  return records.filter(
+    r =>
+      (
+        currentType === "All" ||
+        r.type === currentType
+      ) &&
+      matchesSearch(r, q)
+  );
 
 }
 
 
-function openForm(r=null){
+/* =====================================================
+   RENDER ACADEMIC RECORDS
+   ===================================================== */
 
-editing = r;
+function render() {
 
-$("formTitle").textContent =
-r
-? "Edit Academic Record"
-: "Add Academic Record";
+  [
+    "Programme",
+    "Class",
+    "Subject",
+    "Teacher",
+    "Assignment"
+  ]
+    .forEach(t => {
 
-$("formMsg").textContent = "";
+      const valid =
+        records.filter(
+          r => r.type === t
+        );
 
-$("academicForm").reset();
+      const element =
+        $("count" + t);
 
-if(r){
+      if (element) {
 
-$("type").value =
-r.type;
+        element.textContent =
+          valid.length;
 
-$("name").value =
-r.name || "";
+      }
 
-$("code").value =
-r.code || "";
+    });
 
-$("programme").value =
-r.programme || "";
 
-$("className").value =
-r.className || "";
+  if (currentType === "NoteBank")
+    return;
 
-$("subject").value =
-r.subject || "";
 
-$("teacher").value =
-r.teacher || "";
+  const data =
+    filteredRecords();
 
-$("status").value =
-r.status || "Active";
 
-$("notes").value =
-r.notes || "";
+  $("rows").innerHTML =
+    data
+      .map(r => `
+
+        <tr>
+
+          <td>${esc(r.type)}</td>
+
+          <td>
+            <b>${esc(displayName(r))}</b>
+          </td>
+
+          <td>${esc(r.code)}</td>
+
+          <td>${esc(r.programme)}</td>
+
+          <td>${esc(r.className)}</td>
+
+          <td>${esc(r.subject)}</td>
+
+          <td>${esc(r.teacher)}</td>
+
+          <td>
+            <span class="badge">
+              ${esc(r.status || "Active")}
+            </span>
+          </td>
+
+          <td>
+
+            <button
+              type="button"
+              class="secondary"
+              onclick="editRecord('${esc(r.airtableId)}')">
+
+              Edit
+
+            </button>
+
+          </td>
+
+        </tr>
+
+      `)
+      .join("")
+
+    ||
+
+    `
+      <tr>
+        <td colspan="9" class="empty">
+          No academic records found.
+        </td>
+      </tr>
+    `;
+
+
+  $("mobileRecords").innerHTML =
+    data
+      .map(r => `
+
+        <div class="record-card">
+
+          <div class="record-title">
+            ${esc(displayName(r))}
+          </div>
+
+          <div class="record-grid">
+
+            <div class="record-field">
+              <small>Type</small>
+              <div>${esc(r.type)}</div>
+            </div>
+
+            <div class="record-field">
+              <small>Code</small>
+              <div>${esc(r.code)}</div>
+            </div>
+
+            <div class="record-field">
+              <small>Programme</small>
+              <div>${esc(r.programme)}</div>
+            </div>
+
+            <div class="record-field">
+              <small>Class</small>
+              <div>${esc(r.className)}</div>
+            </div>
+
+            <div class="record-field">
+              <small>Subject</small>
+              <div>${esc(r.subject)}</div>
+            </div>
+
+            <div class="record-field">
+              <small>Teacher</small>
+              <div>${esc(r.teacher)}</div>
+            </div>
+
+          </div>
+
+          <div class="record-action">
+
+            <button
+              type="button"
+              class="secondary"
+              onclick="editRecord('${esc(r.airtableId)}')">
+
+              Edit
+
+            </button>
+
+          </div>
+
+        </div>
+
+      `)
+      .join("");
 
 }
 
-toggle();
 
-$("modal")
-.classList
-.add("show");
+/* =====================================================
+   FORM TYPE TOGGLE
+   ===================================================== */
+
+function toggle() {
+
+  const t =
+    $("type").value;
+
+  const assignment =
+    t === "Assignment";
+
+
+  $("nameWrap").style.display =
+    assignment
+      ? "none"
+      : "block";
+
+
+  $("codeWrap").style.display =
+    (
+      t === "Programme" ||
+      t === "Subject"
+    )
+      ? "block"
+      : "none";
+
+
+  [
+    "programmeWrap",
+    "classWrap",
+    "subjectWrap",
+    "teacherWrap"
+  ]
+    .forEach(x => {
+
+      $(x).style.display =
+        assignment
+          ? "block"
+          : "none";
+
+    });
+
+
+  $("name").required =
+    !assignment;
+
+  $("className").required =
+    assignment;
+
+  $("subject").required =
+    assignment;
+
+  $("teacher").required =
+    assignment;
+
+
+  $("nameLabel").textContent =
+    t;
 
 }
 
 
-function closeForm(){
+/* =====================================================
+   OPEN FORM
+   ===================================================== */
 
-$("modal")
-.classList
-.remove("show");
+function openForm(r = null) {
 
-editing = null;
+  editing = r;
+
+  $("formTitle").textContent =
+    r
+      ? "Edit Academic Record"
+      : "Add Academic Record";
+
+  $("formMsg").textContent = "";
+
+  $("academicForm").reset();
+
+
+  if (r) {
+
+    $("type").value =
+      r.type;
+
+    $("name").value =
+      r.name || "";
+
+    $("code").value =
+      r.code || "";
+
+    $("programme").value =
+      r.programme || "";
+
+    $("className").value =
+      r.className || "";
+
+    $("subject").value =
+      r.subject || "";
+
+    $("teacher").value =
+      r.teacher || "";
+
+    $("status").value =
+      r.status || "Active";
+
+    $("notes").value =
+      r.notes || "";
+
+  }
+
+
+  toggle();
+
+  $("modal")
+    .classList
+    .add("show");
 
 }
 
 
-function editRecord(id){
+/* =====================================================
+   CLOSE FORM
+   ===================================================== */
 
-const r =
-records.find(
-x => x.airtableId === id
-);
+function closeForm() {
 
-if(r)
-openForm(r);
+  $("modal")
+    .classList
+    .remove("show");
 
-}
-
-
-function show(t,ok){
-
-const m =
-$("msg");
-
-m.className =
-t
-? "msg " + (ok ? "ok" : "err")
-: "msg";
-
-m.textContent = t;
+  editing = null;
 
 }
 
 
-/* MAIN TAB HANDLER */
+/* =====================================================
+   EDIT RECORD
+   ===================================================== */
+
+function editRecord(id) {
+
+  const r =
+    records.find(
+      x =>
+        x.airtableId === id
+    );
+
+  if (r)
+    openForm(r);
+
+}
+
+
+/* =====================================================
+   MESSAGE
+   ===================================================== */
+
+function show(t, ok) {
+
+  const m =
+    $("msg");
+
+  m.className =
+    t
+      ? "msg " + (ok ? "ok" : "err")
+      : "msg";
+
+  m.textContent =
+    t;
+
+}
+
+
+/* =====================================================
+   MAIN TAB HANDLER
+   ===================================================== */
 
 $("tabs")
-.addEventListener(
-"click",
-function(e){
+  .addEventListener(
+    "click",
+    function(e) {
 
-const button =
-e.target.closest(
-"[data-type]"
-);
+      const button =
+        e.target.closest(
+          "[data-type]"
+        );
 
-if(!button)
-return;
+      if (!button)
+        return;
 
-e.preventDefault();
+      e.preventDefault();
 
-currentType =
-button.dataset.type;
-
-document
-.querySelectorAll(
-"#tabs [data-type]"
-)
-.forEach(
-x =>
-x.classList.remove("active")
-);
-
-button.classList.add("active");
+      currentType =
+        button.dataset.type;
 
 
-if(currentType === "NoteBank"){
-
-$("academicRecords")
-.style.display = "none";
-
-$("noteBank")
-.classList.add("active");
-
-}
-else{
-
-$("academicRecords")
-.style.display = "block";
-
-$("noteBank")
-.classList.remove("active");
-
-render();
-
-}
-
-}
-);
+      document
+        .querySelectorAll(
+          "#tabs [data-type]"
+        )
+        .forEach(
+          x =>
+            x.classList.remove(
+              "active"
+            )
+        );
 
 
-/* AI TOOL SWITCHER */
-
-function showAITool(type){
-
-const note =
-$("noteCreator");
-
-const question =
-$("questionCreator");
-
-const noteTab =
-$("noteCreatorTab");
-
-const questionTab =
-$("questionCreatorTab");
+      button.classList.add(
+        "active"
+      );
 
 
-if(type === "note"){
+      if (
+        currentType ===
+        "NoteBank"
+      ) {
 
-note.classList.add("active");
-question.classList.remove("active");
+        $("academicRecords")
+          .style
+          .display = "none";
 
-noteTab.classList.add("active");
-questionTab.classList.remove("active");
+        $("noteBank")
+          .classList
+          .add("active");
 
-}
-else{
+      }
+      else {
 
-note.classList.remove("active");
-question.classList.add("active");
+        $("academicRecords")
+          .style
+          .display = "block";
 
-noteTab.classList.remove("active");
-questionTab.classList.add("active");
+        $("noteBank")
+          .classList
+          .remove("active");
 
-}
+        render();
 
-}
+      }
+
+    }
+  );
 
 
-/* BUILD NOTE PROMPT */
+/* =====================================================
+   AI TOOL SWITCHER
+   ===================================================== */
 
-function buildNotePrompt(){
+function showAITool(type) {
 
-const subject =
-$("aiNoteSubject").value;
+  const note =
+    $("noteCreator");
 
-const cls =
-$("aiNoteClass").value;
+  const question =
+    $("questionCreator");
 
-const programme =
-$("aiNoteProgramme").value;
+  const noteTab =
+    $("noteCreatorTab");
 
-const topic =
-$("aiNoteTopic").value.trim();
+  const questionTab =
+    $("questionCreatorTab");
 
-const teacherPrompt =
-$("aiNotePrompt").value.trim();
 
-const exams =
-[...document.querySelectorAll(".noteExam:checked")]
-.map(x => x.value);
+  if (type === "note") {
 
-if(
-!subject ||
-!cls ||
-!topic ||
-!teacherPrompt
-){
+    note
+      .classList
+      .add("active");
 
-throw Error(
-"Select Subject, Class, Topic and enter the teacher prompt."
-);
+    question
+      .classList
+      .remove("active");
+
+    noteTab
+      .classList
+      .add("active");
+
+    questionTab
+      .classList
+      .remove("active");
+
+  }
+  else {
+
+    note
+      .classList
+      .remove("active");
+
+    question
+      .classList
+      .add("active");
+
+    noteTab
+      .classList
+      .remove("active");
+
+    questionTab
+      .classList
+      .add("active");
+
+  }
 
 }
 
-return {
 
-contentType:"Note",
+/* =====================================================
+   EXAMINATION CHECKBOXES
+   IMPORTANT:
+   These selectors match the actual HTML classes.
+   ===================================================== */
 
-subject,
+function getNoteExamTypes() {
 
-className:cls,
+  return [
+    ...document.querySelectorAll(
+      ".noteExam:checked"
+    )
+  ]
+    .map(cb => cb.value)
+    .filter(Boolean);
 
-programme,
+}
 
-topic,
 
-examTypes:exams,
+function getQuestionExamTypes() {
 
-teacherPrompt,
+  return [
+    ...document.querySelectorAll(
+      ".questionExam:checked"
+    )
+  ]
+    .map(cb => cb.value)
+    .filter(Boolean);
 
-systemContext:`
+}
+
+
+/* =====================================================
+   BUILD NOTE PROMPT
+   ===================================================== */
+
+function buildNotePrompt() {
+
+  const subject =
+    $("aiNoteSubject")
+      .value
+      .trim();
+
+  const cls =
+    $("aiNoteClass")
+      .value
+      .trim();
+
+  const programme =
+    $("aiNoteProgramme")
+      .value
+      .trim();
+
+  const topic =
+    $("aiNoteTopic")
+      .value
+      .trim();
+
+  const teacherPrompt =
+    $("aiNotePrompt")
+      .value
+      .trim();
+
+  const exams =
+    getNoteExamTypes();
+
+
+  if (
+    !subject ||
+    !cls ||
+    !topic ||
+    !teacherPrompt
+  ) {
+
+    throw new Error(
+      "Select Subject, Class, Topic and enter the teacher prompt."
+    );
+
+  }
+
+
+  return {
+
+    contentType: "Note",
+
+    subject,
+
+    className: cls,
+
+    programme,
+
+    topic,
+
+    examTypes:
+      exams.length
+        ? exams
+        : [
+            "WAEC",
+            "NECO",
+            "UTME"
+          ],
+
+    teacherPrompt,
+
+    systemContext: `
 Create academic content for Aibinu Flexiprep Educonsult.
 
 Subject: ${subject}
 Class: ${cls}
 Programme: ${programme || "General"}
 Topic: ${topic}
-Examination focus: ${exams.join(", ")}
+Examination focus: ${
+      exams.length
+        ? exams.join(", ")
+        : "WAEC, NECO, UTME"
+    }
 
 The teacher's prompt is the primary instruction.
 
@@ -2140,205 +918,198 @@ Do not publish the content.
 Return it as a teacher-review draft.
 `
 
-};
+  };
 
 }
 
 
-/* BUILD QUESTION PROMPT */
+/* =====================================================
+   BUILD QUESTION PROMPT
+   ===================================================== */
 
-function buildQuestionPrompt(){
-
-const subject =
-$("aiQuestionSubject").value;
-
-const cls =
-$("aiQuestionClass").value;
-
-const programme =
-$("aiQuestionProgramme").value;
-
-const topic =
-$("aiQuestionTopic").value.trim();
-
-const count =
-Number($("aiQuestionCount").value);
-
-const difficulty =
-$("aiQuestionDifficulty").value;
-
-const bloom =
-$("aiQuestionBloom").value;
-
-const questionType =
-$("aiQuestionType").value;
-
-const teacherPrompt =
-$("aiQuestionPrompt").value.trim();
-
-const exams =
-[...document.querySelectorAll(".questionExam:checked")]
-.map(x => x.value);
-
-if(
-!subject ||
-!cls ||
-!topic ||
-!teacherPrompt
-){
-
-throw Error(
-"Select Subject, Class, Topic and enter the teacher prompt."
-);
-
-}
-
-return {
-
-contentType:"Question",
-
-subject,
-
-className:cls,
-
-programme,
-
-topic,
-
-examTypes:exams,
-
-questionCount:count,
-
-difficulty,
-
-bloomLevel:bloom,
-
-questionType,
-
-teacherPrompt,
-
-systemContext:`
-Create examination-style questions for Aibinu Flexiprep Educonsult.
-
-Subject: ${subject}
-Class: ${cls}
-Programme: ${programme || "General"}
-Topic: ${topic}
-Exam types: ${exams.join(", ")}
-Number: ${count}
-Difficulty: ${difficulty}
-Bloom level: ${bloom}
-Question type: ${questionType}
-
-The teacher's prompt is the primary instruction.
-
-Return structured questions suitable for teacher review.
-
-Do not approve or publish the questions.
-`
-
-};
-
-}
-
-
-/*
-CURRENT DEMO GENERATION
-
-This prepares the exact payload that
-the secure backend will receive.
-
-Do NOT put an OpenAI API key here.
-*/
-async function generateNoteDraft() {
+function buildQuestionPrompt() {
 
   const subject =
-    $("aiNoteSubject")?.value?.trim() || "";
+    $("aiQuestionSubject")
+      .value
+      .trim();
 
-  const className =
-    $("aiNoteClass")?.value?.trim() || "";
+  const cls =
+    $("aiQuestionClass")
+      .value
+      .trim();
 
   const programme =
-    $("aiNoteProgramme")?.value?.trim() || "";
+    $("aiQuestionProgramme")
+      .value
+      .trim();
 
   const topic =
-    $("aiNoteTopic")?.value?.trim() || "";
+    $("aiQuestionTopic")
+      .value
+      .trim();
+
+  let count =
+    Number(
+      $("aiQuestionCount")
+        .value
+    );
+
+
+  if (!Number.isFinite(count))
+    count = 1;
+
+
+  count =
+    Math.max(
+      1,
+      Math.min(
+        100,
+        Math.floor(count)
+      )
+    );
+
+
+  const difficulty =
+    $("aiQuestionDifficulty")
+      .value ||
+    "Mixed";
+
+  const bloomLevel =
+    $("aiQuestionBloom")
+      .value ||
+    "Mixed";
+
+  const questionType =
+    $("aiQuestionType")
+      .value ||
+    "MCQ";
 
   const teacherPrompt =
-    $("aiNotePrompt")?.value?.trim() || "";
+    $("aiQuestionPrompt")
+      .value
+      .trim();
 
-  const examTypes = [];
-
-  document
-    .querySelectorAll(
-      '#noteAIForm input[type="checkbox"]:checked'
-    )
-    .forEach(cb => {
-
-      if (cb.value) {
-        examTypes.push(cb.value);
-      }
-
-    });
+  const exams =
+    getQuestionExamTypes();
 
 
-  if (!subject) {
-    alert(
-      "Please select a subject."
+  if (
+    !subject ||
+    !cls ||
+    !topic ||
+    !teacherPrompt
+  ) {
+
+    throw new Error(
+      "Select Subject, Class, Topic and enter the teacher prompt."
     );
-    return;
+
   }
 
 
-  if (!className) {
-    alert(
-      "Please select a class."
-    );
-    return;
-  }
+  return {
 
-
-  if (!topic) {
-    alert(
-      "Please enter/select a topic."
-    );
-    return;
-  }
-
-
-  if (!teacherPrompt) {
-    alert(
-      "Please enter the teacher's instruction/prompt."
-    );
-    return;
-  }
-
-
-  const payload = {
-
-    contentType:
-      "Note",
+    contentType: "Question",
 
     subject,
 
-    className,
+    className: cls,
 
     programme,
 
     topic,
 
     examTypes:
-      examTypes.length
-        ? examTypes
+      exams.length
+        ? exams
         : [
             "WAEC",
             "NECO",
             "UTME"
           ],
 
-    teacherPrompt
+    questionCount:
+      count,
+
+    difficulty,
+
+    bloomLevel,
+
+    questionType,
+
+    teacherPrompt,
+
+    systemContext: `
+Create examination-style questions for Aibinu Flexiprep Educonsult.
+
+Subject: ${subject}
+Class: ${cls}
+Programme: ${programme || "General"}
+Topic: ${topic}
+Exam types: ${
+      exams.length
+        ? exams.join(", ")
+        : "WAEC, NECO, UTME"
+    }
+Number of questions: ${count}
+Difficulty: ${difficulty}
+Bloom level: ${bloomLevel}
+Question type: ${questionType}
+
+The teacher's prompt is the primary instruction.
+
+Generate exactly ${count} question${
+      count === 1 ? "" : "s"
+    } where possible.
+
+For MCQ questions provide:
+- question
+- optionA
+- optionB
+- optionC
+- optionD
+- correctAnswer
+- difficulty
+- bloomLevel
+- explanation
+
+Use accurate calculations and plausible distractors.
+
+Return structured questions suitable for teacher review.
+
+Do not approve or publish the questions.
+`
 
   };
+
+}
+
+
+/* =====================================================
+   GENERATE NOTE DRAFT
+   ===================================================== */
+
+async function generateNoteDraft() {
+
+  let payload;
+
+
+  try {
+
+    payload =
+      buildNotePrompt();
+
+  }
+  catch (error) {
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
 
 
   currentAIType =
@@ -2356,15 +1127,19 @@ async function generateNoteDraft() {
 
 
   if (resultBox) {
-    resultBox.classList.add(
-      "show"
-    );
+
+    resultBox
+      .classList
+      .add("show");
+
   }
 
 
   if (preview) {
+
     preview.textContent =
       "⏳ Generating note with AI...";
+
   }
 
 
@@ -2375,8 +1150,7 @@ async function generateNoteDraft() {
         "/api/ai-content",
         {
 
-          method:
-            "POST",
+          method: "POST",
 
           headers: {
             "Content-Type":
@@ -2393,13 +1167,16 @@ async function generateNoteDraft() {
 
 
     const data =
-      await response.json();
+      await safeJson(
+        response
+      );
 
 
     if (!response.ok) {
 
       throw new Error(
         data.error ||
+        data.details ||
         `Server error: ${response.status}`
       );
 
@@ -2431,13 +1208,11 @@ async function generateNoteDraft() {
 
     currentAIResult = {
 
-      type:
-        "Note",
+      type: "Note",
 
       note,
 
-      raw:
-        data
+      raw: data
 
     };
 
@@ -2497,13 +1272,17 @@ async function generateNoteDraft() {
       "AI note generated successfully as DRAFT."
     );
 
-
-  } catch (error) {
+  }
+  catch (error) {
 
     console.error(
       "AI NOTE ERROR:",
       error
     );
+
+
+    currentAIResult =
+      null;
 
 
     if (preview) {
@@ -2522,108 +1301,39 @@ async function generateNoteDraft() {
 
 }
 
+
+/* =====================================================
+   GENERATE QUESTION DRAFT
+   ===================================================== */
+
 async function generateQuestionDraft() {
-  const subject =
-    $("aiQuestionSubject")?.value?.trim() || "";
 
-  const className =
-    $("aiQuestionClass")?.value?.trim() || "";
+  let payload;
 
-  const programme =
-    $("aiQuestionProgramme")?.value?.trim() || "";
 
-  const topic =
-    $("aiQuestionTopic")?.value?.trim() || "";
+  try {
 
-  const count =
-    Math.max(
-      1,
-      Math.min(
-        100,
-        Number(
-          $("aiQuestionCount")?.value || 1
-        )
-      )
-    );
+    payload =
+      buildQuestionPrompt();
 
-  const difficulty =
-    $("aiQuestionDifficulty")?.value ||
-    "Mixed";
-
-  const bloomLevel =
-    $("aiQuestionBloom")?.value ||
-    "Mixed";
-
-  const questionType =
-    $("aiQuestionType")?.value ||
-    "MCQ";
-
-  const teacherPrompt =
-    $("aiQuestionPrompt")?.value?.trim() || "";
-
-  const examTypes = [];
-
-  document
-    .querySelectorAll(
-      '#questionAIForm input[type="checkbox"]:checked'
-    )
-    .forEach(cb => {
-      if (cb.value) {
-        examTypes.push(cb.value);
-      }
-    });
-
-  if (!subject) {
-    alert("Please select a subject.");
-    return;
   }
+  catch (error) {
 
-  if (!className) {
-    alert("Please select a class.");
-    return;
-  }
-
-  if (!topic) {
-    alert("Please enter/select a topic.");
-    return;
-  }
-
-  if (!teacherPrompt) {
     alert(
-      "Please enter the teacher's instruction/prompt."
+      error.message
     );
+
     return;
+
   }
 
-  const payload = {
-    contentType: "Question",
 
-    subject,
+  currentAIType =
+    "question";
 
-    className,
+  currentAIPayload =
+    payload;
 
-    programme,
-
-    topic,
-
-    questionCount: count,
-
-    difficulty,
-
-    bloomLevel,
-
-    questionType,
-
-    examTypes:
-      examTypes.length
-        ? examTypes
-        : ["WAEC", "NECO", "UTME"],
-
-    teacherPrompt
-  };
-
-  currentAIType = "question";
-  currentAIPayload = payload;
 
   const resultBox =
     $("questionAIResult");
@@ -2631,97 +1341,149 @@ async function generateQuestionDraft() {
   const preview =
     $("questionPromptPreview");
 
+
   if (resultBox) {
-    resultBox.classList.add("show");
+
+    resultBox
+      .classList
+      .add("show");
+
   }
 
+
   if (preview) {
+
     preview.textContent =
       "⏳ Generating questions with AI...";
+
   }
+
 
   try {
 
-    const response = await fetch(
-      "/api/ai-content",
-      {
-        method: "POST",
+    const response =
+      await fetch(
+        "/api/ai-content",
+        {
 
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
+          method: "POST",
 
-        body:
-          JSON.stringify(payload)
-      }
-    );
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            )
+
+        }
+      );
+
 
     const data =
-      await response.json();
+      await safeJson(
+        response
+      );
+
 
     if (!response.ok) {
+
       throw new Error(
         data.error ||
+        data.details ||
         `Server error: ${response.status}`
       );
+
     }
 
+
     if (!data.success) {
+
       throw new Error(
         data.error ||
         "AI question generation failed."
       );
+
     }
 
+
     const questions =
-      Array.isArray(data.questions)
+      Array.isArray(
+        data.questions
+      )
         ? data.questions
         : [];
 
+
     if (!questions.length) {
+
       throw new Error(
         "The AI returned no questions."
       );
+
     }
 
+
     currentAIResult = {
+
       type: "Question",
+
       questions,
+
       raw: data
+
     };
+
 
     if (preview) {
 
       preview.textContent =
         questions
-          .map((q, index) => {
+          .map(
+            (q, index) => {
 
-            return (
-              `QUESTION ${index + 1}\n\n` +
+              return (
 
-              `${q.question}\n\n` +
+                `QUESTION ${index + 1}\n\n` +
 
-              `A. ${q.optionA}\n` +
-              `B. ${q.optionB}\n` +
-              `C. ${q.optionC}\n` +
-              `D. ${q.optionD}\n\n` +
+                `${q.question || ""}\n\n` +
 
-              `Correct Answer: ${q.correctAnswer}\n` +
+                `A. ${q.optionA || ""}\n` +
 
-              `Difficulty: ${q.difficulty}\n` +
+                `B. ${q.optionB || ""}\n` +
 
-              `Bloom Level: ${q.bloomLevel}\n\n` +
+                `C. ${q.optionC || ""}\n` +
 
-              `Explanation: ${q.explanation}\n\n` +
+                `D. ${q.optionD || ""}\n\n` +
 
-              `${"─".repeat(50)}\n\n`
-            );
+                `Correct Answer: ${
+                  q.correctAnswer || ""
+                }\n` +
 
-          })
+                `Difficulty: ${
+                  q.difficulty || payload.difficulty
+                }\n` +
+
+                `Bloom Level: ${
+                  q.bloomLevel || payload.bloomLevel
+                }\n\n` +
+
+                `Explanation: ${
+                  q.explanation || ""
+                }\n\n` +
+
+                `${"─".repeat(50)}\n\n`
+
+              );
+
+            }
+          )
           .join("");
 
     }
+
 
     alert(
       `${questions.length} AI question${
@@ -2731,267 +1493,334 @@ async function generateQuestionDraft() {
       } generated successfully as DRAFT.`
     );
 
-  } catch (error) {
+  }
+  catch (error) {
 
     console.error(
       "AI QUESTION ERROR:",
       error
     );
 
+
+    currentAIResult =
+      null;
+
+
     if (preview) {
+
       preview.textContent =
         `❌ Generation failed:\n\n${error.message}`;
+
     }
+
 
     alert(
       `Question generation failed:\n\n${error.message}`
     );
 
   }
-}
-/* EDIT */
-
-function editNoteDraft(){
-
-$("aiNotePrompt").focus();
-
-show(
-"Edit the teacher prompt and generate again when ready.",
-true
-);
 
 }
 
 
-function editQuestionDraft(){
+/* =====================================================
+   EDIT NOTE DRAFT
+   ===================================================== */
 
-$("aiQuestionPrompt").focus();
+function editNoteDraft() {
 
-show(
-"Edit the teacher prompt and generate again when ready.",
-true
-);
+  $("aiNotePrompt")
+    .focus();
 
-}
-
-
-/*
-APPROVAL PLACEHOLDERS
-
-These will call the secure backend
-once the AI API endpoint is implemented.
-*/
-
-function submitNoteForApproval(){
-
-if(!currentAIPayload){
-
-show(
-"Generate a note draft first.",
-false
-);
-
-return;
-
-}
-
-show(
-"Note draft is ready for the secure NoteBank approval workflow.",
-true
-);
+  show(
+    "Edit the teacher prompt and generate again when ready.",
+    true
+  );
 
 }
 
 
-function submitQuestionsForApproval(){
+/* =====================================================
+   EDIT QUESTION DRAFT
+   ===================================================== */
 
-if(!currentAIPayload){
+function editQuestionDraft() {
 
-show(
-"Generate questions first.",
-false
-);
+  $("aiQuestionPrompt")
+    .focus();
 
-return;
-
-}
-
-show(
-"Question draft is ready for the secure Question Review workflow.",
-true
-);
+  show(
+    "Edit the teacher prompt and generate again when ready.",
+    true
+  );
 
 }
 
 
-/* FORM TYPE */
+/* =====================================================
+   APPROVAL WORKFLOW
+   KEEPING CURRENT WORKING BEHAVIOUR
+   ===================================================== */
+
+function submitNoteForApproval() {
+
+  if (
+    !currentAIResult ||
+    currentAIResult.type !== "Note"
+  ) {
+
+    show(
+      "Generate a note draft first.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  show(
+    "Note draft is ready for the secure NoteBank approval workflow.",
+    true
+  );
+
+}
+
+
+/* =====================================================
+   QUESTION APPROVAL
+   ===================================================== */
+
+function submitQuestionsForApproval() {
+
+  if (
+    !currentAIResult ||
+    currentAIResult.type !== "Question"
+  ) {
+
+    show(
+      "Generate questions first.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  show(
+    "Question draft is ready for the secure Question Review workflow.",
+    true
+  );
+
+}
+
+
+/* =====================================================
+   FORM TYPE
+   ===================================================== */
 
 $("type")
-.addEventListener(
-"change",
-toggle
-);
+  .addEventListener(
+    "change",
+    toggle
+  );
 
 
-/* SEARCH */
+/* =====================================================
+   SEARCH
+   ===================================================== */
 
 $("search")
-.addEventListener(
-"input",
-render
-);
+  .addEventListener(
+    "input",
+    render
+  );
 
 
-/* SAVE ACADEMIC RECORD */
+/* =====================================================
+   SAVE ACADEMIC RECORD
+   ===================================================== */
 
 $("academicForm")
-.addEventListener(
-"submit",
-async e => {
+  .addEventListener(
+    "submit",
+    async e => {
 
-e.preventDefault();
-
-if(
-$("type").value === "Assignment" &&
-(
-!$("className").value ||
-!$("subject").value ||
-!$("teacher").value
-)
-){
-
-$("formMsg").className =
-"msg err";
-
-$("formMsg").textContent =
-"Select Class, Subject and Teacher.";
-
-return;
-
-}
+      e.preventDefault();
 
 
-const body = {
+      if (
+        $("type").value ===
+        "Assignment" &&
+        (
+          !$("className").value ||
+          !$("subject").value ||
+          !$("teacher").value
+        )
+      ) {
 
-type:
-$("type").value,
+        $("formMsg")
+          .className =
+          "msg err";
 
-name:
-$("name").value.trim(),
+        $("formMsg")
+          .textContent =
+          "Select Class, Subject and Teacher.";
 
-code:
-$("code").value.trim(),
+        return;
 
-programme:
-$("programme").value,
-
-className:
-$("className").value,
-
-subject:
-$("subject").value,
-
-teacher:
-$("teacher").value,
-
-status:
-$("status").value,
-
-notes:
-$("notes").value.trim()
-
-};
+      }
 
 
-if(editing){
+      const body = {
 
-body.airtableId =
-editing.airtableId;
+        type:
+          $("type").value,
 
-}
+        name:
+          $("name")
+            .value
+            .trim(),
 
+        code:
+          $("code")
+            .value
+            .trim(),
 
-try{
+        programme:
+          $("programme").value,
 
-const r =
-await fetch(
-"/api/academic",
-{
+        className:
+          $("className").value,
 
-method:
-editing
-? "PUT"
-: "POST",
+        subject:
+          $("subject").value,
 
-headers:{
-"Content-Type":
-"application/json"
-},
+        teacher:
+          $("teacher").value,
 
-body:
-JSON.stringify(body)
+        status:
+          $("status").value,
 
-}
-);
+        notes:
+          $("notes")
+            .value
+            .trim()
 
-const d =
-await r.json();
-
-if(!r.ok){
-
-throw Error(
-d.error?.message ||
-d.error ||
-"Save failed"
-);
-
-}
-
-closeForm();
-
-await loadData();
-
-show(
-"Academic record saved successfully.",
-true
-);
-
-}
-catch(x){
-
-$("formMsg").className =
-"msg err";
-
-$("formMsg").textContent =
-x.message;
-
-}
-
-}
-);
+      };
 
 
-/* CLOSE MODAL */
+      if (editing) {
+
+        body.airtableId =
+          editing.airtableId;
+
+      }
+
+
+      try {
+
+        const r =
+          await fetch(
+            "/api/academic",
+            {
+
+              method:
+                editing
+                  ? "PUT"
+                  : "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(
+                  body
+                )
+
+            }
+          );
+
+
+        const d =
+          await safeJson(r);
+
+
+        if (!r.ok) {
+
+          throw new Error(
+            d.error?.message ||
+            d.error ||
+            "Save failed"
+          );
+
+        }
+
+
+        closeForm();
+
+        await loadData();
+
+
+        show(
+          "Academic record saved successfully.",
+          true
+        );
+
+      }
+      catch (x) {
+
+        console.error(
+          "ACADEMIC SAVE ERROR:",
+          x
+        );
+
+
+        $("formMsg")
+          .className =
+          "msg err";
+
+        $("formMsg")
+          .textContent =
+          x.message;
+
+      }
+
+    }
+  );
+
+
+/* =====================================================
+   CLOSE MODAL
+   ===================================================== */
 
 $("modal")
-.addEventListener(
-"click",
-e => {
+  .addEventListener(
+    "click",
+    e => {
 
-if(e.target === $("modal"))
-closeForm();
+      if (
+        e.target ===
+        $("modal")
+      ) {
 
-}
-);
+        closeForm();
+
+      }
+
+    }
+  );
 
 
-/* INITIALIZE */
+/* =====================================================
+   INITIALIZE
+   ===================================================== */
 
 toggle();
 
 loadData();
 
 </script>
-
-</body>
-</html>
