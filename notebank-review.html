@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#08783f">
-
 <title>Aibinu Flexiprep | NoteBank Review Center</title>
 
 <style>
@@ -16,22 +15,25 @@
   --bg:#f4f7f5;
   --line:#dce6e0;
   --danger:#b42318;
-  --ok:#e7f6ec
+  --ok:#e7f6ec;
 }
 
 *{
-  box-sizing:border-box
+  box-sizing:border-box;
 }
 
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:var(--bg);
-  color:var(--ink)
+  color:var(--ink);
 }
 
-button,input,textarea,select{
-  font:inherit
+button,
+input,
+textarea,
+select{
+  font:inherit;
 }
 
 button{
@@ -39,29 +41,29 @@ button{
   border-radius:10px;
   padding:11px 15px;
   font-weight:700;
-  cursor:pointer
+  cursor:pointer;
 }
 
 button:disabled{
   opacity:.6;
-  cursor:not-allowed
+  cursor:not-allowed;
 }
 
 .primary{
   background:var(--gold);
-  color:var(--ink)
+  color:var(--ink);
 }
 
 .secondary{
   background:#fff;
   color:var(--g);
-  border:1px solid var(--line)
+  border:1px solid var(--line);
 }
 
 header{
   background:var(--g);
   color:#fff;
-  padding:16px 5%
+  padding:16px 5%;
 }
 
 .header-inner{
@@ -71,13 +73,13 @@ header{
   justify-content:space-between;
   align-items:center;
   gap:15px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .brand{
   display:flex;
   align-items:center;
-  gap:10px
+  gap:10px;
 }
 
 .logo{
@@ -86,23 +88,23 @@ header{
   padding:11px;
   border-radius:10px;
   font-weight:800;
-  font-size:20px
+  font-size:20px;
 }
 
 .brand b{
-  font-size:18px
+  font-size:18px;
 }
 
 .brand small{
   display:block;
   opacity:.8;
-  margin-top:3px
+  margin-top:3px;
 }
 
 main{
   max-width:1200px;
   margin:25px auto;
-  padding:0 16px
+  padding:0 16px;
 }
 
 .top{
@@ -110,33 +112,33 @@ main{
   justify-content:space-between;
   align-items:end;
   gap:15px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 h1{
   margin:5px 0;
-  font-size:38px
+  font-size:38px;
 }
 
 .muted{
   color:var(--muted);
-  font-size:17px
+  font-size:17px;
 }
 
 .msg{
   margin:15px 0;
   padding:11px;
-  border-radius:9px
+  border-radius:9px;
 }
 
 .ok{
   background:var(--ok);
-  color:var(--g)
+  color:var(--g);
 }
 
 .err{
   background:#fde9e7;
-  color:var(--danger)
+  color:var(--danger);
 }
 
 .panel{
@@ -144,7 +146,7 @@ h1{
   border:1px solid var(--line);
   border-radius:18px;
   padding:18px;
-  margin-top:20px
+  margin-top:20px;
 }
 
 .queue-head{
@@ -152,7 +154,7 @@ h1{
   justify-content:space-between;
   align-items:center;
   gap:10px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .count{
@@ -161,25 +163,25 @@ h1{
   border-radius:99px;
   background:var(--ok);
   color:var(--g);
-  font-weight:800
+  font-weight:800;
 }
 
 .card{
   border:1px solid var(--line);
   border-radius:14px;
   padding:17px;
-  margin-top:14px
+  margin-top:14px;
 }
 
 .card h2{
-  margin:0 0 7px
+  margin:0 0 7px;
 }
 
 .meta{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
-  margin:10px 0
+  margin:10px 0;
 }
 
 .badge{
@@ -189,12 +191,12 @@ h1{
   font-size:12px;
   font-weight:700;
   background:#fff7df;
-  color:#765b00
+  color:#765b00;
 }
 
 .small{
   font-size:13px;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .target-box{
@@ -202,20 +204,20 @@ h1{
   padding:15px;
   border:1px solid var(--line);
   border-radius:12px;
-  background:#f8fbf9
+  background:#f8fbf9;
 }
 
 .target-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
-  margin-top:10px
+  margin-top:10px;
 }
 
 .field label{
   display:block;
   font-weight:700;
-  margin-bottom:6px
+  margin-bottom:6px;
 }
 
 .field select,
@@ -226,23 +228,23 @@ h1{
   border:1px solid #ccd8d1;
   border-radius:9px;
   background:#fff;
-  color:var(--ink)
+  color:var(--ink);
 }
 
 .actions{
   display:flex;
   gap:9px;
   flex-wrap:wrap;
-  margin-top:13px
+  margin-top:13px;
 }
 
 .comment{
-  margin-top:14px
+  margin-top:14px;
 }
 
 .comment textarea{
   min-height:90px;
-  resize:vertical
+  resize:vertical;
 }
 
 .note-body{
@@ -250,58 +252,58 @@ h1{
   border:1px solid var(--line);
   border-radius:12px;
   padding:15px;
-  background:#f8fbf9
+  background:#f8fbf9;
 }
 
 .section{
-  margin-top:15px
+  margin-top:15px;
 }
 
 .section h3{
-  margin-bottom:6px
+  margin-bottom:6px;
 }
 
 .content{
   white-space:pre-wrap;
-  line-height:1.55
+  line-height:1.55;
 }
 
 details{
-  margin-top:13px
+  margin-top:13px;
 }
 
 summary{
   cursor:pointer;
   font-weight:800;
-  color:var(--g)
+  color:var(--g);
 }
 
 .empty{
   padding:30px 10px;
   text-align:center;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 @media(max-width:700px){
 
   main{
-    padding:0 12px
+    padding:0 12px;
   }
 
   h1{
-    font-size:31px
+    font-size:31px;
   }
 
   .panel{
-    padding:13px
+    padding:13px;
   }
 
   .actions button{
-    width:100%
+    width:100%;
   }
 
   .target-grid{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 }
 </style>
@@ -310,6 +312,7 @@ summary{
 <body>
 
 <header>
+
   <div class="header-inner">
 
     <div class="brand">
@@ -331,12 +334,11 @@ summary{
       class="secondary"
       type="button"
       onclick="location.href='/academic.html'">
-
       ← Academic Management
-
     </button>
 
   </div>
+
 </header>
 
 
@@ -356,8 +358,8 @@ summary{
 
       <div class="muted">
         Review AI-generated notes before publication.
-        Publication target is selected here and stored
-        only in NoteBank_Publications.
+        Publication target is selected here and stored only in
+        NoteBank_Publications.
       </div>
 
     </div>
@@ -366,9 +368,7 @@ summary{
       class="primary"
       type="button"
       onclick="loadQueue()">
-
       ↻ Refresh Queue
-
     </button>
 
   </div>
@@ -398,13 +398,13 @@ summary{
       <span
         id="queueCount"
         class="count">
-
         0
-
       </span>
 
     </div>
 
+
+    <!-- REVIEWER -->
 
     <div class="target-box">
 
@@ -450,60 +450,59 @@ summary{
 "use strict";
 
 
-/* ============================================================
+/* =========================================================
    GLOBAL DATA
-   ============================================================ */
+========================================================= */
 
 let programmes = [];
-
 let classes = [];
 
+
+/* =========================================================
+   BASIC HELPERS
+========================================================= */
 
 const $ = id =>
   document.getElementById(id);
 
 
-const esc = v =>
-  String(v ?? "").replace(
+const esc = value =>
+  String(value ?? "").replace(
     /[&<>"']/g,
-    c => ({
+    character => ({
       "&":"&amp;",
       "<":"&lt;",
       ">":"&gt;",
       '"':"&quot;",
       "'":"&#39;"
-    }[c])
+    }[character])
   );
 
 
-function txt(v){
-  return String(v ?? "").trim();
+function txt(value){
+  return String(value ?? "").trim();
 }
 
 
-/* ============================================================
-   SAFE JSON
-   ============================================================ */
+/* =========================================================
+   SAFE JSON RESPONSE
+========================================================= */
 
-async function safeJson(r){
+async function safeJson(response){
 
-  const raw =
-    await r.text();
+  const raw = await response.text();
 
   const type =
-    r.headers.get("content-type") || "";
+    response.headers.get("content-type") || "";
 
   if(
     !type
       .toLowerCase()
       .includes("application/json")
   ){
-
     throw new Error(
-      raw ||
-      `Server returned ${r.status}.`
+      raw || `Server returned ${response.status}.`
     );
-
   }
 
   try{
@@ -519,286 +518,296 @@ async function safeJson(r){
     );
 
   }
-
 }
 
 
-/* ============================================================
+/* =========================================================
    MESSAGE
-   ============================================================ */
+========================================================= */
 
-function show(message,ok=true){
+function show(message, ok = true){
 
-  const b =
-    $("msg");
+  const box = $("msg");
 
-  b.className =
+  box.className =
     message
       ? `msg ${ok ? "ok" : "err"}`
       : "";
 
-  b.textContent =
+  box.textContent =
     message || "";
-
 }
 
 
-/* ============================================================
-   GET VALUE
-   ============================================================ */
+/* =========================================================
+   GET VALUE FROM OBJECT
+========================================================= */
 
-function value(note,...keys){
+function value(note, ...keys){
 
-  for(
-    const k of keys
-  ){
+  for(const key of keys){
 
     if(
-      note?.[k] !== undefined &&
-      note?.[k] !== null &&
-      txt(note[k])
+      note?.[key] !== undefined &&
+      note?.[key] !== null &&
+      txt(note[key])
     ){
 
-      return note[k];
+      return note[key];
 
     }
 
   }
 
   return "";
-
 }
 
 
-/* ============================================================
+/* =========================================================
    NOTE SECTION
-   ============================================================ */
+========================================================= */
 
-function section(label,v){
+function section(label, content){
 
-  v =
-    txt(v);
+  content = txt(content);
 
-  return v
-    ? `
-      <div class="section">
-        <h3>${esc(label)}</h3>
-        <div class="content">
-          ${esc(v)}
-        </div>
-      </div>
-    `
-    : "";
-
-}
-
-
-/* ============================================================
-   RENDER NOTE
-   ============================================================ */
-
-function renderNote(n){
+  if(!content){
+    return "";
+  }
 
   return `
+    <div class="section">
+
+      <h3>
+        ${esc(label)}
+      </h3>
+
+      <div class="content">
+        ${esc(content)}
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   RENDER NOTE
+========================================================= */
+
+function renderNote(note){
+
+  return `
+
     <div class="note-body">
 
       ${section(
         "Learning Objectives",
-        value(n,"Learning Objectives")
+        value(note,"Learning Objectives")
       )}
 
       ${section(
         "Key Terms",
-        value(n,"Key Terms")
+        value(note,"Key Terms")
       )}
 
       ${section(
         "Main Content",
-        value(n,"Content")
+        value(note,"Content")
       )}
 
       ${section(
         "Examples",
-        value(n,"Examples")
+        value(note,"Examples")
       )}
 
       ${section(
         "Worked Examples",
-        value(n,"Worked Examples")
+        value(note,"Worked Examples")
       )}
 
       ${section(
         "Formulae",
-        value(n,"Formulae")
+        value(note,"Formulae")
       )}
 
       ${section(
         "Applications",
-        value(n,"Applications")
+        value(note,"Applications")
       )}
 
       ${section(
         "Common Misconceptions",
-        value(n,"Common Misconceptions")
+        value(note,"Common Misconceptions")
       )}
 
       ${section(
         "Summary",
-        value(n,"Summary")
+        value(note,"Summary")
       )}
 
       ${section(
         "Examination Tips",
-        value(n,"Exam Tips")
+        value(note,"Exam Tips")
       )}
 
       ${section(
         "WAEC Focus",
-        value(n,"WAEC Focus")
+        value(note,"WAEC Focus")
       )}
 
       ${section(
         "NECO Focus",
-        value(n,"NECO Focus")
+        value(note,"NECO Focus")
       )}
 
       ${section(
         "UTME Focus",
-        value(n,"UTME Focus")
+        value(note,"UTME Focus")
       )}
 
       ${section(
         "Diagrams",
-        value(n,"Diagrams")
+        value(note,"Diagrams")
       )}
 
     </div>
-  `;
 
+  `;
 }
 
 
-/* ============================================================
-   CLASS HELPERS
-   ============================================================ */
+/* =========================================================
+   CLASS IDENTIFICATION
+========================================================= */
 
-function classId(c){
+function classId(classRecord){
 
-  const raw =
-    txt(
-      c.airtableId ||
-      c.id ||
-      c.recordId
-    );
+  const raw = txt(
+    classRecord.airtableId ||
+    classRecord.id ||
+    classRecord.recordId
+  );
 
-  const m =
+  const match =
     raw.match(
       /(?:^|\|)(rec[A-Za-z0-9]{14})$/
     );
 
-  return m
-    ? m[1]
+  return match
+    ? match[1]
     : raw;
-
 }
 
 
-function className(c){
+/* =========================================================
+   CLASS NAME
+========================================================= */
+
+function className(classRecord){
 
   return txt(
-    c.name ||
-    c.className ||
-    c["Class Name"] ||
-    c.Name
+    classRecord.name ||
+    classRecord.className ||
+    classRecord["Class Name"] ||
+    classRecord.Name
   );
 
 }
 
 
-function classProgramme(c){
+/* =========================================================
+   PROGRAMME NAME
+========================================================= */
+
+function programmeName(programmeRecord){
 
   return txt(
-    c.programme ||
-    c.Programme
+    programmeRecord.name ||
+    programmeRecord.programme ||
+    programmeRecord.code
   );
 
 }
 
 
-function programmeName(p){
-
-  return txt(
-    p.name ||
-    p.programme ||
-    p.code
-  );
-
-}
-
-
-/* ============================================================
+/* =========================================================
    PROGRAMME OPTIONS
-   ============================================================ */
+========================================================= */
 
 function programmeOptions(
-  selectedProgramme=""
+  selectedProgramme = ""
 ){
 
   const selected =
     txt(selectedProgramme)
       .toLowerCase();
 
-  return `
-    <option value="">
+  return (
+
+    `<option value="">
       Select target programme
-    </option>
-  ` +
+    </option>`
 
-  programmes
-    .map(p => {
+    +
 
-      const name =
-        programmeName(p);
+    programmes
+      .map(programme => {
 
-      return `
-        <option
-          value="${esc(name)}"
-          ${
-            name.toLowerCase() === selected
-              ? "selected"
-              : ""
-          }>
+        const name =
+          programmeName(programme);
 
-          ${esc(name)}
+        return `
+          <option
+            value="${esc(name)}"
+            ${
+              name.toLowerCase() === selected
+                ? "selected"
+                : ""
+            }>
+            ${esc(name)}
+          </option>
+        `;
 
-        </option>
-      `;
+      })
+      .join("")
 
-    })
-    .join("");
+  );
 
 }
 
 
-/* ============================================================
+/* =========================================================
    CLASS OPTIONS
-   ============================================================ */
+=========================================================
+
+   IMPORTANT:
+
+   Programme determines whether the class selector
+   becomes active.
+
+   Programme DOES NOT filter the classes.
+
+   Therefore:
+
+   WAEC  → SS1, SS2, SS3...
+   NECO  → SS1, SS2, SS3...
+   UTME  → SS1, SS2, SS3...
+
+========================================================= */
 
 function classOptions(
-  selectedProgramme="",
-  selectedClass=""
+  selectedProgramme = "",
+  selectedClass = ""
 ){
 
-  const p =
-    txt(selectedProgramme)
-      .toLowerCase();
+  const programme =
+    txt(selectedProgramme).toLowerCase();
 
 
-  /*
-   * Programme MUST be selected first.
-   */
+  /* No programme selected */
 
-  if(!p){
+  if(!programme){
 
     return `
       <option value="">
@@ -810,27 +819,23 @@ function classOptions(
 
 
   /*
-   * Only classes belonging to the
-   * selected programme are shown.
+   * Classes are shared academic levels.
+   * Do NOT filter them by programme.
    */
 
   const filtered =
-    classes.filter(
-      c =>
-        classProgramme(c)
-          .toLowerCase() === p
-    );
+    classes;
 
 
   const options =
     filtered
-      .map(c => {
+      .map(classRecord => {
 
         const id =
-          classId(c);
+          classId(classRecord);
 
         const name =
-          className(c);
+          className(classRecord);
 
         return `
           <option
@@ -840,9 +845,7 @@ function classOptions(
                 ? "selected"
                 : ""
             }>
-
             ${esc(name)}
-
           </option>
         `;
 
@@ -851,102 +854,97 @@ function classOptions(
 
 
   return `
+
     <option value="">
       ${
         filtered.length
           ? "Select target class"
-          : "No classes available for this programme"
+          : "No classes available"
       }
     </option>
 
     ${options}
+
   `;
 
 }
 
 
-/* ============================================================
-   CLASS STATE
-   ============================================================ */
+/* =========================================================
+   ENABLE / DISABLE CLASS SELECT
+========================================================= */
 
 function setClassState(
   select,
   programme,
-  selectedClass=""
+  selectedClass = ""
 ){
 
-  if(!select)return;
+  if(!select){
+    return;
+  }
 
 
-  const p =
+  const selectedProgramme =
     txt(programme);
 
 
   /*
    * No programme:
-   * keep Target Class disabled.
+   * disable Target Class
    */
 
-  if(!p){
+  if(!selectedProgramme){
 
-    select.disabled =
-      true;
+    select.disabled = true;
 
-    select.innerHTML =
-      `
-        <option value="">
-          Select target programme first
-        </option>
-      `;
+    select.innerHTML = `
+      <option value="">
+        Select target programme first
+      </option>
+    `;
 
     return;
-
   }
 
 
   /*
-   * Programme is ready.
-   * Now load its classes.
+   * Programme selected:
+   * enable Target Class
    */
 
-  select.disabled =
-    false;
+  select.disabled = false;
 
   select.innerHTML =
     classOptions(
-      p,
+      selectedProgramme,
       selectedClass
     );
 
 }
 
 
-/* ============================================================
-   REFRESH CLASSES WHEN PROGRAMME CHANGES
-   ============================================================ */
+/* =========================================================
+   REFRESH CLASS SELECT
+========================================================= */
 
-function refreshClasses(i){
+function refreshClasses(index){
 
-  const p =
-    $("programme_" + i);
+  const programmeSelect =
+    $("programme_" + index);
 
-  const c =
-    $("class_" + i);
+  const classSelect =
+    $("class_" + index);
 
 
   if(
-    p &&
-    c
+    programmeSelect &&
+    classSelect
   ){
 
-    /*
-     * Clear previous class selection.
-     * The new programme controls the class list.
-     */
-
     setClassState(
-      c,
-      p.value,
+      classSelect,
+      programmeSelect.value,
       ""
     );
 
@@ -955,54 +953,50 @@ function refreshClasses(i){
 }
 
 
-/* ============================================================
+/* =========================================================
    RENDER REVIEW CARD
-   ============================================================ */
+========================================================= */
 
-function renderCard(n,i){
+function renderCard(note,index){
 
   const id =
-    n.airtableId ||
-    n["Note ID"];
-
+    note.airtableId ||
+    note["Note ID"];
 
   const title =
-    value(n,"Title") ||
+    value(note,"Title") ||
     "Untitled Note";
 
-
   const subject =
-    value(n,"Subject");
-
+    value(note,"Subject");
 
   const version =
-    value(n,"Version") ||
+    value(note,"Version") ||
     "1";
-
 
   const updated =
     value(
-      n,
+      note,
       "Updated Date",
       "Created Date"
     );
 
 
-  const cid =
-    `comment_${i}`;
+  const commentId =
+    `comment_${index}`;
 
-  const pid =
-    `programme_${i}`;
+  const programmeId =
+    `programme_${index}`;
 
-  const clid =
-    `class_${i}`;
+  const classIdElement =
+    `class_${index}`;
 
 
   return `
 
     <article
       class="card"
-      id="note_${i}">
+      id="note_${index}">
 
       <h2>
         ${esc(title)}
@@ -1044,16 +1038,20 @@ function renderCard(n,i){
       }
 
 
+      <!-- FULL NOTE -->
+
       <details>
 
         <summary>
           📖 Read Full Note
         </summary>
 
-        ${renderNote(n)}
+        ${renderNote(note)}
 
       </details>
 
+
+      <!-- PUBLICATION TARGET -->
 
       <div class="target-box">
 
@@ -1067,8 +1065,8 @@ function renderCard(n,i){
           style="margin-top:4px">
 
           Select the programme first.
-          Target Class will then load only
-          classes belonging to that programme.
+          Target Class will then load all available
+          classes.
 
           These values are saved to
           <b>NoteBank_Publications</b>,
@@ -1080,12 +1078,12 @@ function renderCard(n,i){
         <div class="target-grid">
 
 
-          <!-- TARGET PROGRAMME -->
+          <!-- PROGRAMME -->
 
           <div class="field">
 
             <label
-              for="${pid}">
+              for="${programmeId}">
 
               Target Programme
 
@@ -1093,8 +1091,8 @@ function renderCard(n,i){
 
 
             <select
-              id="${pid}"
-              onchange="refreshClasses(${i})">
+              id="${programmeId}"
+              onchange="refreshClasses(${index})">
 
               ${programmeOptions()}
 
@@ -1103,12 +1101,12 @@ function renderCard(n,i){
           </div>
 
 
-          <!-- TARGET CLASS -->
+          <!-- CLASS -->
 
           <div class="field">
 
             <label
-              for="${clid}">
+              for="${classIdElement}">
 
               Target Class
 
@@ -1116,13 +1114,11 @@ function renderCard(n,i){
 
 
             <select
-              id="${clid}"
+              id="${classIdElement}"
               disabled>
 
               <option value="">
-
                 Select target programme first
-
               </option>
 
             </select>
@@ -1135,12 +1131,12 @@ function renderCard(n,i){
       </div>
 
 
-      <!-- REVIEWER COMMENT -->
+      <!-- REVIEW COMMENT -->
 
       <div class="comment">
 
         <label
-          for="${cid}">
+          for="${commentId}">
 
           <b>
             Reviewer Comment
@@ -1150,7 +1146,7 @@ function renderCard(n,i){
 
 
         <textarea
-          id="${cid}"
+          id="${commentId}"
           placeholder="Add a review comment. Required when requesting changes.">
         </textarea>
 
@@ -1161,12 +1157,13 @@ function renderCard(n,i){
 
       <div class="actions">
 
+
         <button
           class="secondary"
           type="button"
           onclick="requestChanges(
             '${esc(id)}',
-            '${cid}'
+            '${commentId}'
           )">
 
           ✏️ Request Changes
@@ -1179,17 +1176,17 @@ function renderCard(n,i){
           type="button"
           onclick="approveNote(
             '${esc(id)}',
-            '${cid}',
-            '${pid}',
-            '${clid}'
+            '${commentId}',
+            '${programmeId}',
+            '${classIdElement}'
           )">
 
           ✓ Approve & Publish
 
         </button>
 
-      </div>
 
+      </div>
 
     </article>
 
@@ -1198,22 +1195,22 @@ function renderCard(n,i){
 }
 
 
-/* ============================================================
+/* =========================================================
    LOAD ACADEMIC TARGETS
-   ============================================================
+=========================================================
 
-   IMPORTANT:
+   IMPORTANT INITIALISATION ORDER
 
-   Programme and Class data are loaded together FIRST.
+   1. Load Academic data.
+   2. Build Target Programme options.
+   3. Keep Target Class disabled until programme selected.
+   4. Once programme is selected, show all available classes.
 
-   The review queue is NOT rendered until this finishes.
-
-   This fixes the original loading-order problem.
-   ============================================================ */
+========================================================= */
 
 async function loadAcademicTargets(){
 
-  const r =
+  const response =
     await fetch(
       "/api/academic",
       {
@@ -1222,14 +1219,14 @@ async function loadAcademicTargets(){
     );
 
 
-  const d =
-    await safeJson(r);
+  const data =
+    await safeJson(response);
 
 
-  if(!r.ok){
+  if(!response.ok){
 
     throw new Error(
-      d.error ||
+      data.error ||
       "Unable to load academic programmes and classes."
     );
 
@@ -1237,28 +1234,25 @@ async function loadAcademicTargets(){
 
 
   const records =
-    Array.isArray(d.records)
-      ? d.records
+    Array.isArray(data.records)
+      ? data.records
       : [];
 
 
-  /* ==========================================================
-     BUILD PROGRAMME LIST
-     ========================================================== */
+  /* ==============================================
+     PROGRAMMES
+  ============================================== */
 
   const seen =
     new Set();
 
-  programmes =
-    [];
+  programmes = [];
 
 
-  for(
-    const x of records
-  ){
+  for(const record of records){
 
     if(
-      String(x.type || "")
+      String(record.type || "")
         .toLowerCase()
         !== "programme"
     ){
@@ -1269,8 +1263,7 @@ async function loadAcademicTargets(){
 
 
     const name =
-      programmeName(x);
-
+      programmeName(record);
 
     const key =
       name.toLowerCase();
@@ -1288,9 +1281,8 @@ async function loadAcademicTargets(){
 
     seen.add(key);
 
-
     programmes.push({
-      ...x,
+      ...record,
       name
     });
 
@@ -1298,8 +1290,7 @@ async function loadAcademicTargets(){
 
 
   /*
-   * Fallback only if Academic API
-   * contains no programme records.
+   * Fallback programmes.
    */
 
   if(!programmes.length){
@@ -1323,51 +1314,51 @@ async function loadAcademicTargets(){
   }
 
 
-  /* ==========================================================
-     BUILD CLASS LIST
-     ==========================================================
+  /* ==============================================
+     CLASSES
+  ==============================================
 
      IMPORTANT:
 
-     Do NOT include classes that do not have
-     a programme relationship.
+     We only require:
 
-     This prevents unrelated classes from
-     appearing under the wrong programme.
-     ========================================================== */
+       type = class
+       AND
+       class name exists.
+
+     We deliberately DO NOT require
+     Programme to be populated.
+
+  ============================================== */
 
   classes =
     records.filter(
-      x =>
+      record =>
 
-        String(x.type || "")
+        String(record.type || "")
           .toLowerCase()
           === "class"
 
         &&
 
-        className(x)
+        className(record)
 
-        &&
-
-        classProgramme(x)
     );
 
 }
 
 
-/* ============================================================
+/* =========================================================
    LOAD REVIEW QUEUE
-   ============================================================ */
+========================================================= */
 
 async function loadQueue(){
 
-  $("queue").innerHTML =
-    `
-      <div class="empty">
-        Loading programmes and classes...
-      </div>
-    `;
+  $("queue").innerHTML = `
+    <div class="empty">
+      Loading programmes and classes...
+    </div>
+  `;
 
 
   $("queueCount")
@@ -1379,27 +1370,22 @@ async function loadQueue(){
 
   try{
 
+
     /*
-     * ========================================================
-     * STEP 1
-     *
-     * Load PROGRAMMES + CLASSES first.
-     * ========================================================
+     * CRITICAL:
+
+     * Academic data MUST load first.
      */
 
     await loadAcademicTargets();
 
 
     /*
-     * ========================================================
-     * STEP 2
-     *
-     * Only after the target data is ready do we
-     * load the NoteBank review queue.
-     * ========================================================
+     * Only after Academic data has loaded
+     * do we load the review queue.
      */
 
-    const r =
+    const response =
       await fetch(
         "/api/note-reviews?list=review",
         {
@@ -1408,17 +1394,17 @@ async function loadQueue(){
       );
 
 
-    const d =
-      await safeJson(r);
+    const data =
+      await safeJson(response);
 
 
     if(
-      !r.ok ||
-      d.success !== true
+      !response.ok ||
+      data.success !== true
     ){
 
       throw new Error(
-        d.error ||
+        data.error ||
         "Unable to load review queue."
       );
 
@@ -1426,27 +1412,25 @@ async function loadQueue(){
 
 
     const notes =
-      Array.isArray(d.notes)
-        ? d.notes
+      Array.isArray(data.notes)
+        ? data.notes
         : [];
 
 
     $("queueCount")
       .textContent =
-      notes.length;
+        notes.length;
 
+
+    /* No notes */
 
     if(!notes.length){
 
-      $("queue").innerHTML =
-        `
-          <div class="empty">
-
-            🎉 No notes are currently
-            awaiting approval.
-
-          </div>
-        `;
+      $("queue").innerHTML = `
+        <div class="empty">
+          🎉 No notes are currently awaiting approval.
+        </div>
+      `;
 
       return;
 
@@ -1454,12 +1438,8 @@ async function loadQueue(){
 
 
     /*
-     * Target Programme is now ready
-     * before each card is created.
-     *
-     * Target Class starts disabled and
-     * becomes available only after the
-     * programme is selected.
+     * Render cards only after
+     * programmes and classes are ready.
      */
 
     $("queue").innerHTML =
@@ -1468,23 +1448,25 @@ async function loadQueue(){
         .join("");
 
 
-  }catch(e){
+  }catch(error){
 
-    console.error(e);
+    console.error(error);
 
 
-    $("queue").innerHTML =
-      `
-        <div class="empty">
+    $("queue").innerHTML = `
 
-          ❌ ${esc(e.message)}
+      <div class="empty">
 
-        </div>
-      `;
+        ❌
+        ${esc(error.message)}
+
+      </div>
+
+    `;
 
 
     show(
-      e.message,
+      error.message,
       false
     );
 
@@ -1493,9 +1475,9 @@ async function loadQueue(){
 }
 
 
-/* ============================================================
+/* =========================================================
    REVIEW ACTION
-   ============================================================ */
+========================================================= */
 
 async function reviewAction(
   noteId,
@@ -1517,9 +1499,7 @@ async function reviewAction(
     );
 
 
-  /* ==========================================================
-     REVIEWER VALIDATION
-     ========================================================== */
+  /* Reviewer required */
 
   if(!reviewer){
 
@@ -1528,17 +1508,14 @@ async function reviewAction(
       false
     );
 
-    $("reviewerName")
-      .focus();
+    $("reviewerName").focus();
 
     return;
 
   }
 
 
-  /* ==========================================================
-     COMMENT VALIDATION
-     ========================================================== */
+  /* Comment required for changes */
 
   if(
     action === "request_changes" &&
@@ -1550,8 +1527,7 @@ async function reviewAction(
       false
     );
 
-    $(commentId)
-      .focus();
+    $(commentId).focus();
 
     return;
 
@@ -1559,17 +1535,14 @@ async function reviewAction(
 
 
   let targetProgramme = "";
-
   let targetClass = "";
 
 
-  /* ==========================================================
-     PUBLICATION TARGET VALIDATION
-     ========================================================== */
+  /* ==============================================
+     APPROVAL
+  ============================================== */
 
-  if(
-    action === "approve"
-  ){
+  if(action === "approve"){
 
     targetProgramme =
       txt(
@@ -1583,6 +1556,8 @@ async function reviewAction(
       );
 
 
+    /* Programme required */
+
     if(!targetProgramme){
 
       show(
@@ -1594,6 +1569,8 @@ async function reviewAction(
 
     }
 
+
+    /* Class required */
 
     if(!targetClass){
 
@@ -1609,25 +1586,21 @@ async function reviewAction(
   }
 
 
-  /* ==========================================================
-     DISABLE ACTIVE BUTTON
-     ========================================================== */
-
   const button =
     document.activeElement;
 
 
   if(button){
 
-    button.disabled =
-      true;
+    button.disabled = true;
 
   }
 
 
   try{
 
-    const r =
+
+    const response =
       await fetch(
         "/api/note-reviews",
         {
@@ -1638,39 +1611,38 @@ async function reviewAction(
               "application/json"
           },
 
-          body:
-            JSON.stringify({
+          body:JSON.stringify({
 
-              noteId,
+            noteId,
 
-              action,
+            action,
 
-              reviewer,
+            reviewer,
 
-              reviewerComment:
-                comment,
+            reviewerComment:
+              comment,
 
-              targetProgramme,
+            targetProgramme,
 
-              targetClass
+            targetClass
 
-            })
+          })
 
         }
       );
 
 
-    const d =
-      await safeJson(r);
+    const data =
+      await safeJson(response);
 
 
     if(
-      !r.ok ||
-      d.success !== true
+      !response.ok ||
+      data.success !== true
     ){
 
       throw new Error(
-        d.error ||
+        data.error ||
         "Review operation failed."
       );
 
@@ -1678,26 +1650,26 @@ async function reviewAction(
 
 
     show(
-      d.message ||
+      data.message ||
       "Review completed successfully.",
       true
     );
 
 
     /*
-     * Reload everything in the correct
-     * order after the action.
+     * Refresh queue after successful action.
      */
 
     await loadQueue();
 
 
-  }catch(e){
+  }catch(error){
 
-    console.error(e);
+    console.error(error);
+
 
     show(
-      e.message,
+      error.message,
       false
     );
 
@@ -1706,8 +1678,7 @@ async function reviewAction(
 
     if(button){
 
-      button.disabled =
-        false;
+      button.disabled = false;
 
     }
 
@@ -1716,9 +1687,9 @@ async function reviewAction(
 }
 
 
-/* ============================================================
+/* =========================================================
    APPROVE NOTE
-   ============================================================ */
+========================================================= */
 
 function approveNote(
   noteId,
@@ -1749,9 +1720,9 @@ function approveNote(
 }
 
 
-/* ============================================================
+/* =========================================================
    REQUEST CHANGES
-   ============================================================ */
+========================================================= */
 
 function requestChanges(
   noteId,
@@ -1767,9 +1738,9 @@ function requestChanges(
 }
 
 
-/* ============================================================
+/* =========================================================
    INITIAL LOAD
-   ============================================================ */
+========================================================= */
 
 loadQueue();
 
