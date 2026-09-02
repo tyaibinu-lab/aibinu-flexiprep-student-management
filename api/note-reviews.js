@@ -1,67 +1,2127 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#08783f">
-<title>Aibinu Flexiprep | NoteBank Review Center</title>
-<style>
-:root{--g:#08783f;--gold:#d7a62a;--ink:#17382b;--muted:#68756e;--bg:#f4f7f5;--line:#dce6e0;--danger:#b42318;--ok:#e7f6ec}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}button,input,textarea,select{font:inherit}button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:not-allowed}.primary{background:var(--gold);color:var(--ink)}.secondary{background:#fff;color:var(--g);border:1px solid var(--line)}header{background:var(--g);color:#fff;padding:16px 5%}.header-inner{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:10px}.logo{background:var(--gold);color:var(--g);padding:11px;border-radius:10px;font-weight:800;font-size:20px}.brand b{font-size:18px}.brand small{display:block;opacity:.8;margin-top:3px}main{max-width:1200px;margin:25px auto;padding:0 16px}.top{display:flex;justify-content:space-between;align-items:end;gap:15px;flex-wrap:wrap}h1{margin:5px 0;font-size:38px}.muted{color:var(--muted);font-size:17px}.msg{margin:15px 0;padding:11px;border-radius:9px}.ok{background:var(--ok);color:var(--g)}.err{background:#fde9e7;color:var(--danger)}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:20px}.queue-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.count{display:inline-block;padding:6px 10px;border-radius:99px;background:var(--ok);color:var(--g);font-weight:800}.card{border:1px solid var(--line);border-radius:14px;padding:17px;margin-top:14px}.card h2{margin:0 0 7px}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.badge{display:inline-block;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:700;background:#fff7df;color:#765b00}.small{font-size:13px;color:var(--muted)}.target-box{margin-top:15px;padding:15px;border:1px solid var(--line);border-radius:12px;background:#f8fbf9}.target-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}.field label{display:block;font-weight:700;margin-bottom:6px}.field select,.field input,.comment textarea{width:100%;padding:12px;border:1px solid #ccd8d1;border-radius:9px;background:#fff;color:var(--ink)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.comment{margin-top:14px}.comment textarea{min-height:90px;resize:vertical}.note-body{margin-top:15px;border:1px solid var(--line);border-radius:12px;padding:15px;background:#f8fbf9}.section{margin-top:15px}.section h3{margin-bottom:6px}.content{white-space:pre-wrap;line-height:1.55}details{margin-top:13px}summary{cursor:pointer;font-weight:800;color:var(--g)}.empty{padding:30px 10px;text-align:center;color:var(--muted)}@media(max-width:700px){main{padding:0 12px}h1{font-size:31px}.panel{padding:13px}.actions button{width:100%}.target-grid{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<header><div class="header-inner"><div class="brand"><div class="logo">AF</div><div><b>AIBINU FLEXIPREP</b><small>EDUCONSULT · NOTEBANK REVIEW</small></div></div><button class="secondary" type="button" onclick="location.href='/academic.html'">← Academic Management</button></div></header>
-<main>
-<div class="top"><div><small>AIBINU FLEXIPREP</small><h1>📋 NoteBank Review Center</h1><div class="muted">Review AI-generated notes before publication. Publication target is selected here and stored only in NoteBank_Publications.</div></div><button class="primary" type="button" onclick="loadQueue()">↻ Refresh Queue</button></div>
-<div id="msg"></div>
-<div class="panel">
-  <div class="queue-head"><div><h2>Notes Awaiting Approval</h2><div class="small">Only notes with status <b>Under Review</b> appear here.</div></div><span id="queueCount" class="count">0</span></div>
-  <div class="target-box">
-    <div class="field"><label for="reviewerName">Reviewer Name</label><input id="reviewerName" placeholder="Enter the reviewer's name"></div>
-    <div class="small" style="margin-top:6px">If the name matches a teacher record, the reviewer will be linked to Teachers.</div>
-  </div>
-  <div id="queue"><div class="empty">Loading review queue...</div></div>
-</div>
-</main>
-<script>
-"use strict";
-const PROGRAMMES=["WAEC","NECO","UTME"];
-let classes=[];
-const $=id=>document.getElementById(id);
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"}[c]));
-function txt(v){return String(v??"").trim()}
-async function safeJson(r){const raw=await r.text();const type=r.headers.get("content-type")||"";if(!type.toLowerCase().includes("application/json"))throw new Error(raw||`Server returned ${r.status}.`);try{return raw?JSON.parse(raw):{}}catch{throw new Error("Server returned invalid JSON.")}}
-function show(message,ok=true){const b=$("msg");b.className=message?`msg ${ok?"ok":"err"}`:"";b.textContent=message||""}
-function value(note,...keys){for(const k of keys)if(note?.[k]!==undefined&&note?.[k]!==null&&txt(note[k]))return note[k];return ""}
-function section(label,v){v=txt(v);return v?`<div class="section"><h3>${esc(label)}</h3><div class="content">${esc(v)}</div></div>`:""}
-function renderNote(n){return `<div class="note-body">${section("Learning Objectives",value(n,"Learning Objectives"))}${section("Key Terms",value(n,"Key Terms"))}${section("Main Content",value(n,"Content"))}${section("Examples",value(n,"Examples"))}${section("Worked Examples",value(n,"Worked Examples"))}${section("Formulae",value(n,"Formulae"))}${section("Applications",value(n,"Applications"))}${section("Common Misconceptions",value(n,"Common Misconceptions"))}${section("Summary",value(n,"Summary"))}${section("Examination Tips",value(n,"Exam Tips"))}${section("WAEC Focus",value(n,"WAEC Focus"))}${section("NECO Focus",value(n,"NECO Focus"))}${section("UTME Focus",value(n,"UTME Focus"))}${section("Diagrams",value(n,"Diagrams"))}</div>`}
-function classId(c){const raw=txt(c.airtableId||c.id||c.recordId);const m=raw.match(/(?:^|\|)(rec[A-Za-z0-9]{14})$/);return m?m[1]:raw}
-function className(c){return txt(c.name||c.className||c["Class Name"]||c.Name)}
-function classProgramme(c){return txt(c.programme||c.Programme)}
-function classOptions(selectedProgramme="",selectedClass=""){
-  const p=txt(selectedProgramme).toLowerCase();
-  const filtered=classes.filter(c=>{const cp=classProgramme(c).toLowerCase();return !p||!cp||cp===p});
-  return `<option value="">Select target class</option>`+filtered.map(c=>`<option value="${esc(classId(c))}" ${classId(c)===selectedClass?"selected":""}>${esc(className(c))}${classProgramme(c)?` — ${esc(classProgramme(c))}`:""}</option>`).join("");
+// ============================================================
+// AIBINU FLEXIPREP EDUCONSULT
+// File: api/note-reviews.js
+//
+// NoteBank workflow:
+//
+// AI/Draft
+//      ↓
+// Under Review
+//      ↓
+// Published
+//
+// OR
+//
+// Under Review
+//      ↓
+// Changes Requested
+//
+// IMPORTANT:
+// Target Programme and Target Class belong ONLY to
+// NoteBank_Publications.
+//
+// They are NOT fields in NoteBank_Notes.
+// ============================================================
+
+
+const AIRTABLE_API =
+  "https://api.airtable.com/v0";
+
+
+/* ============================================================
+   AIRTABLE TABLE IDs
+   ============================================================ */
+
+const NOTES_TABLE =
+  "tblsEjHgHA7vhPgm0";
+
+const APPROVALS_TABLE =
+  process.env.AIRTABLE_APPROVALS_TABLE_ID ||
+  "tblJHGCDxEpdjm46y";
+
+const PUBLICATIONS_TABLE =
+  process.env.AIRTABLE_PUBLICATIONS_TABLE_ID ||
+  "tblKSLfWIrVNGkH5D";
+
+const TEACHERS_TABLE =
+  "tblVjuSJe4R5kcOZr";
+
+const CLASSES_TABLE =
+  "tblpwV6RF0IpHGWLg";
+
+
+/* ============================================================
+   AIRTABLE CONFIGURATION
+   ============================================================ */
+
+function config(){
+
+  const token =
+    process.env.AIRTABLE_PAT ||
+    process.env.AIRTABLE_TOKEN;
+
+  const baseId =
+    process.env.AIRTABLE_BASE_ID;
+
+
+  if(!token || !baseId){
+
+    throw new Error(
+      "Airtable environment variables are missing."
+    );
+
+  }
+
+
+  return {
+    token,
+    baseId
+  };
+
 }
-function programmeOptions(){return `<option value="">Select programme</option>`+PROGRAMMES.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("")}
-function renderCard(n,i){const id=n.airtableId||n["Note ID"];const title=value(n,"Title")||"Untitled Note";const subject=value(n,"Subject");const version=value(n,"Version")||"1";const updated=value(n,"Updated Date","Created Date");const cid=`comment_${i}`,pid=`programme_${i}`,clid=`class_${i}`;return `<article class="card" id="note_${i}"><h2>${esc(title)}</h2><div class="meta">${subject?`<span class="badge">${esc(subject)}</span>`:""}<span class="badge">Under Review</span><span class="badge">Version ${esc(version)}</span></div>${updated?`<div class="small">Last updated: ${esc(updated)}</div>`:""}<details><summary>📖 Read Full Note</summary>${renderNote(n)}</details><div class="target-box"><b>Publication Target</b><div class="small" style="margin-top:4px">These values are saved to <b>NoteBank_Publications</b>, not NoteBank_Notes.</div><div class="target-grid"><div class="field"><label for="${pid}">Target Programme</label><select id="${pid}" onchange="refreshClasses(${i})">${programmeOptions()}</select></div><div class="field"><label for="${clid}">Target Class</label><select id="${clid}">${classOptions()}</select></div></div></div><div class="comment"><label for="${cid}"><b>Reviewer Comment</b></label><textarea id="${cid}" placeholder="Add a review comment. Required when requesting changes."></textarea></div><div class="actions"><button class="secondary" type="button" onclick="requestChanges('${esc(id)}','${cid}')">✏️ Request Changes</button><button class="primary" type="button" onclick="approveNote('${esc(id)}','${cid}','${pid}','${clid}')">✓ Approve & Publish</button></div></article>`}
-function refreshClasses(i){const p=$("programme_"+i),c=$("class_"+i);if(p&&c)c.innerHTML=classOptions(p.value,c.value)}
-async function loadClasses(){try{const r=await fetch("/api/academic",{cache:"no-store"});const d=await safeJson(r);if(!r.ok)throw new Error(d.error||"Unable to load classes.");const records=Array.isArray(d.records)?d.records:[];classes=records.filter(x=>String(x.type||"").toLowerCase()==="class"&&className(x));}catch(e){console.warn("Class loading failed:",e);classes=[]}}
-async function loadQueue(){
-  $("queue").innerHTML='<div class="empty">Loading review queue...</div>';show("");
-  try{await loadClasses();const r=await fetch("/api/note-reviews?list=review",{cache:"no-store"});const d=await safeJson(r);if(!r.ok||d.success!==true)throw new Error(d.error||"Unable to load review queue.");const notes=Array.isArray(d.notes)?d.notes:[];$("queueCount").textContent=notes.length;if(!notes.length){$("queue").innerHTML='<div class="empty">🎉 No notes are currently awaiting approval.</div>';return}$("queue").innerHTML=notes.map(renderCard).join("");}
-  catch(e){console.error(e);$("queue").innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`;show(e.message,false)}
+
+
+/* ============================================================
+   HEADERS
+   ============================================================ */
+
+function authHeaders(token){
+
+  return {
+
+    Authorization:
+      `Bearer ${token}`,
+
+    "Content-Type":
+      "application/json"
+
+  };
+
 }
-async function reviewAction(noteId,commentId,action,programmeId,classId){
-  const reviewer=txt($("reviewerName").value);const comment=txt($(commentId)?.value);if(!reviewer){show("Enter the reviewer name first.",false);$("reviewerName").focus();return}if(action==="request_changes"&&!comment){show("Reviewer comment is required when requesting changes.",false);$(commentId).focus();return}
-  let targetProgramme="",targetClass="";if(action==="approve"){targetProgramme=txt($(programmeId)?.value);targetClass=txt($(classId)?.value);if(!targetProgramme){show("Select the Target Programme before publishing.",false);return}if(!targetClass){show("Select the Target Class before publishing.",false);return}}
-  const button=document.activeElement;if(button)button.disabled=true;
-  try{const r=await fetch("/api/note-reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({noteId,action,reviewer,reviewerComment:comment,targetProgramme,targetClass})});const d=await safeJson(r);if(!r.ok||d.success!==true)throw new Error(d.error||"Review operation failed.");show(d.message||"Review completed successfully.",true);await loadQueue();}catch(e){console.error(e);show(e.message,false)}finally{if(button)button.disabled=false}
+
+
+/* ============================================================
+   GENERIC AIRTABLE REQUEST
+   ============================================================ */
+
+async function airtable(
+  table,
+  method = "GET",
+  body = null,
+  query = ""
+){
+
+  const {
+    token,
+    baseId
+  } = config();
+
+
+  const response =
+    await fetch(
+      `${AIRTABLE_API}/${baseId}/${table}${query}`,
+      {
+
+        method,
+
+        headers:
+          authHeaders(token),
+
+        ...(body !== null
+          ? {
+              body:
+                JSON.stringify(body)
+            }
+          : {})
+
+      }
+    );
+
+
+  const raw =
+    await response.text();
+
+
+  let data = {};
+
+
+  try{
+
+    data =
+      raw
+        ? JSON.parse(raw)
+        : {};
+
+  }catch{
+
+    data = {
+      raw
+    };
+
+  }
+
+
+  if(!response.ok){
+
+    throw new Error(
+
+      data?.error?.message ||
+
+      data?.error?.type ||
+
+      `Airtable request failed (${response.status}).`
+
+    );
+
+  }
+
+
+  return data;
+
 }
-function approveNote(noteId,commentId,programmeId,classId){if(!confirm("Approve this note and publish it to the selected programme and class?"))return;reviewAction(noteId,commentId,"approve",programmeId,classId)}
-function requestChanges(noteId,commentId){reviewAction(noteId,commentId,"request_changes")}
-loadQueue();
-</script>
-</body>
-</html>
+
+
+/* ============================================================
+   LIST ALL RECORDS
+   ============================================================ */
+
+async function listAll(table){
+
+  const records = [];
+
+  let offset = "";
+
+
+  do{
+
+    const query =
+      offset
+        ? `?pageSize=100&offset=${encodeURIComponent(offset)}`
+        : "?pageSize=100";
+
+
+    const data =
+      await airtable(
+        table,
+        "GET",
+        null,
+        query
+      );
+
+
+    records.push(
+      ...(data.records || [])
+    );
+
+
+    offset =
+      data.offset || "";
+
+
+  }while(offset);
+
+
+  return records;
+
+}
+
+
+/* ============================================================
+   FIND NOTE
+   ============================================================ */
+
+async function findNote(noteId){
+
+  const id =
+    String(
+      noteId || ""
+    ).trim();
+
+
+  if(!id){
+
+    return null;
+
+  }
+
+
+  /*
+   * If the supplied value is already an Airtable
+   * record ID, use it directly.
+   */
+
+  if(
+    /^rec[A-Za-z0-9]{14}$/.test(id)
+  ){
+
+    try{
+
+      return await airtable(
+        `${NOTES_TABLE}/${id}`
+      );
+
+    }catch(_){
+
+      // Fall through to Note ID search.
+    }
+
+  }
+
+
+  /*
+   * Otherwise search the custom Note ID field.
+   */
+
+  const records =
+    await listAll(
+      NOTES_TABLE
+    );
+
+
+  return (
+    records.find(
+      record =>
+        String(
+          record.fields?.["Note ID"] || ""
+        ).trim() === id
+    ) ||
+    null
+  );
+
+}
+
+
+/* ============================================================
+   CONVERT VALUES TO AIRTABLE RECORD IDs
+   ============================================================ */
+
+function recordIds(value){
+
+  const values =
+    Array.isArray(value)
+      ? value
+      : [value];
+
+
+  return values
+
+    .map(
+      value =>
+        String(
+          value || ""
+        ).trim()
+    )
+
+    .map(value => {
+
+      const match =
+        value.match(
+          /(?:^|\|)(rec[A-Za-z0-9]{14})$/
+        );
+
+
+      return match
+        ? match[1]
+        : value;
+
+    })
+
+    .filter(
+      value =>
+        /^rec[A-Za-z0-9]{14}$/.test(value)
+    );
+
+}
+
+
+/* ============================================================
+   FIND TEACHER
+   ============================================================ */
+
+async function findTeacherId(value){
+
+  /*
+   * First check if the value is already
+   * an Airtable record ID.
+   */
+
+  const direct =
+    recordIds(value);
+
+
+  if(direct.length){
+
+    return direct[0];
+
+  }
+
+
+  const name =
+    String(
+      value || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if(!name){
+
+    return null;
+
+  }
+
+
+  const teachers =
+    await listAll(
+      TEACHERS_TABLE
+    );
+
+
+  const found =
+    teachers.find(
+      record => {
+
+        const fields =
+          record.fields || {};
+
+
+        return [
+
+          fields.Name,
+
+          fields["Teacher Name"],
+
+          fields.Full_Name,
+
+          fields["Full Name"]
+
+        ]
+
+          .filter(Boolean)
+
+          .some(
+            teacherName =>
+              String(
+                teacherName
+              )
+                .trim()
+                .toLowerCase()
+                === name
+          );
+
+      }
+    );
+
+
+  return found?.id || null;
+
+}
+
+
+/* ============================================================
+   FIND CLASS
+   ============================================================ */
+
+async function findClassId(value){
+
+  /*
+   * If frontend supplied a real Airtable
+   * record ID, use it directly.
+   */
+
+  const direct =
+    recordIds(value);
+
+
+  if(direct.length){
+
+    return direct[0];
+
+  }
+
+
+  const wanted =
+    String(
+      value || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if(!wanted){
+
+    return null;
+
+  }
+
+
+  const classes =
+    await listAll(
+      CLASSES_TABLE
+    );
+
+
+  const found =
+    classes.find(
+      record => {
+
+        const fields =
+          record.fields || {};
+
+
+        return [
+
+          fields["Class Name"],
+
+          fields.Name,
+
+          fields.Class,
+
+          fields["Class ID"],
+
+          fields.Code
+
+        ]
+
+          .filter(Boolean)
+
+          .some(
+            className =>
+              String(
+                className
+              )
+                .trim()
+                .toLowerCase()
+                === wanted
+          );
+
+      }
+    );
+
+
+  return found?.id || null;
+
+}
+
+
+/* ============================================================
+   RESPONSE FORMAT
+   ============================================================ */
+
+function responseNote(record){
+
+  return {
+
+    airtableId:
+      record.id,
+
+    ...(record.fields || {})
+
+  };
+
+}
+
+
+/* ============================================================
+   CURRENT TIME
+   ============================================================ */
+
+function now(){
+
+  return new Date()
+    .toISOString();
+
+}
+
+
+/* ============================================================
+   UPDATE NOTE
+   ============================================================ */
+
+async function updateNote(
+  id,
+  fields
+){
+
+  return airtable(
+
+    `${NOTES_TABLE}/${id}`,
+
+    "PATCH",
+
+    {
+      fields,
+      typecast:true
+    }
+
+  );
+
+}
+
+
+/* ============================================================
+   CREATE APPROVAL
+   ============================================================ */
+
+async function createApproval(
+  fields
+){
+
+  return airtable(
+
+    APPROVALS_TABLE,
+
+    "POST",
+
+    {
+      records:[
+        {
+          fields
+        }
+      ],
+
+      typecast:true
+    }
+
+  );
+
+}
+
+
+/* ============================================================
+   UPDATE APPROVAL
+   ============================================================ */
+
+async function updateApproval(
+  id,
+  fields
+){
+
+  return airtable(
+
+    `${APPROVALS_TABLE}/${id}`,
+
+    "PATCH",
+
+    {
+      fields,
+      typecast:true
+    }
+
+  );
+
+}
+
+
+/* ============================================================
+   FIND PENDING APPROVAL
+   ============================================================ */
+
+async function findPendingApproval(
+  noteId
+){
+
+  const records =
+    await listAll(
+      APPROVALS_TABLE
+    );
+
+
+  return (
+
+    records.find(
+      record => {
+
+        const fields =
+          record.fields || {};
+
+
+        const noteLinks =
+          Array.isArray(
+            fields.Note
+          )
+            ? fields.Note
+            : [];
+
+
+        return (
+
+          String(
+            fields.Status || ""
+          ).trim()
+          === "Pending"
+
+          &&
+
+          noteLinks.includes(
+            noteId
+          )
+
+        );
+
+      }
+    )
+
+    || null
+
+  );
+
+}
+
+
+/* ============================================================
+   FIND EXISTING PUBLICATION
+   ============================================================ */
+
+async function findPublication(
+  noteId,
+  version
+){
+
+  const wanted =
+    String(
+      version || ""
+    ).trim();
+
+
+  const records =
+    await listAll(
+      PUBLICATIONS_TABLE
+    );
+
+
+  return (
+
+    records.find(
+      record => {
+
+        const fields =
+          record.fields || {};
+
+
+        const noteLinks =
+          Array.isArray(
+            fields.Note
+          )
+            ? fields.Note
+            : [];
+
+
+        return (
+
+          noteLinks.includes(
+            noteId
+          )
+
+          &&
+
+          (
+            !wanted
+
+            ||
+
+            String(
+              fields.Version || ""
+            ).trim()
+            === wanted
+          )
+
+        );
+
+      }
+    )
+
+    || null
+
+  );
+
+}
+
+
+/* ============================================================
+   CREATE PUBLICATION
+   ============================================================ */
+
+async function createPublication(
+  fields
+){
+
+  return airtable(
+
+    PUBLICATIONS_TABLE,
+
+    "POST",
+
+    {
+      records:[
+        {
+          fields
+        }
+      ],
+
+      typecast:true
+    }
+
+  );
+
+}
+
+
+/* ============================================================
+   UPDATE PUBLICATION
+   ============================================================ */
+
+async function updatePublication(
+  id,
+  fields
+){
+
+  return airtable(
+
+    `${PUBLICATIONS_TABLE}/${id}`,
+
+    "PATCH",
+
+    {
+      fields,
+      typecast:true
+    }
+
+  );
+
+}
+
+
+/* ============================================================
+   PUBLISH NOTE
+   ============================================================ */
+
+async function publishRecord(
+  note,
+  reviewerId,
+  targetProgramme,
+  targetClass
+){
+
+  const programme =
+    String(
+      targetProgramme || ""
+    ).trim();
+
+
+  const classValue =
+    String(
+      targetClass || ""
+    ).trim();
+
+
+  if(!programme){
+
+    throw new Error(
+      "Target Programme is required before publication."
+    );
+
+  }
+
+
+  if(!classValue){
+
+    throw new Error(
+      "Target Class is required before publication."
+    );
+
+  }
+
+
+  /*
+   * Resolve the selected class to the
+   * actual Airtable Classes record ID.
+   */
+
+  const classId =
+    await findClassId(
+      classValue
+    );
+
+
+  if(!classId){
+
+    throw new Error(
+      `Target Class "${classValue}" was not found in the Classes table.`
+    );
+
+  }
+
+
+  const version =
+    String(
+      note.fields?.Version ||
+      "1"
+    ).trim();
+
+
+  /*
+   * Publication record.
+   *
+   * Programme/Class are stored HERE,
+   * not in NoteBank_Notes.
+   */
+
+  const fields = {
+
+    "Publication ID":
+      `PUB-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+
+    "Note":
+      [note.id],
+
+    "Version":
+      version,
+
+    "Target Programme":
+      programme,
+
+    "Target Class":
+      [classId],
+
+    "Publish Date":
+      now(),
+
+    "Status":
+      "Published"
+
+  };
+
+
+  /*
+   * Published By is linked to Teachers.
+   */
+
+  if(reviewerId){
+
+    fields["Published By"] =
+      [reviewerId];
+
+  }
+
+
+  /*
+   * Avoid duplicate publication records
+   * for the same Note + Version.
+   */
+
+  const existing =
+    await findPublication(
+      note.id,
+      version
+    );
+
+
+  if(existing){
+
+    const updatedFields = {
+
+      "Note":
+        [note.id],
+
+      "Version":
+        version,
+
+      "Target Programme":
+        programme,
+
+      "Target Class":
+        [classId],
+
+      "Publish Date":
+        now(),
+
+      "Status":
+        "Published"
+
+    };
+
+
+    if(reviewerId){
+
+      updatedFields["Published By"] =
+        [reviewerId];
+
+    }
+
+
+    const updated =
+      await updatePublication(
+        existing.id,
+        updatedFields
+      );
+
+
+    return {
+
+      publication:
+        updated,
+
+      created:false
+
+    };
+
+  }
+
+
+  const created =
+    await createPublication(
+      fields
+    );
+
+
+  return {
+
+    publication:
+      created?.records?.[0] || null,
+
+    created:true
+
+  };
+
+}
+
+
+/* ============================================================
+   MAIN HANDLER
+   ============================================================ */
+
+export default async function handler(
+  req,
+  res
+){
+
+  /*
+   * CORS
+   */
+
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "*"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,PATCH,OPTIONS"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+  res.setHeader(
+    "Cache-Control",
+    "no-store"
+  );
+
+
+  /*
+   * OPTIONS
+   */
+
+  if(
+    req.method === "OPTIONS"
+  ){
+
+    return res
+      .status(200)
+      .end();
+
+  }
+
+
+  try{
+
+    config();
+
+
+    const body =
+      req.body || {};
+
+
+    const noteId =
+      req.query?.noteId ||
+
+      body.noteId ||
+
+      body["Note ID"];
+
+
+    /* ========================================================
+       GET REVIEW QUEUE
+       ======================================================== */
+
+    if(
+      req.method === "GET" &&
+      !noteId
+    ){
+
+      const notes =
+        await listAll(
+          NOTES_TABLE
+        );
+
+
+      const mode =
+        String(
+          req.query?.list ||
+          "review"
+        )
+          .toLowerCase();
+
+
+      const filtered =
+
+        mode === "review"
+
+          ?
+
+          notes.filter(
+            record =>
+              String(
+                record.fields?.Status ||
+                ""
+              ).trim()
+              === "Under Review"
+          )
+
+          :
+
+          notes;
+
+
+      /*
+       * Newest first.
+       */
+
+      filtered.sort(
+        (a,b) =>
+
+          new Date(
+            b.fields?.["Updated Date"] ||
+            b.fields?.["Created Date"] ||
+            0
+          )
+
+          -
+
+          new Date(
+            a.fields?.["Updated Date"] ||
+            a.fields?.["Created Date"] ||
+            0
+          )
+
+      );
+
+
+      return res
+        .status(200)
+        .json({
+
+          success:true,
+
+          count:
+            filtered.length,
+
+          notes:
+            filtered.map(
+              responseNote
+            )
+
+        });
+
+    }
+
+
+    /* ========================================================
+       GET SINGLE NOTE
+       ======================================================== */
+
+    if(
+      req.method === "GET"
+    ){
+
+      if(!noteId){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              "noteId is required."
+
+          });
+
+      }
+
+
+      const note =
+        await findNote(
+          noteId
+        );
+
+
+      if(!note){
+
+        return res
+          .status(404)
+          .json({
+
+            success:false,
+
+            error:
+              "Note not found."
+
+          });
+
+      }
+
+
+      return res
+        .status(200)
+        .json({
+
+          success:true,
+
+          note:
+            responseNote(
+              note
+            )
+
+        });
+
+    }
+
+
+    /* ========================================================
+       NOTE ID REQUIRED FOR WRITE OPERATIONS
+       ======================================================== */
+
+    if(!noteId){
+
+      return res
+        .status(400)
+        .json({
+
+          success:false,
+
+          error:
+            "noteId is required."
+
+        });
+
+    }
+
+
+    const note =
+      await findNote(
+        noteId
+      );
+
+
+    if(!note){
+
+      return res
+        .status(404)
+        .json({
+
+          success:false,
+
+          error:
+            "Note not found."
+
+        });
+
+    }
+
+
+    const currentStatus =
+      String(
+        note.fields?.Status ||
+        "AI Draft"
+      ).trim();
+
+
+    const action =
+      String(
+        body.action ||
+        "save"
+      )
+        .trim()
+        .toLowerCase();
+
+
+    /* ========================================================
+       SAVE DRAFT
+       ======================================================== */
+
+    if(
+
+      ["PUT","PATCH"].includes(
+        req.method
+      )
+
+      &&
+
+      action === "save"
+
+    ){
+
+      /*
+       * Only these fields can be edited
+       * by the Review API.
+       *
+       * Programme/Class are deliberately
+       * NOT here.
+       */
+
+      const editable = [
+
+        "Title",
+
+        "Learning Objectives",
+
+        "Key Terms",
+
+        "Content",
+
+        "Examples",
+
+        "Worked Examples",
+
+        "Summary",
+
+        "Exam Tips",
+
+        "WAEC Focus",
+
+        "NECO Focus",
+
+        "UTME Focus",
+
+        "Formulae",
+
+        "Applications",
+
+        "Common Misconceptions",
+
+        "Diagrams",
+
+        "Teacher Prompt",
+
+        "Review Comment"
+
+      ];
+
+
+      const fields = {
+
+        "Updated Date":
+          now()
+
+      };
+
+
+      for(
+        const fieldName
+        of editable
+      ){
+
+        if(
+          Object.prototype
+            .hasOwnProperty
+            .call(
+              body,
+              fieldName
+            )
+        ){
+
+          fields[fieldName] =
+            body[fieldName];
+
+        }
+
+      }
+
+
+      const updated =
+        await updateNote(
+          note.id,
+          fields
+        );
+
+
+      return res
+        .status(200)
+        .json({
+
+          success:true,
+
+          message:
+            "Note draft saved successfully.",
+
+          status:
+            updated.fields?.Status ||
+            currentStatus,
+
+          note:
+            responseNote(
+              updated
+            )
+
+        });
+
+    }
+
+
+    /* ========================================================
+       SUBMIT FOR APPROVAL
+       ======================================================== */
+
+    if(
+
+      ["POST","PUT","PATCH"].includes(
+        req.method
+      )
+
+      &&
+
+      action === "submit"
+
+    ){
+
+      if(
+        ![
+          "AI Draft",
+          "Draft",
+          "Changes Requested"
+        ].includes(
+          currentStatus
+        )
+      ){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              `Cannot submit note from status "${currentStatus}".`
+
+          });
+
+      }
+
+
+      const version =
+        String(
+          note.fields?.Version ||
+          "1"
+        ).trim();
+
+
+      const submittedBy =
+        body.submittedBy ||
+
+        body.createdBy ||
+
+        body.teacherId ||
+
+        "";
+
+
+      /*
+       * First move the note to Under Review.
+       */
+
+      const updated =
+        await updateNote(
+          note.id,
+          {
+
+            Status:
+              "Under Review",
+
+            "Updated Date":
+              now()
+
+          }
+        );
+
+
+      try{
+
+        const approvalFields = {
+
+          "Approval ID":
+            `APR-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+
+          "Note":
+            [note.id],
+
+          "Submission Date":
+            now(),
+
+          "Status":
+            "Pending",
+
+          "Version":
+            version
+
+        };
+
+
+        const submittedIds =
+          recordIds(
+            submittedBy
+          );
+
+
+        if(
+          submittedIds.length
+        ){
+
+          approvalFields[
+            "Submitted By"
+          ] =
+            submittedIds;
+
+        }
+
+
+        const approval =
+          await createApproval(
+            approvalFields
+          );
+
+
+        return res
+          .status(200)
+          .json({
+
+            success:true,
+
+            message:
+              "Note submitted for approval.",
+
+            status:
+              "Under Review",
+
+            approval:
+              approval?.records?.[0] ||
+              null,
+
+            note:
+              responseNote(
+                updated
+              )
+
+          });
+
+
+      }catch(error){
+
+        /*
+         * If Approval creation fails,
+         * return the note to its previous state.
+         */
+
+        try{
+
+          await updateNote(
+            note.id,
+            {
+
+              Status:
+                currentStatus,
+
+              "Updated Date":
+                now()
+
+            }
+          );
+
+        }catch(_){}
+
+
+        throw error;
+
+      }
+
+    }
+
+
+    /* ========================================================
+       APPROVE & PUBLISH
+       ======================================================== */
+
+    if(
+
+      ["POST","PUT","PATCH"].includes(
+        req.method
+      )
+
+      &&
+
+      action === "approve"
+
+    ){
+
+      if(
+        currentStatus !==
+        "Under Review"
+      ){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              `Cannot approve note from status "${currentStatus}".`
+
+          });
+
+      }
+
+
+      const reviewer =
+        body.reviewer ||
+
+        body.approvedBy ||
+
+        body.teacherId ||
+
+        "";
+
+
+      /*
+       * Resolve reviewer against Teachers.
+       */
+
+      const reviewerId =
+        await findTeacherId(
+          reviewer
+        );
+
+
+      const comment =
+        String(
+
+          body.reviewerComment ||
+
+          body.reviewComment ||
+
+          body["Review Comment"] ||
+
+          body.comment ||
+
+          ""
+
+        ).trim();
+
+
+      /*
+       * These two values come from the
+       * Review Center.
+       */
+
+      const targetProgramme =
+        body.targetProgramme ||
+
+        body["Target Programme"] ||
+
+        "";
+
+
+      const targetClass =
+        body.targetClass ||
+
+        body["Target Class"] ||
+
+        "";
+
+
+      /* ======================================================
+         VALIDATE TARGET BEFORE PUBLISHING
+         ====================================================== */
+
+      if(
+        !String(
+          targetProgramme
+        ).trim()
+      ){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              "Target Programme is required."
+
+          });
+
+      }
+
+
+      if(
+        !String(
+          targetClass
+        ).trim()
+      ){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              "Target Class is required."
+
+          });
+
+      }
+
+
+      const classId =
+        await findClassId(
+          targetClass
+        );
+
+
+      if(!classId){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              `Target Class "${targetClass}" was not found in the Classes table.`
+
+          });
+
+      }
+
+
+      /* ======================================================
+         UPDATE NOTE TO PUBLISHED
+         ====================================================== */
+
+      const published =
+        await updateNote(
+          note.id,
+          {
+
+            Status:
+              "Published",
+
+            "Published Date":
+              now(),
+
+            "Approved Date":
+              now(),
+
+            "Updated Date":
+              now(),
+
+            ...(reviewerId
+              ? {
+                  "Approved By":
+                    [reviewerId]
+                }
+              : {}),
+
+            ...(comment
+              ? {
+                  "Review Comment":
+                    comment
+                }
+              : {})
+
+          }
+        );
+
+
+      try{
+
+        /* ====================================================
+           CREATE/UPDATE PUBLICATION
+           ==================================================== */
+
+        const publication =
+          await publishRecord(
+
+            published,
+
+            reviewerId,
+
+            targetProgramme,
+
+            classId
+
+          );
+
+
+        /* ====================================================
+           UPDATE APPROVAL
+           ==================================================== */
+
+        const pending =
+          await findPendingApproval(
+            note.id
+          );
+
+
+        let approval =
+          pending;
+
+
+        if(pending){
+
+          const fields = {
+
+            "Status":
+              "Approved",
+
+            "Review Date":
+              now()
+
+          };
+
+
+          /*
+           * IMPORTANT:
+           * Reviewer is a linked Teacher field.
+           */
+
+          if(reviewerId){
+
+            fields[
+              "Reviewer"
+            ] =
+              [reviewerId];
+
+          }
+
+
+          if(comment){
+
+            fields[
+              "Reviewer Comments"
+            ] =
+              comment;
+
+          }
+
+
+          approval =
+            await updateApproval(
+              pending.id,
+              fields
+            );
+
+        }
+
+
+        return res
+          .status(200)
+          .json({
+
+            success:true,
+
+            message:
+              "Note approved and published.",
+
+            status:
+              "Published",
+
+            publication:
+              publication.publication,
+
+            approval,
+
+            note:
+              responseNote(
+                published
+              )
+
+          });
+
+
+      }catch(error){
+
+        /*
+         * If publication creation fails,
+         * don't leave the system falsely showing
+         * a successfully published note.
+         */
+
+        try{
+
+          await updateNote(
+            note.id,
+            {
+
+              Status:
+                "Under Review",
+
+              "Updated Date":
+                now()
+
+            }
+          );
+
+        }catch(_){}
+
+
+        return res
+          .status(500)
+          .json({
+
+            success:false,
+
+            error:
+              "Publication record could not be created. The note has been returned to Under Review.",
+
+            details:
+              error.message
+
+          });
+
+      }
+
+    }
+
+
+    /* ========================================================
+       REQUEST CHANGES
+       ======================================================== */
+
+    if(
+
+      ["POST","PUT","PATCH"].includes(
+        req.method
+      )
+
+      &&
+
+      [
+        "request_changes",
+        "changes",
+        "reject"
+      ].includes(
+        action
+      )
+
+    ){
+
+      if(
+        currentStatus !==
+        "Under Review"
+      ){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              `Cannot request changes from status "${currentStatus}".`
+
+          });
+
+      }
+
+
+      const reviewer =
+        body.reviewer ||
+
+        body.approvedBy ||
+
+        body.teacherId ||
+
+        "";
+
+
+      const reviewerId =
+        await findTeacherId(
+          reviewer
+        );
+
+
+      const comment =
+        String(
+
+          body.reviewerComment ||
+
+          body.reviewComment ||
+
+          body["Review Comment"] ||
+
+          body.comment ||
+
+          body.reason ||
+
+          ""
+
+        ).trim();
+
+
+      if(!comment){
+
+        return res
+          .status(400)
+          .json({
+
+            success:false,
+
+            error:
+              "A review comment is required when requesting changes."
+
+          });
+
+      }
+
+
+      const updated =
+        await updateNote(
+          note.id,
+          {
+
+            Status:
+              "Changes Requested",
+
+            "Review Comment":
+              comment,
+
+            "Updated Date":
+              now()
+
+          }
+        );
+
+
+      const pending =
+        await findPendingApproval(
+          note.id
+        );
+
+
+      let approval =
+        pending;
+
+
+      if(pending){
+
+        const fields = {
+
+          "Status":
+            "Changes Requested",
+
+          "Review Date":
+            now(),
+
+          "Reviewer Comments":
+            comment
+
+        };
+
+
+        if(reviewerId){
+
+          fields[
+            "Reviewer"
+          ] =
+            [reviewerId];
+
+        }
+
+
+        approval =
+          await updateApproval(
+            pending.id,
+            fields
+          );
+
+      }
+
+
+      return res
+        .status(200)
+        .json({
+
+          success:true,
+
+          message:
+            "Changes requested for this note.",
+
+          status:
+            "Changes Requested",
+
+          approval,
+
+          note:
+            responseNote(
+              updated
+            )
+
+        });
+
+    }
+
+
+    /* ========================================================
+       UNSUPPORTED ACTION
+       ======================================================== */
+
+    return res
+      .status(400)
+      .json({
+
+        success:false,
+
+        error:
+          `Unsupported action "${action}".`
+
+      });
+
+
+  }catch(error){
+
+    console.error(
+      "Note review API error:",
+      error
+    );
+
+
+    return res
+      .status(500)
+      .json({
+
+        success:false,
+
+        error:
+          error?.message ||
+          "Internal server error."
+
+      });
+
+  }
+
+}
