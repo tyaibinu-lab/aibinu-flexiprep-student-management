@@ -1,3 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08783f">
+
+<title>Aibinu Flexiprep | NoteBank Review Center</title>
+
+<style>
+:root{
+  --g:#08783f;
+  --gold:#d7a62a;
+  --ink:#17382b;
+  --muted:#68756e;
+  --bg:#f4f7f5;
+  --line:#dce6e0;
+  --danger:#b42318;
+  --ok:#e7f6ec;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+button,
+input,
+textarea,
+select{
+  font:inherit;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.primary{
+  background:var(--gold);
+  color:var(--ink);
+}
+
+.secondary{
+  background:#fff;
+  color:var(--g);
+  border:1px solid var(--line);
+}
+
+header{
+  background:var(--g);
+  color:#fff;
+  padding:16px 5%;
+}
+
+.header-inner{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo{
+  background:var(--gold);
+  color:var(--g);
+  padding:11px;
+  border-radius:10px;
+  font-weight:800;
+  font-size:20px;
+}
+
+.brand b{
+  font-size:18px;
+}
+
+.brand small{
+  display:block;
+  opacity:.8;
+  margin-top:3px;
+}
+
+main{
+  max-width:1200px;
+  margin:25px auto;
+  padding:0 16px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+h1{
+  margin:5px 0;
+  font-size:38px;
+}
+
+.muted{
+  color:var(--muted);
+  font-size:17px;
+}
+
+.msg{
+  margin:15px 0;
+  padding:11px;
+  border-radius:9px;
+}
+
+.ok{
+  background:var(--ok);
+  color:var(--g);
+}
+
+.err{
+  background:#fde9e7;
+  color:var(--danger);
+}
+
+.panel{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  margin-top:20px;
+}
+
+.queue-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.count{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:99px;
+  background:var(--ok);
+  color:var(--g);
+  font-weight:800;
+}
+
+.card{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:17px;
+  margin-top:14px;
+}
+
+.card h2{
+  margin:0 0 7px;
+}
+
+.meta{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:10px 0;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:99px;
+  font-size:12px;
+  font-weight:700;
+  background:#fff7df;
+  color:#765b00;
+}
+
+.small{
+  font-size:13px;
+  color:var(--muted);
+}
+
+.target-box{
+  margin-top:15px;
+  padding:15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#f8fbf9;
+}
+
+.target-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:10px;
+}
+
+.field label{
+  display:block;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.field select,
+.field input,
+.comment textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccd8d1;
+  border-radius:9px;
+  background:#fff;
+  color:var(--ink);
+}
+
+.actions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:13px;
+}
+
+.comment{
+  margin-top:14px;
+}
+
+.comment textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+.note-body{
+  margin-top:15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:15px;
+  background:#f8fbf9;
+}
+
+.section{
+  margin-top:15px;
+}
+
+.section h3{
+  margin-bottom:6px;
+}
+
+.content{
+  white-space:pre-wrap;
+  line-height:1.55;
+}
+
+details{
+  margin-top:13px;
+}
+
+summary{
+  cursor:pointer;
+  font-weight:800;
+  color:var(--g);
+}
+
+.empty{
+  padding:30px 10px;
+  text-align:center;
+  color:var(--muted);
+}
+
+.loading{
+  padding:30px 10px;
+  text-align:center;
+  color:var(--g);
+  font-weight:700;
+}
+
+@media(max-width:700px){
+
+  main{
+    padding:0 12px;
+  }
+
+  h1{
+    font-size:31px;
+  }
+
+  .panel{
+    padding:13px;
+  }
+
+  .actions button{
+    width:100%;
+  }
+
+  .target-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="header-inner">
+
+    <div class="brand">
+
+      <div class="logo">
+        AF
+      </div>
+
+      <div>
+        <b>AIBINU FLEXIPREP</b>
+
+        <small>
+          EDUCONSULT · NOTEBANK REVIEW
+        </small>
+      </div>
+
+    </div>
+
+    <button
+      class="secondary"
+      type="button"
+      onclick="location.href='/academic.html'">
+
+      ← Academic Management
+
+    </button>
+
+  </div>
+
+</header>
+
+
+<main>
+
+  <div class="top">
+
+    <div>
+
+      <small>
+        AIBINU FLEXIPREP
+      </small>
+
+      <h1>
+        📋 NoteBank Review Center
+      </h1>
+
+      <div class="muted">
+        Review AI-generated notes before publication.
+        Select the examination programme and academic class
+        before publishing.
+      </div>
+
+    </div>
+
+    <button
+      class="primary"
+      type="button"
+      onclick="loadQueue()">
+
+      ↻ Refresh Queue
+
+    </button>
+
+  </div>
+
+
+  <div id="msg"></div>
+
+
+  <div class="panel">
+
+    <div class="queue-head">
+
+      <div>
+
+        <h2>
+          Notes Awaiting Approval
+        </h2>
+
+        <div class="small">
+
+          Only notes with status
+          <b>Under Review</b>
+          appear here.
+
+        </div>
+
+      </div>
+
+      <span
+        id="queueCount"
+        class="count">
+
+        0
+
+      </span>
+
+    </div>
+
+
+    <!-- REVIEWER -->
+
+    <div class="target-box">
+
+      <div class="field">
+
+        <label for="reviewerName">
+          Reviewer Name
+        </label>
+
+        <input
+          id="reviewerName"
+          placeholder="Enter the reviewer's name">
+
+      </div>
+
+      <div
+        class="small"
+        style="margin-top:6px">
+
+        If the name matches a teacher record,
+        the reviewer will be linked to Teachers.
+
+      </div>
+
+    </div>
+
+
+    <!-- REVIEW QUEUE -->
+
+    <div id="queue">
+
+      <div class="loading">
+        Loading review queue...
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+
 <script>
 
 "use strict";
@@ -15,7 +481,8 @@ let classes = [];
    BASIC HELPERS
 ========================================================= */
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+  document.getElementById(id);
 
 
 const esc = value =>
@@ -32,7 +499,9 @@ const esc = value =>
 
 
 function txt(value){
+
   return String(value ?? "").trim();
+
 }
 
 
@@ -42,20 +511,26 @@ function txt(value){
 
 async function safeJson(response){
 
-  const raw = await response.text();
+  const raw =
+    await response.text();
 
   const type =
     response.headers.get("content-type") || "";
 
+
   if(
-    !type.toLowerCase().includes("application/json")
+    !type
+      .toLowerCase()
+      .includes("application/json")
   ){
 
     throw new Error(
-      raw || `Server returned ${response.status}.`
+      raw ||
+      `Server returned ${response.status}.`
     );
 
   }
+
 
   try{
 
@@ -80,12 +555,15 @@ async function safeJson(response){
 
 function show(message,ok=true){
 
-  const box = $("msg");
+  const box =
+    $("msg");
+
 
   box.className =
     message
       ? `msg ${ok ? "ok" : "err"}`
       : "";
+
 
   box.textContent =
     message || "";
@@ -99,9 +577,14 @@ function show(message,ok=true){
 
 function readField(record,names){
 
-  if(!record) return "";
+  if(!record){
+    return "";
+  }
 
-  for(const name of names){
+
+  for(
+    const name of names
+  ){
 
     if(
       record[name] !== undefined &&
@@ -115,18 +598,21 @@ function readField(record,names){
 
   }
 
+
   return "";
 
 }
 
 
 /* =========================================================
-   GET NOTE VALUE
+   NOTE VALUE
 ========================================================= */
 
 function value(note,...keys){
 
-  for(const key of keys){
+  for(
+    const key of keys
+  ){
 
     if(
       note?.[key] !== undefined &&
@@ -140,6 +626,7 @@ function value(note,...keys){
 
   }
 
+
   return "";
 
 }
@@ -151,22 +638,29 @@ function value(note,...keys){
 
 function section(label,content){
 
-  content = txt(content);
+  content =
+    txt(content);
+
 
   if(!content){
     return "";
   }
 
+
   return `
+
     <div class="section">
 
-      <h3>${esc(label)}</h3>
+      <h3>
+        ${esc(label)}
+      </h3>
 
       <div class="content">
         ${esc(content)}
       </div>
 
     </div>
+
   `;
 
 }
@@ -184,72 +678,114 @@ function renderNote(note){
 
       ${section(
         "Learning Objectives",
-        value(note,"Learning Objectives")
+        value(
+          note,
+          "Learning Objectives"
+        )
       )}
 
       ${section(
         "Key Terms",
-        value(note,"Key Terms")
+        value(
+          note,
+          "Key Terms"
+        )
       )}
 
       ${section(
         "Main Content",
-        value(note,"Content")
+        value(
+          note,
+          "Content"
+        )
       )}
 
       ${section(
         "Examples",
-        value(note,"Examples")
+        value(
+          note,
+          "Examples"
+        )
       )}
 
       ${section(
         "Worked Examples",
-        value(note,"Worked Examples")
+        value(
+          note,
+          "Worked Examples"
+        )
       )}
 
       ${section(
         "Formulae",
-        value(note,"Formulae")
+        value(
+          note,
+          "Formulae"
+        )
       )}
 
       ${section(
         "Applications",
-        value(note,"Applications")
+        value(
+          note,
+          "Applications"
+        )
       )}
 
       ${section(
         "Common Misconceptions",
-        value(note,"Common Misconceptions")
+        value(
+          note,
+          "Common Misconceptions"
+        )
       )}
 
       ${section(
         "Summary",
-        value(note,"Summary")
+        value(
+          note,
+          "Summary"
+        )
       )}
 
       ${section(
         "Examination Tips",
-        value(note,"Exam Tips")
+        value(
+          note,
+          "Exam Tips"
+        )
       )}
 
       ${section(
         "WAEC Focus",
-        value(note,"WAEC Focus")
+        value(
+          note,
+          "WAEC Focus"
+        )
       )}
 
       ${section(
         "NECO Focus",
-        value(note,"NECO Focus")
+        value(
+          note,
+          "NECO Focus"
+        )
       )}
 
       ${section(
         "UTME Focus",
-        value(note,"UTME Focus")
+        value(
+          note,
+          "UTME Focus"
+        )
       )}
 
       ${section(
         "Diagrams",
-        value(note,"Diagrams")
+        value(
+          note,
+          "Diagrams"
+        )
       )}
 
     </div>
@@ -265,17 +801,27 @@ function renderNote(note){
 
 function recordId(record){
 
-  const raw = readField(
-    record,
-    [
-      "airtableId",
-      "airtableID",
-      "recordId",
-      "recordID",
-      "id",
-      "ID"
-    ]
-  );
+  let raw =
+    readField(
+      record,
+      [
+        "airtableId",
+        "airtableID",
+        "recordId",
+        "recordID",
+        "id",
+        "ID"
+      ]
+    );
+
+
+  /*
+   * Some APIs may return:
+
+       "Class Name|recXXXXXXXXXXXXXX"
+
+     so extract the Airtable record ID.
+  */
 
   if(
     typeof raw === "string" &&
@@ -285,9 +831,11 @@ function recordId(record){
     const parts =
       raw.split("|");
 
-    return parts[parts.length-1];
+    raw =
+      parts[parts.length - 1];
 
   }
+
 
   return txt(raw);
 
@@ -299,10 +847,6 @@ function recordId(record){
 ========================================================= */
 
 function programmeName(record){
-
-  /*
-   * Handles several possible API/Airtable field names.
-   */
 
   return txt(
     readField(
@@ -329,10 +873,6 @@ function programmeName(record){
 ========================================================= */
 
 function className(record){
-
-  /*
-   * Handles several possible API/Airtable field names.
-   */
 
   return txt(
     readField(
@@ -364,14 +904,34 @@ function normaliseProgramme(value){
     txt(value)
       .toUpperCase();
 
-  if(v.includes("WAEC"))
+
+  if(
+    v.includes("WAEC")
+  ){
+
     return "WAEC";
 
-  if(v.includes("NECO"))
+  }
+
+
+  if(
+    v.includes("NECO")
+  ){
+
     return "NECO";
 
-  if(v.includes("UTME") || v.includes("JAMB"))
+  }
+
+
+  if(
+    v.includes("UTME") ||
+    v.includes("JAMB")
+  ){
+
     return "UTME";
+
+  }
+
 
   return txt(value);
 
@@ -388,12 +948,22 @@ function normaliseClass(value){
     txt(value)
       .toUpperCase();
 
+
   /*
-   * Extract SS1, SS2, SS3 etc.
-   */
+   * Convert:
+
+       SS 1
+       SS1
+       Senior Secondary 1
+
+     where possible.
+  */
 
   const match =
-    v.match(/\bSS\s*[123]\b/);
+    v.match(
+      /\bSS\s*[123]\b/
+    );
+
 
   if(match){
 
@@ -401,6 +971,7 @@ function normaliseClass(value){
       .replace(/\s+/g,"");
 
   }
+
 
   return txt(value);
 
@@ -427,30 +998,38 @@ function programmeOptions(
       Select target programme
     </option>
 
-    ${programmes.map(programme => {
+    ${programmes.map(
+      programme => {
 
-      const name =
-        normaliseProgramme(
-          programmeName(programme)
-        );
+        const name =
+          normaliseProgramme(
+            programmeName(programme)
+          );
 
-      if(!name) return "";
 
-      return `
-        <option
-          value="${esc(name)}"
-          ${
-            name === selected
-              ? "selected"
-              : ""
-          }>
+        if(!name){
+          return "";
+        }
 
-          ${esc(name)}
 
-        </option>
-      `;
+        return `
 
-    }).join("")}
+          <option
+            value="${esc(name)}"
+            ${
+              name === selected
+                ? "selected"
+                : ""
+            }>
+
+            ${esc(name)}
+
+          </option>
+
+        `;
+
+      }
+    ).join("")}
 
   `;
 
@@ -479,9 +1058,11 @@ function classOptions(
   if(!programme){
 
     return `
+
       <option value="">
         Select target programme first
       </option>
+
     `;
 
   }
@@ -490,119 +1071,124 @@ function classOptions(
   /*
    * IMPORTANT:
    *
-   * DO NOT FILTER CLASSES BY PROGRAMME.
+   * Classes are NOT filtered by programme.
    *
-   * SS1, SS2 and SS3 are shared academic
-   * publication levels.
+   * WAEC → SS1, SS2, SS3
+   * NECO → SS1, SS2, SS3
+   * UTME → SS1, SS2, SS3
    */
 
   const available =
     classes;
 
 
-  /*
-   * Remove duplicate class names while
-   * retaining the first actual Airtable ID.
-   */
-
   const seen =
     new Set();
 
 
   const unique =
-    available.filter(record => {
+    available.filter(
+      record => {
 
-      const name =
-        normaliseClass(
-          className(record)
-        );
-
-      const key =
-        name.toUpperCase();
+        const name =
+          normaliseClass(
+            className(record)
+          );
 
 
-      if(!name || seen.has(key)){
-        return false;
+        const key =
+          name.toUpperCase();
+
+
+        if(
+          !name ||
+          seen.has(key)
+        ){
+
+          return false;
+
+        }
+
+
+        seen.add(key);
+
+        return true;
+
       }
-
-
-      seen.add(key);
-
-      return true;
-
-    });
+    );
 
 
   /*
-   * Sort SS1 → SS2 → SS3.
+   * Sort SS1 → SS2 → SS3
    */
 
-  unique.sort((a,b) => {
+  unique.sort(
+    (a,b) => {
 
-    const aa =
-      normaliseClass(
-        className(a)
-      );
-
-    const bb =
-      normaliseClass(
-        className(b)
-      );
+      const aa =
+        parseInt(
+          className(a)
+            .replace(/\D/g,"")
+        ) || 999;
 
 
-    const na =
-      parseInt(
-        aa.replace(/\D/g,"")
-      ) || 999;
-
-    const nb =
-      parseInt(
-        bb.replace(/\D/g,"")
-      ) || 999;
+      const bb =
+        parseInt(
+          className(b)
+            .replace(/\D/g,"")
+        ) || 999;
 
 
-    return na - nb;
+      return aa - bb;
 
-  });
+    }
+  );
 
 
   const options =
-    unique.map(record => {
+    unique.map(
+      record => {
 
-      const id =
-        recordId(record);
-
-      const name =
-        normaliseClass(
-          className(record)
-        );
+        const id =
+          recordId(record);
 
 
-      return `
-        <option
-          value="${esc(id)}"
-          ${
-            id === selectedClass
-              ? "selected"
-              : ""
-          }>
+        const name =
+          normaliseClass(
+            className(record)
+          );
 
-          ${esc(name)}
 
-        </option>
-      `;
+        return `
 
-    }).join("");
+          <option
+            value="${esc(id)}"
+            ${
+              id === selectedClass
+                ? "selected"
+                : ""
+            }>
+
+            ${esc(name)}
+
+          </option>
+
+        `;
+
+      }
+    ).join("");
 
 
   return `
 
     <option value="">
+
       ${
         unique.length
           ? "Select target class"
           : "No classes available"
       }
+
     </option>
 
     ${options}
@@ -633,20 +1219,30 @@ function setClassState(
     );
 
 
+  /*
+   * No programme selected.
+   */
+
   if(!p){
 
     select.disabled = true;
 
     select.innerHTML = `
+
       <option value="">
         Select target programme first
       </option>
+
     `;
 
     return;
 
   }
 
+
+  /*
+   * Programme selected.
+   */
 
   select.disabled = false;
 
@@ -661,13 +1257,14 @@ function setClassState(
 
 
 /* =========================================================
-   REFRESH CLASSES
+   REFRESH CLASS
 ========================================================= */
 
 function refreshClasses(index){
 
   const programmeSelect =
     $("programme_" + index);
+
 
   const classSelect =
     $("class_" + index);
@@ -692,7 +1289,10 @@ function refreshClasses(index){
    RENDER REVIEW CARD
 ========================================================= */
 
-function renderCard(note,index){
+function renderCard(
+  note,
+  index
+){
 
   const id =
     note.airtableId ||
@@ -701,16 +1301,25 @@ function renderCard(note,index){
 
 
   const title =
-    value(note,"Title") ||
+    value(
+      note,
+      "Title"
+    ) ||
     "Untitled Note";
 
 
   const subject =
-    value(note,"Subject");
+    value(
+      note,
+      "Subject"
+    );
 
 
   const version =
-    value(note,"Version") ||
+    value(
+      note,
+      "Version"
+    ) ||
     "1";
 
 
@@ -740,6 +1349,7 @@ function renderCard(note,index){
       class="card"
       id="note_${index}">
 
+
       <h2>
         ${esc(title)}
       </h2>
@@ -750,16 +1360,20 @@ function renderCard(note,index){
         ${
           subject
             ? `
+
               <span class="badge">
                 ${esc(subject)}
               </span>
+
             `
             : ""
         }
 
+
         <span class="badge">
           Under Review
         </span>
+
 
         <span class="badge">
           Version ${esc(version)}
@@ -771,14 +1385,20 @@ function renderCard(note,index){
       ${
         updated
           ? `
+
             <div class="small">
+
               Last updated:
               ${esc(updated)}
+
             </div>
+
           `
           : ""
       }
 
+
+      <!-- FULL NOTE -->
 
       <details>
 
@@ -790,6 +1410,8 @@ function renderCard(note,index){
 
       </details>
 
+
+      <!-- PUBLICATION TARGET -->
 
       <div class="target-box">
 
@@ -803,17 +1425,18 @@ function renderCard(note,index){
           style="margin-top:4px">
 
           Select the programme first.
-          Target Class will then load all available
-          academic classes.
+          Target Class will then become available.
 
-          The selected programme and class are stored
-          in <b>NoteBank_Publications</b>.
+          Classes are shared academic levels and
+          are not restricted by programme.
 
         </div>
 
 
         <div class="target-grid">
 
+
+          <!-- PROGRAMME -->
 
           <div class="field">
 
@@ -835,6 +1458,8 @@ function renderCard(note,index){
 
           </div>
 
+
+          <!-- CLASS -->
 
           <div class="field">
 
@@ -864,6 +1489,8 @@ function renderCard(note,index){
       </div>
 
 
+      <!-- REVIEW COMMENT -->
+
       <div class="comment">
 
         <label
@@ -884,7 +1511,10 @@ function renderCard(note,index){
       </div>
 
 
+      <!-- ACTION BUTTONS -->
+
       <div class="actions">
+
 
         <button
           class="secondary"
@@ -913,7 +1543,9 @@ function renderCard(note,index){
 
         </button>
 
+
       </div>
+
 
     </article>
 
@@ -923,7 +1555,7 @@ function renderCard(note,index){
 
 
 /* =========================================================
-   LOAD ACADEMIC DATA
+   LOAD ACADEMIC TARGETS
 ========================================================= */
 
 async function loadAcademicTargets(){
@@ -963,128 +1595,141 @@ async function loadAcademicTargets(){
   );
 
 
-  /* =====================================================
+  /* =======================================================
      PROGRAMMES
-  ===================================================== */
+  ======================================================= */
 
   const programmeMap =
     new Map();
 
 
   /*
-   * First inspect records explicitly marked
-   * as programmes.
+   * Read records explicitly marked as
+   * programme/program.
    */
 
-  records.forEach(record => {
+  records.forEach(
+    record => {
 
-    const type =
-      txt(
-        readField(
-          record,
-          [
-            "type",
-            "Type",
-            "recordType",
-            "Record Type"
-          ]
+      const type =
+        txt(
+          readField(
+            record,
+            [
+              "type",
+              "Type",
+              "recordType",
+              "Record Type"
+            ]
+          )
+        ).toLowerCase();
+
+
+      const name =
+        normaliseProgramme(
+          programmeName(record)
+        );
+
+
+      if(
+        (
+          type === "programme" ||
+          type === "program"
         )
-      ).toLowerCase();
-
-
-    const name =
-      normaliseProgramme(
-        programmeName(record)
-      );
-
-
-    if(
-      type === "programme" ||
-      type === "program"
-    ){
-
-      if(name){
+        &&
+        name
+      ){
 
         programmeMap.set(
           name,
-          record
+          {
+            ...record,
+            name
+          }
         );
 
       }
 
     }
-
-  });
-
-
-  /*
-   * Also inspect programme fields directly.
-   */
-
-  records.forEach(record => {
-
-    const possible =
-      normaliseProgramme(
-        readField(
-          record,
-          [
-            "programme",
-            "Programme",
-            "programmeName",
-            "Programme Name",
-            "Programme_Name"
-          ]
-        )
-      );
-
-
-    if(
-      ["WAEC","NECO","UTME"].includes(possible)
-    ){
-
-      programmeMap.set(
-        possible,
-        {
-          ...record,
-          name:possible
-        }
-      );
-
-    }
-
-  });
+  );
 
 
   /*
-   * GUARANTEE the three supported examination
-   * programmes.
-   *
-   * This prevents a missing Type field in Airtable
-   * from making a programme disappear.
+   * Also inspect direct Programme fields.
    */
 
-  for(
-    const name of [
-      "WAEC",
-      "NECO",
-      "UTME"
-    ]
-  ){
+  records.forEach(
+    record => {
 
-    if(!programmeMap.has(name)){
+      const name =
+        normaliseProgramme(
+          readField(
+            record,
+            [
+              "programme",
+              "Programme",
+              "programmeName",
+              "Programme Name",
+              "Programme_Name"
+            ]
+          )
+        );
 
-      programmeMap.set(
-        name,
-        {
+
+      if(
+        [
+          "WAEC",
+          "NECO",
+          "UTME"
+        ].includes(name)
+      ){
+
+        programmeMap.set(
           name,
-          programme:name,
-          type:"Programme"
-        }
-      );
+          {
+            ...record,
+            name
+          }
+        );
+
+      }
 
     }
+  );
 
-  }
+
+  /*
+   * GUARANTEE all three examination programmes.
+   *
+   * This prevents the dropdown from losing NECO
+   * simply because its Airtable record has a
+   * different Type value.
+   */
+
+  [
+    "WAEC",
+    "NECO",
+    "UTME"
+  ].forEach(
+    name => {
+
+      if(
+        !programmeMap.has(name)
+      ){
+
+        programmeMap.set(
+          name,
+          {
+            name,
+            programme:name,
+            type:"Programme"
+          }
+        );
+
+      }
+
+    }
+  );
 
 
   programmes =
@@ -1098,78 +1743,90 @@ async function loadAcademicTargets(){
    */
 
   const programmeOrder = {
+
     WAEC:1,
     NECO:2,
     UTME:3
+
   };
 
 
   programmes.sort(
-    (a,b) =>
-      (programmeOrder[
+    (a,b) => {
+
+      const aa =
         normaliseProgramme(
           programmeName(a)
-        )
-      ] || 99)
-      -
-      (programmeOrder[
+        );
+
+
+      const bb =
         normaliseProgramme(
           programmeName(b)
-        )
-      ] || 99)
+        );
+
+
+      return (
+        (programmeOrder[aa] || 99)
+        -
+        (programmeOrder[bb] || 99)
+      );
+
+    }
   );
 
 
-  /* =====================================================
+  /* =======================================================
      CLASSES
-  ===================================================== */
+  ======================================================= */
 
   const classMap =
     new Map();
 
 
-  records.forEach(record => {
+  records.forEach(
+    record => {
 
-    const name =
-      normaliseClass(
-        className(record)
-      );
-
-
-    /*
-     * Recognise SS1, SS2, SS3 regardless of
-     * whether the API calls the record a class.
-     */
-
-    if(
-      /^SS[1-3]$/i.test(name)
-    ){
-
-      const id =
-        recordId(record);
+      const name =
+        normaliseClass(
+          className(record)
+        );
 
 
       /*
-       * Only use records with an actual Airtable
-       * record ID.
+       * Recognise SS1, SS2 and SS3.
        */
 
-      if(id){
+      if(
+        /^SS[1-3]$/i.test(name)
+      ){
 
-        classMap.set(
-          name.toUpperCase(),
-          {
-            ...record,
-            name,
-            airtableId:id
-          }
-        );
+        const id =
+          recordId(record);
+
+
+        /*
+         * Only real records should be used
+         * for publication.
+         */
+
+        if(id){
+
+          classMap.set(
+            name.toUpperCase(),
+            {
+              ...record,
+              name,
+              airtableId:id
+            }
+          );
+
+        }
 
       }
 
     }
-
-  });
+  );
 
 
   classes =
@@ -1182,27 +1839,34 @@ async function loadAcademicTargets(){
    * Sort SS1 → SS2 → SS3.
    */
 
-  classes.sort((a,b) => {
+  classes.sort(
+    (a,b) => {
 
-    const aa =
-      parseInt(
-        className(a).replace(/\D/g,"")
-      ) || 99;
+      const aa =
+        parseInt(
+          className(a)
+            .replace(/\D/g,"")
+        ) || 99;
 
-    const bb =
-      parseInt(
-        className(b).replace(/\D/g,"")
-      ) || 99;
 
-    return aa - bb;
+      const bb =
+        parseInt(
+          className(b)
+            .replace(/\D/g,"")
+        ) || 99;
 
-  });
+
+      return aa - bb;
+
+    }
+  );
 
 
   console.log(
     "PROGRAMMES:",
     programmes
   );
+
 
   console.log(
     "CLASSES:",
@@ -1211,7 +1875,7 @@ async function loadAcademicTargets(){
 
 
   /*
-   * IMPORTANT DEBUG INFORMATION.
+   * Display diagnostic information.
    */
 
   show(
@@ -1229,9 +1893,11 @@ async function loadAcademicTargets(){
 async function loadQueue(){
 
   $("queue").innerHTML = `
-    <div class="empty">
+
+    <div class="loading">
       Loading programmes and classes...
     </div>
+
   `;
 
 
@@ -1246,15 +1912,17 @@ async function loadQueue(){
 
 
     /*
-     * FIRST:
-     * Load Academic targets.
+     * STEP 1
+     *
+     * Load Academic data first.
      */
 
     await loadAcademicTargets();
 
 
     /*
-     * SECOND:
+     * STEP 2
+     *
      * Load review queue.
      */
 
@@ -1295,12 +1963,21 @@ async function loadQueue(){
         notes.length;
 
 
+    /*
+     * No notes awaiting approval.
+     */
+
     if(!notes.length){
 
       $("queue").innerHTML = `
+
         <div class="empty">
-          🎉 No notes are currently awaiting approval.
+
+          🎉 No notes are currently
+          awaiting approval.
+
         </div>
+
       `;
 
       return;
@@ -1308,21 +1985,35 @@ async function loadQueue(){
     }
 
 
+    /*
+     * Render cards only AFTER academic
+     * targets have loaded.
+     */
+
     $("queue").innerHTML =
       notes
-        .map(renderCard)
+        .map(
+          renderCard
+        )
         .join("");
 
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      error
+    );
 
 
     $("queue").innerHTML = `
+
       <div class="empty">
-        ❌ ${esc(error.message)}
+
+        ❌
+        ${esc(error.message)}
+
       </div>
+
     `;
 
 
@@ -1360,6 +2051,10 @@ async function reviewAction(
     );
 
 
+  /*
+   * Reviewer required.
+   */
+
   if(!reviewer){
 
     show(
@@ -1367,12 +2062,20 @@ async function reviewAction(
       false
     );
 
-    $("reviewerName").focus();
+
+    $("reviewerName")
+      .focus();
+
 
     return;
 
   }
 
+
+  /*
+   * Comment required for
+   * Request Changes.
+   */
 
   if(
     action === "request_changes" &&
@@ -1384,7 +2087,10 @@ async function reviewAction(
       false
     );
 
-    $(commentId).focus();
+
+    $(commentId)
+      .focus();
+
 
     return;
 
@@ -1395,7 +2101,13 @@ async function reviewAction(
   let targetClass = "";
 
 
-  if(action === "approve"){
+  /* =======================================================
+     APPROVAL DATA
+  ======================================================= */
+
+  if(
+    action === "approve"
+  ){
 
     targetProgramme =
       normaliseProgramme(
@@ -1409,6 +2121,10 @@ async function reviewAction(
       );
 
 
+    /*
+     * Programme required.
+     */
+
     if(!targetProgramme){
 
       show(
@@ -1420,6 +2136,10 @@ async function reviewAction(
 
     }
 
+
+    /*
+     * Class required.
+     */
 
     if(!targetClass){
 
@@ -1440,11 +2160,15 @@ async function reviewAction(
 
 
   if(button){
-    button.disabled = true;
+
+    button.disabled =
+      true;
+
   }
 
 
   try{
+
 
     const response =
       await fetch(
@@ -1480,7 +2204,9 @@ async function reviewAction(
 
 
     const data =
-      await safeJson(response);
+      await safeJson(
+        response
+      );
 
 
     if(
@@ -1503,12 +2229,18 @@ async function reviewAction(
     );
 
 
+    /*
+     * Refresh queue.
+     */
+
     await loadQueue();
 
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      error
+    );
 
 
     show(
@@ -1520,7 +2252,10 @@ async function reviewAction(
   }finally{
 
     if(button){
-      button.disabled = false;
+
+      button.disabled =
+        false;
+
     }
 
   }
@@ -1529,7 +2264,7 @@ async function reviewAction(
 
 
 /* =========================================================
-   APPROVE
+   APPROVE NOTE
 ========================================================= */
 
 function approveNote(
@@ -1580,9 +2315,12 @@ function requestChanges(
 
 
 /* =========================================================
-   INITIAL LOAD
+   START
 ========================================================= */
 
 loadQueue();
 
 </script>
+
+</body>
+</html>
