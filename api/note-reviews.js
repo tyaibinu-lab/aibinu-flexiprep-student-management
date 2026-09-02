@@ -6,13 +6,20 @@
 // Supports:
 //   GET  /api/note-reviews?list=review
 //   GET  /api/note-reviews?noteId=...
-//   PATCH ... action=save
-//   POST  ... action=submit
-//   POST  ... action=approve
-//   POST  ... action=request_changes
+//   PUT/PATCH ... action=save
+//   POST/PUT/PATCH ... action=submit
+//   POST/PUT/PATCH ... action=approve
+//   POST/PUT/PATCH ... action=request_changes
 //
-// AI content is NEVER approved automatically.
-// Human review is required before publication.
+// Workflow:
+//   AI Draft -> Draft -> Under Review -> Published
+//
+// Human approval is required before publication.
+//
+// On approval:
+//   1. NoteBank_Notes -> Published
+//   2. NoteBank_Publications -> Published
+//   3. NoteBank_Approvals -> Approved
 // ============================================================
 
 const AIRTABLE_API = "https://api.airtable.com/v0";
@@ -23,11 +30,22 @@ const APPROVALS_TABLE =
   process.env.AIRTABLE_APPROVALS_TABLE_ID ||
   "tblJHGCDxEpdjm46y";
 
-const TEACHERS_TABLE = "tblVjuSJe4R5kcOZr";
+const PUBLICATIONS_TABLE =
+  process.env.AIRTABLE_PUBLICATIONS_TABLE_ID ||
+  "tblKSLfWIrVNGkH5D";
 
+const TEACHERS_TABLE =
+  "tblVjuSJe4R5kcOZr";
+
+const CLASSES_TABLE =
+  "tblpwV6RF0IpHGWLg";
+
+
+// ============================================================
+// CONFIG
+// ============================================================
 
 function getConfig() {
-
   const token =
     process.env.AIRTABLE_PAT ||
     process.env.AIRTABLE_TOKEN;
@@ -36,30 +54,29 @@ function getConfig() {
     process.env.AIRTABLE_BASE_ID;
 
   if (!token || !baseId) {
-
     throw new Error(
-      "Airtable environment variables are missing. Required: AIRTABLE_PAT/AIRTABLE_TOKEN and AIRTABLE_BASE_ID."
+      "Airtable environment variables are missing."
     );
-
   }
 
   return {
     token,
     baseId
   };
-
 }
 
 
 function headers(token) {
-
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json"
   };
-
 }
 
+
+// ============================================================
+// AIRTABLE REQUEST
+// ============================================================
 
 async function airtableRequest(
   table,
@@ -67,58 +84,46 @@ async function airtableRequest(
   body = null,
   query = ""
 ) {
-
   const {
     token,
     baseId
   } = getConfig();
 
-  const response =
-    await fetch(
-      `${AIRTABLE_API}/${baseId}/${table}${query}`,
-      {
-        method,
-        headers: headers(token),
+  const response = await fetch(
+    `${AIRTABLE_API}/${baseId}/${table}${query}`,
+    {
+      method,
+      headers: headers(token),
 
-        ...(body !== null
-          ? {
-              body:
-                JSON.stringify(body)
-            }
-          : {})
-      }
-    );
+      ...(body !== null
+        ? {
+            body: JSON.stringify(body)
+          }
+        : {})
+    }
+  );
 
-
-  const text =
+  const raw =
     await response.text();
 
-  let data;
+  let data = {};
 
   try {
-
     data =
-      text
-        ? JSON.parse(text)
+      raw
+        ? JSON.parse(raw)
         : {};
-
   } catch {
-
     data = {
-      raw: text
+      raw
     };
-
   }
 
-
-  if(!response.ok){
-
+  if (!response.ok) {
     console.error(
       "Airtable error:",
       {
-        status:
-          response.status,
-
+        status: response.status,
         table,
         method,
         data
@@ -130,29 +135,26 @@ async function airtableRequest(
       data?.error?.type ||
       `Airtable request failed (${response.status})`
     );
-
   }
 
-
   return data;
-
 }
 
 
-async function listAll(table){
+// ============================================================
+// LIST ALL RECORDS
+// ============================================================
 
-  const out = [];
+async function listAll(table) {
+  const records = [];
 
   let offset = "";
 
-
-  do{
-
+  do {
     const query =
       offset
         ? `?pageSize=100&offset=${encodeURIComponent(offset)}`
         : "?pageSize=100";
-
 
     const data =
       await airtableRequest(
@@ -162,95 +164,82 @@ async function listAll(table){
         query
       );
 
-
-    out.push(
+    records.push(
       ...(data.records || [])
     );
-
 
     offset =
       data.offset || "";
 
-  }while(offset);
+  } while (offset);
 
-
-  return out;
-
+  return records;
 }
 
 
-async function findNote(noteId){
+// ============================================================
+// FIND NOTE
+// ============================================================
 
+async function findNote(noteId) {
   const id =
     String(noteId || "")
       .trim();
 
-
-  if(!id)
+  if (!id) {
     return null;
+  }
 
-
-  if(
+  // Airtable record ID
+  if (
     /^rec[A-Za-z0-9]{14}$/
       .test(id)
-  ){
-
-    try{
-
+  ) {
+    try {
       const record =
         await airtableRequest(
           `${NOTES_TABLE}/${id}`,
           "GET"
         );
 
-
-      if(record?.id)
+      if (record?.id) {
         return record;
+      }
 
-    }catch(error){
-
+    } catch (error) {
       console.warn(
-        "Direct Airtable note lookup failed:",
+        "Direct note lookup failed:",
         error.message
       );
-
     }
-
   }
 
-
+  // Custom Note ID
   const records =
     await listAll(
       NOTES_TABLE
     );
 
-
   return (
     records.find(
       record =>
         String(
-          record.fields?.["Note ID"] || ""
+          record.fields?.["Note ID"] ||
+          ""
         ).trim() === id
     ) || null
   );
-
 }
 
+
+// ============================================================
+// UPDATE NOTE
+// ============================================================
 
 async function updateNote(
   recordId,
   fields
-){
-
-  if(!recordId){
-
-    throw new Error(
-      "Airtable note record ID is required."
-    );
-
-  }
-
-
+) {
   return airtableRequest(
     `${NOTES_TABLE}/${recordId}`,
     "PATCH",
@@ -258,37 +247,38 @@ async function updateNote(
       fields
     }
   );
-
 }
 
 
-async function createApproval(fields){
+// ============================================================
+// APPROVALS
+// ============================================================
 
+async function createApproval(
+  fields
+) {
   return airtableRequest(
     APPROVALS_TABLE,
     "POST",
     {
-      records:[
+      records: [
         {
           fields
         }
       ],
-
-      typecast:true
+      typecast: true
     }
   );
-
 }
 
 
 async function updateApproval(
   recordId,
   fields
-){
-
-  if(!recordId)
+) {
+  if (!recordId) {
     return null;
-
+  }
 
   return airtableRequest(
     `${APPROVALS_TABLE}/${recordId}`,
@@ -297,212 +287,521 @@ async function updateApproval(
       fields
     }
   );
-
 }
 
 
 async function findPendingApproval(
   noteRecordId
-){
-
-  if(!noteRecordId)
-    return null;
-
-
+) {
   const approvals =
     await listAll(
       APPROVALS_TABLE
     );
 
-
   return (
     approvals.find(
       record => {
 
-        const links =
-          record.fields?.["Note"];
-
+        const linkedNotes =
+          Array.isArray(
+            record.fields?.["Note"]
+          )
+            ? record.fields["Note"]
+            : [];
 
         const status =
           String(
-            record.fields?.["Status"] || ""
+            record.fields?.["Status"] ||
+            ""
           ).trim();
-
-
-        const linkedIds =
-          Array.isArray(links)
-            ? links
-            : [];
-
 
         return (
           status === "Pending" &&
-          linkedIds.includes(
+          linkedNotes.includes(
             noteRecordId
           )
         );
-
       }
     ) || null
   );
-
 }
 
 
-function now(){
+// ============================================================
+// TEACHER RESOLUTION
+// ============================================================
 
-  return new Date()
-    .toISOString();
-
-}
-
-
-function normalizeLinkedRecordIds(
-  value
-){
-
-  if(
-    value === undefined ||
-    value === null ||
-    value === ""
-  ){
-
-    return [];
-
-  }
-
-
-  const values =
-    Array.isArray(value)
-      ? value
-      : [value];
-
-
-  return values
-    .map(
-      item =>
-        String(
-          item || ""
-        ).trim()
-    )
-    .filter(
-      item =>
-        /^rec[A-Za-z0-9]{14}$/
-          .test(item)
-    );
-
+function isRecordId(value) {
+  return /^rec[A-Za-z0-9]{14}$/.test(
+    String(value || "").trim()
+  );
 }
 
 
 async function resolveTeacherId(
   value
-){
-
-  const direct =
-    normalizeLinkedRecordIds(
-      value
-    );
-
-
-  if(direct.length)
-    return direct[0];
-
-
-  const name =
+) {
+  const supplied =
     String(
       value || ""
     ).trim();
 
-
-  if(!name)
+  if (!supplied) {
     return null;
-
-
-  try{
-
-    const teachers =
-      await listAll(
-        TEACHERS_TABLE
-      );
-
-
-    const found =
-      teachers.find(
-        record => {
-
-          const fields =
-            record.fields || {};
-
-
-          return [
-            fields.Name,
-            fields["Teacher Name"],
-            fields.Full_Name,
-            fields["Full Name"]
-          ]
-            .filter(Boolean)
-            .some(
-              candidate =>
-                String(candidate)
-                  .trim()
-                  .toLowerCase() ===
-                name.toLowerCase()
-            );
-
-        }
-      );
-
-
-    return found?.id || null;
-
-  }catch(error){
-
-    console.warn(
-      "Unable to resolve reviewer:",
-      error.message
-    );
-
-    return null;
-
   }
 
+  if (
+    isRecordId(supplied)
+  ) {
+    return supplied;
+  }
+
+  const teachers =
+    await listAll(
+      TEACHERS_TABLE
+    );
+
+  const target =
+    supplied.toLowerCase();
+
+  const found =
+    teachers.find(
+      record => {
+
+        const fields =
+          record.fields || {};
+
+        const names = [
+          fields.Name,
+          fields["Teacher Name"],
+          fields.Full_Name,
+          fields["Full Name"]
+        ];
+
+        return names
+          .filter(Boolean)
+          .some(
+            name =>
+              String(name)
+                .trim()
+                .toLowerCase() ===
+              target
+          );
+      }
+    );
+
+  return found?.id || null;
 }
 
 
-function noteResponse(record){
+// ============================================================
+// CLASS RESOLUTION
+//
+// Target Class is a linked record.
+//
+// If NoteBank_Notes contains a real Airtable class
+// record ID, use it directly.
+//
+// Otherwise try to match the class name against Classes.
+// ============================================================
+
+async function resolveClassId(
+  value
+) {
+  if (
+    value === undefined ||
+    value === null ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  // Already an Airtable record ID
+  if (
+    isRecordId(value)
+  ) {
+    return value;
+  }
+
+  const target =
+    String(value)
+      .trim()
+      .toLowerCase();
+
+  if (!target) {
+    return null;
+  }
+
+  const classes =
+    await listAll(
+      CLASSES_TABLE
+    );
+
+  const found =
+    classes.find(
+      record => {
+
+        const fields =
+          record.fields || {};
+
+        const candidates = [
+          fields.Name,
+          fields["Class Name"],
+          fields.Class,
+          fields["Full Name"],
+          fields.Code,
+          fields["Class Code"]
+        ];
+
+        return candidates
+          .filter(Boolean)
+          .some(
+            candidate =>
+              String(candidate)
+                .trim()
+                .toLowerCase() ===
+              target
+          );
+      }
+    );
+
+  return found?.id || null;
+}
+
+
+// ============================================================
+// PUBLICATIONS
+// ============================================================
+
+async function findPublication(
+  noteRecordId,
+  version
+) {
+  const publications =
+    await listAll(
+      PUBLICATIONS_TABLE
+    );
+
+  const wantedVersion =
+    String(
+      version || ""
+    ).trim();
+
+  return (
+    publications.find(
+      record => {
+
+        const fields =
+          record.fields || {};
+
+        const linkedNotes =
+          Array.isArray(
+            fields["Note"]
+          )
+            ? fields["Note"]
+            : [];
+
+        const recordVersion =
+          String(
+            fields["Version"] ||
+            ""
+          ).trim();
+
+        return (
+          linkedNotes.includes(
+            noteRecordId
+          ) &&
+          (
+            !wantedVersion ||
+            !recordVersion ||
+            recordVersion ===
+              wantedVersion
+          )
+        );
+      }
+    ) || null
+  );
+}
+
+
+async function createPublication(
+  fields
+) {
+  return airtableRequest(
+    PUBLICATIONS_TABLE,
+    "POST",
+    {
+      records: [
+        {
+          fields
+        }
+      ],
+      typecast: true
+    }
+  );
+}
+
+
+async function updatePublication(
+  recordId,
+  fields
+) {
+  return airtableRequest(
+    `${PUBLICATIONS_TABLE}/${recordId}`,
+    "PATCH",
+    {
+      fields
+    }
+  );
+}
+
+
+// ============================================================
+// HELPER
+// ============================================================
+
+function now() {
+  return new Date()
+    .toISOString();
+}
+
+
+function firstValue(
+  fields,
+  names
+) {
+  for (
+    const name of names
+  ) {
+
+    const value =
+      fields?.[name];
+
+    if (
+      value !== undefined &&
+      value !== null &&
+      String(value).trim() !== ""
+    ) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+
+// ============================================================
+// CREATE / UPDATE PUBLICATION
+// ============================================================
+
+async function publishNote({
+  note,
+  reviewerId
+}) {
+  const fields =
+    note.fields || {};
+
+  const version =
+    String(
+      fields["Version"] ||
+      "1"
+    ).trim();
+
+  const programme =
+    firstValue(
+      fields,
+      [
+        "Programme",
+        "Target Programme"
+      ]
+    );
+
+  const classValue =
+    firstValue(
+      fields,
+      [
+        "Class",
+        "Target Class"
+      ]
+    );
+
+  // Resolve Class because Target Class
+  // is a linked-record field.
+  const classId =
+    await resolveClassId(
+      classValue
+    );
+
+  const publicationFields = {
+
+    "Publication ID":
+      `PUB-${Date.now()}-${Math.floor(
+        Math.random() * 100000
+      )}`,
+
+    "Note":
+      [note.id],
+
+    "Version":
+      version,
+
+    "Publish Date":
+      now(),
+
+    "Status":
+      "Published"
+  };
+
+
+  // Target Programme is a Single Select
+  if (
+    programme !== "" &&
+    programme !== null &&
+    programme !== undefined
+  ) {
+    publicationFields[
+      "Target Programme"
+    ] =
+      String(programme);
+  }
+
+
+  // Target Class is a linked record
+  if (classId) {
+    publicationFields[
+      "Target Class"
+    ] =
+      [classId];
+  }
+
+
+  // Published By is a linked Teacher
+  if (reviewerId) {
+    publicationFields[
+      "Published By"
+    ] =
+      [reviewerId];
+  }
+
+
+  // Check whether publication already exists
+  const existing =
+    await findPublication(
+      note.id,
+      version
+    );
+
+
+  // Update existing publication
+  if (existing) {
+
+    const updated =
+      await updatePublication(
+        existing.id,
+        {
+          "Note":
+            [note.id],
+
+          "Version":
+            version,
+
+          ...(programme
+            ? {
+                "Target Programme":
+                  String(programme)
+              }
+            : {}),
+
+          ...(classId
+            ? {
+                "Target Class":
+                  [classId]
+              }
+            : {}),
+
+          ...(reviewerId
+            ? {
+                "Published By":
+                  [reviewerId]
+              }
+            : {}),
+
+          "Publish Date":
+            now(),
+
+          "Status":
+            "Published"
+        }
+      );
+
+    return {
+      publication:
+        updated,
+
+      created:
+        false
+    };
+  }
+
+
+  // Create new publication
+  const created =
+    await createPublication(
+      publicationFields
+    );
 
   return {
+    publication:
+      created?.records?.[0] ||
+      null,
+
+    created:
+      true
+  };
+}
+
+
+// ============================================================
+// RESPONSE FORMAT
+// ============================================================
+
+function noteResponse(
+  record
+) {
+  return {
+
     airtableId:
       record.id,
 
     ...(record.fields || {})
   };
-
 }
 
+
+// ============================================================
+// MAIN HANDLER
+// ============================================================
 
 export default async function handler(
   req,
   res
-){
+) {
 
+  // CORS
   res.setHeader(
     "Access-Control-Allow-Origin",
     "*"
   );
-
 
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET,POST,PUT,PATCH,OPTIONS"
   );
 
-
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
   );
-
 
   res.setHeader(
     "Cache-Control",
@@ -510,23 +809,22 @@ export default async function handler(
   );
 
 
-  if(req.method === "OPTIONS"){
-
+  // OPTIONS
+  if (
+    req.method === "OPTIONS"
+  ) {
     return res
       .status(200)
       .end();
-
   }
 
 
-  try{
+  try {
 
     getConfig();
 
-
     const body =
       req.body || {};
-
 
     const noteId =
       req.query?.noteId ||
@@ -536,13 +834,12 @@ export default async function handler(
 
     // ========================================================
     // REVIEW QUEUE
-    // GET /api/note-reviews?list=review
     // ========================================================
 
-    if(
+    if (
       req.method === "GET" &&
       !noteId
-    ){
+    ) {
 
       const mode =
         String(
@@ -550,91 +847,101 @@ export default async function handler(
           "review"
         ).toLowerCase();
 
-
       const notes =
         await listAll(
           NOTES_TABLE
         );
 
-
       let filtered =
         notes;
 
-
-      if(mode === "review"){
+      if (
+        mode === "review"
+      ) {
 
         filtered =
           notes.filter(
             record =>
               String(
-                record.fields?.["Status"] ||
+                record.fields?.[
+                  "Status"
+                ] ||
                 ""
               ).trim() ===
               "Under Review"
           );
-
       }
 
 
+      // Newest first
       filtered.sort(
-        (a,b) => {
+        (a, b) => {
 
-          const da =
+          const dateA =
             new Date(
-              a.fields?.["Updated Date"] ||
-              a.fields?.["Created Date"] ||
+              a.fields?.[
+                "Updated Date"
+              ] ||
+              a.fields?.[
+                "Created Date"
+              ] ||
               0
             ).getTime();
 
-
-          const db =
+          const dateB =
             new Date(
-              b.fields?.["Updated Date"] ||
-              b.fields?.["Created Date"] ||
+              b.fields?.[
+                "Updated Date"
+              ] ||
+              b.fields?.[
+                "Created Date"
+              ] ||
               0
             ).getTime();
 
-
-          return db - da;
-
+          return dateB - dateA;
         }
       );
 
 
-      return res.status(200).json({
+      return res
+        .status(200)
+        .json({
 
-        success:true,
+          success:
+            true,
 
-        count:
-          filtered.length,
+          count:
+            filtered.length,
 
-        notes:
-          filtered.map(
-            noteResponse
-          )
-
-      });
-
+          notes:
+            filtered.map(
+              noteResponse
+            )
+        });
     }
 
 
     // ========================================================
-    // SINGLE NOTE
+    // GET SINGLE NOTE
     // ========================================================
 
-    if(req.method === "GET"){
+    if (
+      req.method === "GET"
+    ) {
 
-      if(!noteId){
+      if (!noteId) {
 
-        return res.status(400).json({
+        return res
+          .status(400)
+          .json({
 
-          success:false,
+            success:
+              false,
 
-          error:
-            "noteId is required."
-
-        });
-
+            error:
+              "noteId is required."
+          });
       }
 
 
@@ -644,45 +951,54 @@ export default async function handler(
         );
 
 
-      if(!note){
+      if (!note) {
 
-        return res.status(404).json({
+        return res
+          .status(404)
+          .json({
 
-          success:false,
+            success:
+              false,
 
-          error:
-            "Note not found.",
+            error:
+              "Note not found.",
 
-          noteId
-
-        });
-
+            noteId
+          });
       }
 
 
-      return res.status(200).json({
+      return res
+        .status(200)
+        .json({
 
-        success:true,
+          success:
+            true,
 
-        note:
-          noteResponse(note)
-
-      });
-
+          note:
+            noteResponse(
+              note
+            )
+        });
     }
 
 
-    if(!noteId){
+    // ========================================================
+    // NOTE IS REQUIRED FOR WRITE OPERATIONS
+    // ========================================================
 
-      return res.status(400).json({
+    if (!noteId) {
 
-        success:false,
+      return res
+        .status(400)
+        .json({
 
-        error:
-          "noteId is required."
+          success:
+            false,
 
-      });
-
+          error:
+            "noteId is required."
+        });
     }
 
 
@@ -692,28 +1008,30 @@ export default async function handler(
       );
 
 
-    if(!note){
+    if (!note) {
 
-      return res.status(404).json({
+      return res
+        .status(404)
+        .json({
 
-        success:false,
+          success:
+            false,
 
-        error:
-          "Note not found.",
+          error:
+            "Note not found.",
 
-        noteId
-
-      });
-
+          noteId
+        });
     }
 
 
     const currentFields =
       note.fields || {};
 
-
     const currentStatus =
-      currentFields["Status"] ||
+      currentFields[
+        "Status"
+      ] ||
       "AI Draft";
 
 
@@ -727,16 +1045,16 @@ export default async function handler(
 
 
     // ========================================================
-    // SAVE
+    // SAVE DRAFT
     // ========================================================
 
-    if(
+    if (
       (
         req.method === "PUT" ||
         req.method === "PATCH"
       ) &&
       action === "save"
-    ){
+    ) {
 
       const editableFields = [
 
@@ -780,28 +1098,28 @@ export default async function handler(
       const fields = {};
 
 
-      for(
+      for (
         const field of
         editableFields
-      ){
+      ) {
 
-        if(
+        if (
           Object.prototype
             .hasOwnProperty.call(
               body,
               field
             )
-        ){
+        ) {
 
           fields[field] =
             body[field];
-
         }
-
       }
 
 
-      fields["Updated Date"] =
+      fields[
+        "Updated Date"
+      ] =
         now();
 
 
@@ -812,37 +1130,42 @@ export default async function handler(
         );
 
 
-      return res.status(200).json({
+      return res
+        .status(200)
+        .json({
 
-        success:true,
+          success:
+            true,
 
-        message:
-          "Note draft saved successfully.",
+          message:
+            "Note draft saved successfully.",
 
-        status:
-          updated.fields?.["Status"] ||
-          currentStatus,
+          status:
+            updated.fields?.[
+              "Status"
+            ] ||
+            currentStatus,
 
-        note:
-          noteResponse(updated)
-
-      });
-
+          note:
+            noteResponse(
+              updated
+            )
+        });
     }
 
 
     // ========================================================
-    // SUBMIT
+    // SUBMIT FOR APPROVAL
     // ========================================================
 
-    if(
+    if (
       (
         req.method === "POST" ||
         req.method === "PUT" ||
         req.method === "PATCH"
       ) &&
       action === "submit"
-    ){
+    ) {
 
       const allowedStatuses = [
 
@@ -855,21 +1178,22 @@ export default async function handler(
       ];
 
 
-      if(
+      if (
         !allowedStatuses.includes(
           currentStatus
         )
-      ){
+      ) {
 
-        return res.status(400).json({
+        return res
+          .status(400)
+          .json({
 
-          success:false,
+            success:
+              false,
 
-          error:
-            `Cannot submit note from status "${currentStatus}".`
-
-        });
-
+            error:
+              `Cannot submit note from status "${currentStatus}".`
+          });
       }
 
 
@@ -882,15 +1206,19 @@ export default async function handler(
 
       const version =
         String(
-          currentFields["Version"] ||
+          currentFields[
+            "Version"
+          ] ||
           "1"
         );
 
 
+      // Change note status
       const updated =
         await updateNote(
           note.id,
           {
+
             "Status":
               "Under Review",
 
@@ -922,47 +1250,65 @@ export default async function handler(
       };
 
 
-      const submittedByIds =
-        normalizeLinkedRecordIds(
+      const submittedById =
+        await resolveTeacherId(
           submittedBy
         );
 
 
-      if(
-        submittedByIds.length
-      ){
+      if (
+        submittedById
+      ) {
 
         approvalFields[
           "Submitted By"
         ] =
-          submittedByIds;
-
+          [submittedById];
       }
 
 
-      let approval;
+      try {
 
-
-      try{
-
-        approval =
+        const approval =
           await createApproval(
             approvalFields
           );
 
-      }catch(approvalError){
 
-        console.error(
-          "Approval record creation failed:",
-          approvalError
-        );
+        return res
+          .status(200)
+          .json({
 
+            success:
+              true,
 
-        try{
+            message:
+              "Note submitted for approval.",
+
+            status:
+              "Under Review",
+
+            approval:
+              approval?.records?.[0] ||
+              null,
+
+            note:
+              noteResponse(
+                updated
+              )
+          });
+
+      } catch (
+        error
+      ) {
+
+        // Rollback
+        try {
 
           await updateNote(
             note.id,
             {
+
               "Status":
                 currentStatus,
 
@@ -971,47 +1317,18 @@ export default async function handler(
             }
           );
 
-        }catch(rollbackError){
+        } catch (
+          rollbackError
+        ) {
 
           console.error(
             "Rollback failed:",
             rollbackError
           );
-
         }
 
-
-        throw new Error(
-
-          "Approval record could not be created. " +
-          "The note was returned to its previous status. " +
-          approvalError.message
-
-        );
-
+        throw error;
       }
-
-
-      return res.status(200).json({
-
-        success:true,
-
-        message:
-          "Note submitted for approval.",
-
-        status:
-          "Under Review",
-
-        approvalId:
-          approval
-            ?.records?.[0]?.id ||
-          null,
-
-        note:
-          noteResponse(updated)
-
-      });
-
     }
 
 
@@ -1019,44 +1336,42 @@ export default async function handler(
     // APPROVE AND PUBLISH
     // ========================================================
 
-    if(
-      req.method === "POST" &&
+    if (
+      (
+        req.method === "POST" ||
+        req.method === "PUT" ||
+        req.method === "PATCH"
+      ) &&
       action === "approve"
-    ){
+    ) {
 
-      if(
-        currentStatus !==
-          "Under Review" &&
-        currentStatus !==
+      if (
+        ![
+          "Under Review",
           "Approved"
-      ){
+        ].includes(
+          currentStatus
+        )
+      ) {
 
-        return res.status(400).json({
+        return res
+          .status(400)
+          .json({
 
-          success:false,
+            success:
+              false,
 
-          error:
-            `Cannot approve note from status "${currentStatus}".`
-
-        });
-
+            error:
+              `Cannot approve note from status "${currentStatus}".`
+          });
       }
 
 
       const reviewer =
-        body.reviewerId ||
         body.reviewer ||
         body.approvedBy ||
+        body.teacherId ||
         "";
-
-
-      const comment =
-        String(
-          body.reviewerComment ||
-          body.comment ||
-          body.reason ||
-          ""
-        ).trim();
 
 
       const reviewerId =
@@ -1065,130 +1380,214 @@ export default async function handler(
         );
 
 
-      const fields = {
-
-        "Status":
-          "Published",
-
-        "Updated Date":
-          now(),
-
-        "Approved Date":
-          now()
-
-      };
+      const reviewComment =
+        body.reviewComment ||
+        body["Review Comment"] ||
+        body.comment ||
+        "";
 
 
-      if(reviewerId){
+      // --------------------------------------------------------
+      // STEP 1
+      // PUBLISH NOTE
+      // --------------------------------------------------------
 
-        fields[
-          "Approved By"
-        ] =
-          [reviewerId];
-
-      }
-
-
-      if(comment){
-
-        fields[
-          "Review Comment"
-        ] =
-          comment;
-
-      }
-
-
-      const updated =
+      const publishedNote =
         await updateNote(
           note.id,
-          fields
-        );
-
-
-      let approvalUpdated =
-        false;
-
-
-      try{
-
-        const approval =
-          await findPendingApproval(
-            note.id
-          );
-
-
-        if(approval){
-
-          const approvalFields = {
+          {
 
             "Status":
-              "Approved",
+              "Published",
 
-            "Review Date":
-              now()
+            "Published Date":
+              now(),
 
-          };
+            "Approved Date":
+              now(),
 
+            "Updated Date":
+              now(),
 
-          if(comment){
+            ...(reviewerId
+              ? {
+                  "Approved By":
+                    [reviewerId]
+                }
+              : {}),
 
-            approvalFields[
-              "Reviewer Comments"
-            ] =
-              comment;
-
+            ...(reviewComment
+              ? {
+                  "Review Comment":
+                    reviewComment
+                }
+              : {})
           }
-
-
-          if(reviewerId){
-
-            approvalFields[
-              "Reviewer"
-            ] =
-              [reviewerId];
-
-          }
-
-
-          await updateApproval(
-            approval.id,
-            approvalFields
-          );
-
-
-          approvalUpdated =
-            true;
-
-        }
-
-      }catch(approvalError){
-
-        console.error(
-          "Approval history update failed:",
-          approvalError
         );
 
+
+      // --------------------------------------------------------
+      // STEP 2
+      // CREATE PUBLICATION RECORD
+      // --------------------------------------------------------
+
+      let publicationResult;
+
+      try {
+
+        publicationResult =
+          await publishNote({
+
+            note:
+              publishedNote,
+
+            reviewerId
+
+          });
+
+      } catch (
+        publicationError
+      ) {
+
+        console.error(
+          "Publication creation failed:",
+          publicationError
+        );
+
+
+        // Rollback
+        try {
+
+          await updateNote(
+            note.id,
+            {
+
+              "Status":
+                "Under Review",
+
+              "Updated Date":
+                now()
+            }
+          );
+
+        } catch (
+          rollbackError
+        ) {
+
+          console.error(
+            "Publication rollback failed:",
+            rollbackError
+          );
+        }
+
+
+        return res
+          .status(500)
+          .json({
+
+            success:
+              false,
+
+            error:
+              "The publication record could not be created. The note has been returned to Under Review.",
+
+            details:
+              publicationError.message
+          });
       }
 
 
-      return res.status(200).json({
+      // --------------------------------------------------------
+      // STEP 3
+      // UPDATE APPROVAL RECORD
+      // --------------------------------------------------------
 
-        success:true,
+      const pendingApproval =
+        await findPendingApproval(
+          note.id
+        );
 
-        message:
-          "Note approved and published.",
 
-        status:
-          "Published",
+      let updatedApproval =
+        null;
 
-        approvalUpdated,
 
-        note:
-          noteResponse(updated)
+      if (
+        pendingApproval
+      ) {
 
-      });
+        const approvalFields = {
 
+          "Status":
+            "Approved",
+
+          "Review Date":
+            now()
+
+        };
+
+
+        if (
+          reviewerId
+        ) {
+
+          approvalFields[
+            "Reviewer"
+          ] =
+            [reviewerId];
+        }
+
+
+        if (
+          reviewComment
+        ) {
+
+          approvalFields[
+            "Reviewer Comments"
+          ] =
+            reviewComment;
+        }
+
+
+        updatedApproval =
+          await updateApproval(
+            pendingApproval.id,
+            approvalFields
+          );
+      }
+
+
+      // --------------------------------------------------------
+      // FINAL RESPONSE
+      // --------------------------------------------------------
+
+      return res
+        .status(200)
+        .json({
+
+          success:
+            true,
+
+          message:
+            "Note approved and published.",
+
+          status:
+            "Published",
+
+          publication:
+            publicationResult?.publication ||
+            null,
+
+          approval:
+            updatedApproval ||
+            pendingApproval ||
+            null,
+
+          note:
+            noteResponse(
+              publishedNote
+            )
+        });
     }
 
 
@@ -1196,58 +1595,47 @@ export default async function handler(
     // REQUEST CHANGES
     // ========================================================
 
-    if(
-      req.method === "POST" &&
+    if (
       (
-        action === "request_changes" ||
-        action === "changes" ||
-        action === "reject"
+        req.method === "POST" ||
+        req.method === "PUT" ||
+        req.method === "PATCH"
+      ) &&
+      [
+        "request_changes",
+        "changes",
+        "reject"
+      ].includes(
+        action
       )
-    ){
+    ) {
 
-      if(
-        currentStatus !==
-        "Under Review"
-      ){
+      if (
+        ![
+          "Under Review",
+          "Approved"
+        ].includes(
+          currentStatus
+        )
+      ) {
 
-        return res.status(400).json({
+        return res
+          .status(400)
+          .json({
 
-          success:false,
+            success:
+              false,
 
-          error:
-            `Cannot request changes from status "${currentStatus}".`
-
-        });
-
-      }
-
-
-      const reason =
-        String(
-          body.reason ||
-          body.reviewerComment ||
-          body.comment ||
-          ""
-        ).trim();
-
-
-      if(!reason){
-
-        return res.status(400).json({
-
-          success:false,
-
-          error:
-            "Reviewer comment is required when requesting changes."
-
-        });
-
+            error:
+              `Cannot request changes from status "${currentStatus}".`
+          });
       }
 
 
       const reviewer =
-        body.reviewerId ||
         body.reviewer ||
+        body.approvedBy ||
+        body.teacherId ||
         "";
 
 
@@ -1257,15 +1645,43 @@ export default async function handler(
         );
 
 
-      const updated =
+      const reviewComment =
+        body.reviewComment ||
+        body["Review Comment"] ||
+        body.comment ||
+        body.changes ||
+        "";
+
+
+      if (
+        !String(
+          reviewComment
+        ).trim()
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            success:
+              false,
+
+            error:
+              "A review comment is required when requesting changes."
+          });
+      }
+
+
+      const updatedNote =
         await updateNote(
           note.id,
           {
+
             "Status":
               "Changes Requested",
 
             "Review Comment":
-              reason,
+              reviewComment,
 
             "Updated Date":
               now()
@@ -1273,113 +1689,115 @@ export default async function handler(
         );
 
 
-      let approvalUpdated =
-        false;
-
-
-      try{
-
-        const approval =
-          await findPendingApproval(
-            note.id
-          );
-
-
-        if(approval){
-
-          const approvalFields = {
-
-            "Status":
-              "Changes Requested",
-
-            "Review Date":
-              now(),
-
-            "Reviewer Comments":
-              reason
-
-          };
-
-
-          if(reviewerId){
-
-            approvalFields[
-              "Reviewer"
-            ] =
-              [reviewerId];
-
-          }
-
-
-          await updateApproval(
-            approval.id,
-            approvalFields
-          );
-
-
-          approvalUpdated =
-            true;
-
-        }
-
-      }catch(approvalError){
-
-        console.error(
-          "Approval history update failed:",
-          approvalError
+      const pendingApproval =
+        await findPendingApproval(
+          note.id
         );
 
+
+      let updatedApproval =
+        null;
+
+
+      if (
+        pendingApproval
+      ) {
+
+        const approvalFields = {
+
+          "Status":
+            "Changes Requested",
+
+          "Review Date":
+            now(),
+
+          "Reviewer Comments":
+            reviewComment
+
+        };
+
+
+        if (
+          reviewerId
+        ) {
+
+          approvalFields[
+            "Reviewer"
+          ] =
+            [reviewerId];
+        }
+
+
+        updatedApproval =
+          await updateApproval(
+            pendingApproval.id,
+            approvalFields
+          );
       }
 
 
-      return res.status(200).json({
+      return res
+        .status(200)
+        .json({
 
-        success:true,
+          success:
+            true,
 
-        message:
-          "Note returned for revision.",
+          message:
+            "Changes requested for this note.",
 
-        status:
-          "Changes Requested",
+          status:
+            "Changes Requested",
 
-        approvalUpdated,
+          approval:
+            updatedApproval ||
+            pendingApproval ||
+            null,
 
-        note:
-          noteResponse(updated)
-
-      });
-
+          note:
+            noteResponse(
+              updatedNote
+            )
+        });
     }
 
 
-    return res.status(400).json({
+    // ========================================================
+    // UNKNOWN ACTION
+    // ========================================================
 
-      success:false,
+    return res
+      .status(400)
+      .json({
 
-      error:
-        "Invalid action. Use save, submit, approve or request_changes."
+        success:
+          false,
 
-    });
+        error:
+          `Unsupported action "${action}".`
+      });
 
 
-  }catch(error){
+  } catch (
+    error
+  ) {
 
     console.error(
-      "NOTEBANK REVIEW API ERROR:",
+      "Note review API error:",
       error
     );
 
 
-    return res.status(500).json({
+    return res
+      .status(500)
+      .json({
 
-      success:false,
+        success:
+          false,
 
-      error:
-        error.message ||
-        "NoteBank review operation failed."
-
-    });
-
+        error:
+          error?.message ||
+          "Internal server error."
+      });
   }
-
 }
