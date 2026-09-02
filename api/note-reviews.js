@@ -1057,86 +1057,169 @@ export default async function handler(
        GET REVIEW QUEUE
        ======================================================== */
 
-    if(
-      req.method === "GET" &&
-      !noteId
-    ){
+if (req.method === "GET" && !noteId) {
 
-      const notes =
-        await listAll(
-          NOTES_TABLE
-        );
-
-
-      const mode =
-        String(
-          req.query?.list ||
-          "review"
-        )
-          .toLowerCase();
+  const mode =
+    String(
+      req.query?.list || "review"
+    )
+      .trim()
+      .toLowerCase();
 
 
-      const filtered =
+  // ==========================================================
+  // LOAD CLASSES
+  // ==========================================================
 
-        mode === "review"
+  if (mode === "classes") {
 
-          ?
-
-          notes.filter(
-            record =>
-              String(
-                record.fields?.Status ||
-                ""
-              ).trim()
-              === "Under Review"
-          )
-
-          :
-
-          notes;
-
-
-      /*
-       * Newest first.
-       */
-
-      filtered.sort(
-        (a,b) =>
-
-          new Date(
-            b.fields?.["Updated Date"] ||
-            b.fields?.["Created Date"] ||
-            0
-          )
-
-          -
-
-          new Date(
-            a.fields?.["Updated Date"] ||
-            a.fields?.["Created Date"] ||
-            0
-          )
-
+    const classRecords =
+      await listAll(
+        CLASSES_TABLE
       );
 
 
-      return res
-        .status(200)
-        .json({
+    const classes =
+      classRecords
+        .map(record => {
 
-          success:true,
+          const f =
+            record.fields || {};
 
-          count:
-            filtered.length,
 
-          notes:
-            filtered.map(
-              responseNote
-            )
+          return {
 
-        });
+            id:
+              record.id,
 
-    }
+            airtableId:
+              record.id,
+
+            name:
+              String(
+                f["Class Name"] ||
+                f.Name ||
+                f.Class ||
+                ""
+              ).trim(),
+
+            className:
+              String(
+                f["Class Name"] ||
+                f.Name ||
+                f.Class ||
+                ""
+              ).trim(),
+
+            code:
+              String(
+                f["Class ID"] ||
+                f.Code ||
+                ""
+              ).trim(),
+
+            programme:
+              String(
+                f.Programme ||
+                ""
+              ).trim(),
+
+            status:
+              String(
+                f.Status ||
+                "Active"
+              ).trim()
+
+          };
+
+        })
+
+        .filter(
+          record =>
+            record.name
+        );
+
+
+    return res.status(200).json({
+
+      success:
+        true,
+
+      count:
+        classes.length,
+
+      classes
+
+    });
+
+  }
+
+
+  // ==========================================================
+  // LOAD REVIEW QUEUE
+  // ==========================================================
+
+  const notes =
+    await listAll(
+      NOTES_TABLE
+    );
+
+
+  const filtered =
+    mode === "review"
+
+      ?
+
+      notes.filter(
+        record =>
+          String(
+            record.fields?.Status ||
+            ""
+          ).trim()
+          === "Under Review"
+      )
+
+      :
+
+      notes;
+
+
+  filtered.sort(
+    (a, b) =>
+
+      new Date(
+        b.fields?.["Updated Date"] ||
+        b.fields?.["Created Date"] ||
+        0
+      )
+
+      -
+
+      new Date(
+        a.fields?.["Updated Date"] ||
+        a.fields?.["Created Date"] ||
+        0
+      )
+
+  );
+
+
+  return res.status(200).json({
+
+    success:
+      true,
+
+    count:
+      filtered.length,
+
+    notes:
+      filtered.map(
+        responseNote
+      )
+
+  });
+
+}
 
 
     /* ========================================================
