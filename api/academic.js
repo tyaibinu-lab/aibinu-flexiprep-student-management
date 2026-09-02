@@ -7,34 +7,15 @@ const TABLES = {
   teachers: "tblVjuSJe4R5kcOZr"
 };
 
-// ============================================================
-// NOTEBANK TABLES
-// These are READ-ONLY here and are used only for statistics.
-// ============================================================
-
-const NOTEBANK_TABLES = {
-  notes: "tblsEjHgHA7vhPgm0",
-  jobs: "tbldFSYwYcTMtMm9A"
-};
-
 function config() {
-  const token =
-    process.env.AIRTABLE_PAT ||
-    process.env.AIRTABLE_TOKEN;
-
-  const baseId =
-    process.env.AIRTABLE_BASE_ID;
+  const token = process.env.AIRTABLE_PAT;
+  const baseId = process.env.AIRTABLE_BASE_ID;
 
   if (!token || !baseId) {
-    throw new Error(
-      "Airtable environment variables are not configured."
-    );
+    throw new Error("Airtable environment variables are not configured.");
   }
 
-  return {
-    token,
-    baseId
-  };
+  return { token, baseId };
 }
 
 const headers = token => ({
@@ -46,9 +27,9 @@ const makeId = (source, recordId) =>
   `${source}|${recordId}`;
 
 
-// ============================================================
-// GET ALL AIRTABLE RECORDS
-// ============================================================
+/* =========================================================
+   AIRTABLE READ
+========================================================= */
 
 async function listAll(baseId, tableId, token) {
   const all = [];
@@ -57,37 +38,23 @@ async function listAll(baseId, tableId, token) {
   do {
     const url =
       `${AIRTABLE_API}/${baseId}/${tableId}` +
-      (
-        offset
-          ? `?offset=${encodeURIComponent(offset)}`
-          : ""
-      );
+      (offset
+        ? `?offset=${encodeURIComponent(offset)}`
+        : "");
 
     const r = await fetch(url, {
       headers: headers(token)
     });
 
-    const text = await r.text();
-
-    let d;
-
-    try {
-      d = JSON.parse(text);
-    } catch {
-      throw new Error(
-        `Airtable returned invalid JSON (${r.status}).`
-      );
-    }
+    const d = await r.json();
 
     if (!r.ok) {
       throw new Error(
-        d?.error?.message ||
-        "Airtable read failed"
+        d.error?.message || "Airtable read failed"
       );
     }
 
     all.push(...(d.records || []));
-
     offset = d.offset || null;
 
   } while (offset);
@@ -96,23 +63,40 @@ async function listAll(baseId, tableId, token) {
 }
 
 
-// ============================================================
-// MAP ACADEMIC RECORD
-// ============================================================
+/* =========================================================
+   HELPER
+========================================================= */
+
+function firstValue(fields, names) {
+  for (const name of names) {
+    const value = fields?.[name];
+
+    if (
+      value !== undefined &&
+      value !== null &&
+      String(value).trim()
+    ) {
+      return String(value).trim();
+    }
+  }
+
+  return "";
+}
+
+
+/* =========================================================
+   ACADEMIC TABLE
+========================================================= */
 
 function mapAcademic(r) {
   const f = r.fields || {};
 
-  const type =
-    String(
-      f.Type || "Programme"
-    ).trim();
+  const type = String(
+    f.Type || "Programme"
+  ).trim();
 
   return {
-    airtableId: makeId(
-      "academic",
-      r.id
-    ),
+    airtableId: makeId("academic", r.id),
 
     type:
       type === "Assignment"
@@ -131,124 +115,172 @@ function mapAcademic(r) {
 
     code: f.Code || "",
 
-    programme:
-      f.Programme || "",
+    programme: f.Programme || "",
 
-    className:
-      f.Class || "",
+    className: f.Class || "",
 
-    subject:
-      f.Subject || "",
+    subject: f.Subject || "",
 
-    teacher:
-      f.Teacher || "",
+    teacher: f.Teacher || "",
 
-    status:
-      f.Status || "Active",
+    status: f.Status || "Active",
 
-    notes:
-      f.Notes || ""
+    notes: f.Notes || ""
   };
 }
 
 
-// ============================================================
-// MAP CLASS
-// ============================================================
+/* =========================================================
+   CLASSES TABLE
+
+   IMPORTANT:
+   Airtable may contain the class level in either:
+   - Class Name
+   - Level
+   - Name
+   - Class
+
+   We therefore check all possible fields.
+========================================================= */
 
 function mapClass(r) {
   const f = r.fields || {};
 
+  const name = firstValue(
+    f,
+    [
+      "Class Name",
+      "Level",
+      "Name",
+      "Class"
+    ]
+  );
+
   return {
-    airtableId: makeId(
-      "classes",
-      r.id
-    ),
+    airtableId: makeId("classes", r.id),
 
     type: "Class",
 
-    name:
-      f["Class Name"] || "",
+    name: name,
 
-    code:
-      f["Class ID"] || "",
+    code: firstValue(
+      f,
+      [
+        "Class ID",
+        "Code"
+      ]
+    ),
 
-    programme:
-      f.Programme || "",
+    /*
+      Classes are shared academic levels.
+      Programme is retained only as database information.
+    */
+    programme: firstValue(
+      f,
+      ["Programme"]
+    ),
 
-    className:
-      f["Class Name"] || "",
+    className: name,
 
     subject: "",
 
     teacher: "",
 
     status:
-      f.Status || "Active",
+      firstValue(
+        f,
+        ["Status"]
+      ) || "Active",
 
     notes: ""
   };
 }
 
 
-// ============================================================
-// MAP SUBJECT
-// ============================================================
+/* =========================================================
+   SUBJECTS TABLE
+========================================================= */
 
 function mapSubject(r) {
   const f = r.fields || {};
 
+  const name =
+    firstValue(
+      f,
+      [
+        "Subject Name",
+        "Name",
+        "Subject"
+      ]
+    );
+
   return {
-    airtableId: makeId(
-      "subjects",
-      r.id
-    ),
+    airtableId: makeId("subjects", r.id),
 
     type: "Subject",
 
-    name:
-      f["Subject Name"] || "",
+    name: name,
 
     code:
-      f["Subject Code"] || "",
+      firstValue(
+        f,
+        [
+          "Subject Code",
+          "Code"
+        ]
+      ),
 
     programme: "",
 
     className: "",
 
-    subject:
-      f["Subject Name"] || "",
+    subject: name,
 
     teacher: "",
 
     status:
-      f.Status || "Active",
+      firstValue(
+        f,
+        ["Status"]
+      ) || "Active",
 
     notes: ""
   };
 }
 
 
-// ============================================================
-// MAP TEACHER
-// ============================================================
+/* =========================================================
+   TEACHERS TABLE
+========================================================= */
 
 function mapTeacher(r) {
   const f = r.fields || {};
 
+  const name =
+    firstValue(
+      f,
+      [
+        "Full Name",
+        "Name",
+        "Teacher"
+      ]
+    );
+
   return {
-    airtableId: makeId(
-      "teachers",
-      r.id
-    ),
+    airtableId: makeId("teachers", r.id),
 
     type: "Teacher",
 
-    name:
-      f["Full Name"] || "",
+    name: name,
 
     code:
-      f["Teacher ID"] || "",
+      firstValue(
+        f,
+        [
+          "Teacher ID",
+          "Code"
+        ]
+      ),
 
     programme: "",
 
@@ -256,22 +288,25 @@ function mapTeacher(r) {
 
     subject: "",
 
-    teacher:
-      f["Full Name"] || "",
+    teacher: name,
 
     status:
-      f["Employment Status"] ||
-      "Active",
+      firstValue(
+        f,
+        [
+          "Employment Status",
+          "Status"
+        ]
+      ) || "Active",
 
-    notes:
-      f.Notes || ""
+    notes: f.Notes || ""
   };
 }
 
 
-// ============================================================
-// AIRTABLE WRITE
-// ============================================================
+/* =========================================================
+   AIRTABLE WRITE
+========================================================= */
 
 async function airtableWrite(
   baseId,
@@ -311,21 +346,11 @@ async function airtableWrite(
     )
   });
 
-  const text = await r.text();
-
-  let d;
-
-  try {
-    d = JSON.parse(text);
-  } catch {
-    throw new Error(
-      `Airtable returned invalid JSON (${r.status}).`
-    );
-  }
+  const d = await r.json();
 
   if (!r.ok) {
     throw new Error(
-      d?.error?.message ||
+      d.error?.message ||
       "Airtable write failed"
     );
   }
@@ -336,9 +361,9 @@ async function airtableWrite(
 }
 
 
-// ============================================================
-// GENERATE ID
-// ============================================================
+/* =========================================================
+   ID GENERATOR
+========================================================= */
 
 function gen(prefix) {
   return (
@@ -348,20 +373,15 @@ function gen(prefix) {
 }
 
 
-// ============================================================
-// GENERATE UNIQUE PROGRAMMES
-// FROM THE ACADEMIC TABLE
-// ============================================================
+/* =========================================================
+   PROGRAMMES DERIVED FROM ACADEMIC TABLE
+========================================================= */
 
-function uniqueProgrammeRecords(
-  academic
-) {
+function uniqueProgrammeRecords(academic) {
   const seen = new Set();
-
   const out = [];
 
   for (const r of academic) {
-
     const f = r.fields || {};
 
     const name =
@@ -379,13 +399,12 @@ function uniqueProgrammeRecords(
     seen.add(key);
 
     out.push({
-
       airtableId:
         `virtual|${encodeURIComponent(name)}`,
 
       type: "Programme",
 
-      name,
+      name: name,
 
       code: name,
 
@@ -407,14 +426,48 @@ function uniqueProgrammeRecords(
 }
 
 
-// ============================================================
-// MAIN API HANDLER
-// ============================================================
+/* =========================================================
+   FIXED EXAMINATION PROGRAMMES
 
-export default async function handler(
-  req,
-  res
-) {
+   These must always be available even if Airtable currently
+   has no Academic record using that programme.
+========================================================= */
+
+function fixedProgrammes() {
+  return [
+    "WAEC",
+    "NECO",
+    "UTME"
+  ].map(name => ({
+    airtableId:
+      `virtual|${encodeURIComponent(name)}`,
+
+    type: "Programme",
+
+    name: name,
+
+    code: name,
+
+    programme: name,
+
+    className: "",
+
+    subject: "",
+
+    teacher: "",
+
+    status: "Active",
+
+    notes: ""
+  }));
+}
+
+
+/* =========================================================
+   MAIN API HANDLER
+========================================================= */
+
+export default async function handler(req, res) {
 
   try {
 
@@ -424,137 +477,11 @@ export default async function handler(
     } = config();
 
 
-    // ========================================================
-    // GET
-    // ========================================================
+    /* =====================================================
+       GET
+    ===================================================== */
 
     if (req.method === "GET") {
-
-
-      // ======================================================
-      // NOTEBANK STATISTICS
-      //
-      // URL:
-      // /api/academic?stats=1
-      //
-      // This replaces:
-      // /api/notebank-stats
-      //
-      // It allows us to keep the total number of Vercel
-      // serverless functions within the Hobby-plan limit.
-      // ======================================================
-
-      if (
-        req.query &&
-        req.query.stats === "1"
-      ) {
-
-        const [
-          notes,
-          jobs
-        ] = await Promise.all([
-
-          listAll(
-            baseId,
-            NOTEBANK_TABLES.notes,
-            token
-          ),
-
-          listAll(
-            baseId,
-            NOTEBANK_TABLES.jobs,
-            token
-          )
-
-        ]);
-
-
-        // ----------------------------------------------------
-        // Extract NoteBank statuses
-        // ----------------------------------------------------
-
-        const statuses =
-          notes.map(
-            record =>
-              String(
-                record.fields?.Status ||
-                ""
-              ).trim()
-          );
-
-
-        // ----------------------------------------------------
-        // Draft Notes
-        //
-        // AI Draft
-        // Draft
-        // Changes Requested
-        // ----------------------------------------------------
-
-        const draftNotes =
-          statuses.filter(
-            status =>
-              [
-                "AI Draft",
-                "Draft",
-                "Changes Requested"
-              ].includes(status)
-          ).length;
-
-
-        // ----------------------------------------------------
-        // Notes awaiting review
-        // ----------------------------------------------------
-
-        const pendingReview =
-          statuses.filter(
-            status =>
-              status === "Under Review"
-          ).length;
-
-
-        // ----------------------------------------------------
-        // Published Notes
-        // ----------------------------------------------------
-
-        const published =
-          statuses.filter(
-            status =>
-              status === "Published"
-          ).length;
-
-
-        // ----------------------------------------------------
-        // AI Content Jobs
-        // ----------------------------------------------------
-
-        const aiJobs =
-          jobs.length;
-
-
-        // ----------------------------------------------------
-        // Return NoteBank statistics
-        // ----------------------------------------------------
-
-        return res.status(200).json({
-
-          success: true,
-
-          draftNotes,
-
-          pendingReview,
-
-          published,
-
-          aiJobs
-
-        });
-      }
-
-
-      // ======================================================
-      // EXISTING ACADEMIC DATA
-      // ======================================================
 
       const [
         academic,
@@ -590,38 +517,40 @@ export default async function handler(
       ]);
 
 
-      // ------------------------------------------------------
-      // Map Academic records
-      // ------------------------------------------------------
+      /* -----------------------------------------------
+         Map records
+      ------------------------------------------------ */
 
       const academicRecords =
-        academic.map(
-          mapAcademic
-        );
+        academic.map(mapAcademic);
+
+      const classRecords =
+        classes
+          .map(mapClass)
+          .filter(
+            r => r.name
+          );
 
 
-      // ------------------------------------------------------
-      // Explicit programmes
-      // ------------------------------------------------------
+      /* -----------------------------------------------
+         Build programme list
 
-      const explicitProgrammes =
-        academicRecords.filter(
-          r =>
-            r.type === "Programme"
-        );
-
-
-      // ------------------------------------------------------
-      // Programme names
-      // ------------------------------------------------------
+         Sources:
+         1. Fixed programmes
+         2. Explicit Programme records
+         3. Programme values found in Academic table
+      ------------------------------------------------ */
 
       const programmeNames =
         new Map();
 
-
       for (
         const p of [
-          ...explicitProgrammes,
+          ...fixedProgrammes(),
+
+          ...academicRecords.filter(
+            r => r.type === "Programme"
+          ),
 
           ...uniqueProgrammeRecords(
             academic
@@ -638,12 +567,10 @@ export default async function handler(
             .trim()
             .toLowerCase();
 
-
         if (
           key &&
           !programmeNames.has(key)
         ) {
-
           programmeNames.set(
             key,
             {
@@ -651,47 +578,56 @@ export default async function handler(
               type: "Programme"
             }
           );
-
         }
       }
 
 
-      // ------------------------------------------------------
-      // Combine all academic records
-      // ------------------------------------------------------
+      /* -----------------------------------------------
+         Combined records returned to frontend
+      ------------------------------------------------ */
 
       const records = [
 
-        // Assignments
+        /*
+          Assignments
+        */
         ...academicRecords.filter(
           r =>
             r.type === "Assignment"
         ),
 
-        // Programmes
+        /*
+          Programmes
+        */
         ...programmeNames.values(),
 
-        // Classes
-        ...classes.map(
-          mapClass
-        ),
+        /*
+          ALL classes
 
-        // Subjects
+          IMPORTANT:
+          Do NOT filter classes by programme here.
+
+          SS1, SS2, SS3 etc. are shared academic
+          levels and can be used for WAEC, NECO and UTME.
+        */
+        ...classRecords,
+
+        /*
+          Subjects
+        */
         ...subjects.map(
           mapSubject
         ),
 
-        // Teachers
+        /*
+          Teachers
+        */
         ...teachers.map(
           mapTeacher
         )
 
       ];
 
-
-      // ------------------------------------------------------
-      // Return existing Academic Management data
-      // ------------------------------------------------------
 
       return res.status(200).json({
 
@@ -700,12 +636,10 @@ export default async function handler(
         counts: {
 
           programmes:
-            [
-              ...programmeNames.values()
-            ].length,
+            programmeNames.size,
 
           classes:
-            classes.length,
+            classRecords.length,
 
           subjects:
             subjects.length,
@@ -726,9 +660,9 @@ export default async function handler(
     }
 
 
-    // ========================================================
-    // POST
-    // ========================================================
+    /* =====================================================
+       POST
+    ===================================================== */
 
     if (req.method === "POST") {
 
@@ -737,7 +671,6 @@ export default async function handler(
 
       const type =
         b.type;
-
 
       let table =
         TABLES.academic;
@@ -748,9 +681,9 @@ export default async function handler(
       let fields;
 
 
-      // ======================================================
-      // PROGRAMME
-      // ======================================================
+      /* -----------------------------------------------
+         PROGRAMME
+      ------------------------------------------------ */
 
       if (
         type === "Programme"
@@ -758,11 +691,9 @@ export default async function handler(
 
         fields = {
 
-          Type:
-            "Programme",
+          Type: "Programme",
 
-          Name:
-            b.name,
+          Name: b.name,
 
           Code:
             b.code ||
@@ -781,19 +712,20 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // ASSIGNMENT
-      // ======================================================
 
-      } else if (
+      /* -----------------------------------------------
+         ASSIGNMENT
+      ------------------------------------------------ */
+
+      else if (
         type === "Assignment"
       ) {
 
         fields = {
 
-          Type:
-            "Assignment",
+          Type: "Assignment",
 
           Name:
             b.name ||
@@ -831,12 +763,14 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // CLASS
-      // ======================================================
 
-      } else if (
+      /* -----------------------------------------------
+         CLASS
+      ------------------------------------------------ */
+
+      else if (
         type === "Class"
       ) {
 
@@ -845,7 +779,6 @@ export default async function handler(
 
         source =
           "classes";
-
 
         fields = {
 
@@ -856,12 +789,15 @@ export default async function handler(
           "Class Name":
             b.name,
 
-          Programme:
-            b.programme ||
-            "",
-
+          /*
+            Keep Level synchronized with Class Name.
+          */
           Level:
             b.name ||
+            "",
+
+          Programme:
+            b.programme ||
             "",
 
           Capacity:
@@ -876,12 +812,14 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // SUBJECT
-      // ======================================================
 
-      } else if (
+      /* -----------------------------------------------
+         SUBJECT
+      ------------------------------------------------ */
+
+      else if (
         type === "Subject"
       ) {
 
@@ -890,7 +828,6 @@ export default async function handler(
 
         source =
           "subjects";
-
 
         fields = {
 
@@ -907,12 +844,14 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // TEACHER
-      // ======================================================
 
-      } else if (
+      /* -----------------------------------------------
+         TEACHER
+      ------------------------------------------------ */
+
+      else if (
         type === "Teacher"
       ) {
 
@@ -921,7 +860,6 @@ export default async function handler(
 
         source =
           "teachers";
-
 
         fields = {
 
@@ -942,12 +880,10 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // INVALID TYPE
-      // ======================================================
 
-      } else {
+      else {
 
         return res.status(400).json({
 
@@ -958,10 +894,6 @@ export default async function handler(
 
       }
 
-
-      // ======================================================
-      // WRITE TO AIRTABLE
-      // ======================================================
 
       const r =
         await airtableWrite(
@@ -993,33 +925,27 @@ export default async function handler(
     }
 
 
-    // ========================================================
-    // PUT
-    // ========================================================
+    /* =====================================================
+       PUT
+    ===================================================== */
 
     if (req.method === "PUT") {
 
       const b =
         req.body || {};
 
-
       const parts =
         String(
-          b.airtableId || ""
+          b.airtableId ||
+          ""
         ).split("|");
-
 
       const source =
         parts.shift();
 
-
       const recordId =
         parts.join("|");
 
-
-      // ------------------------------------------------------
-      // Validate record
-      // ------------------------------------------------------
 
       if (
         !recordId ||
@@ -1040,9 +966,9 @@ export default async function handler(
       let fields;
 
 
-      // ======================================================
-      // UPDATE ACADEMIC / ASSIGNMENT
-      // ======================================================
+      /* -----------------------------------------------
+         ACADEMIC / ASSIGNMENT
+      ------------------------------------------------ */
 
       if (
         source === "academic"
@@ -1050,7 +976,6 @@ export default async function handler(
 
         const assignment =
           b.type === "Assignment";
-
 
         fields = {
 
@@ -1061,6 +986,7 @@ export default async function handler(
 
           Name:
             assignment
+
               ? (
                   b.name ||
                   [
@@ -1071,6 +997,7 @@ export default async function handler(
                     .filter(Boolean)
                     .join(" — ")
                 )
+
               : b.name,
 
           Code:
@@ -1103,12 +1030,17 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // UPDATE CLASS
-      // ======================================================
 
-      } else if (
+      /* -----------------------------------------------
+         CLASS
+
+         IMPORTANT:
+         Update BOTH Class Name and Level.
+      ------------------------------------------------ */
+
+      else if (
         source === "classes"
       ) {
 
@@ -1121,6 +1053,10 @@ export default async function handler(
           "Class Name":
             b.name,
 
+          Level:
+            b.name ||
+            "",
+
           Programme:
             b.programme ||
             "",
@@ -1131,12 +1067,14 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // UPDATE SUBJECT
-      // ======================================================
 
-      } else if (
+      /* -----------------------------------------------
+         SUBJECT
+      ------------------------------------------------ */
+
+      else if (
         source === "subjects"
       ) {
 
@@ -1155,12 +1093,14 @@ export default async function handler(
 
         };
 
+      }
 
-      // ======================================================
-      // UPDATE TEACHER
-      // ======================================================
 
-      } else if (
+      /* -----------------------------------------------
+         TEACHER
+      ------------------------------------------------ */
+
+      else if (
         source === "teachers"
       ) {
 
@@ -1185,10 +1125,6 @@ export default async function handler(
 
       }
 
-
-      // ======================================================
-      // WRITE UPDATE TO AIRTABLE
-      // ======================================================
 
       const r =
         await airtableWrite(
@@ -1220,9 +1156,9 @@ export default async function handler(
     }
 
 
-    // ========================================================
-    // METHOD NOT ALLOWED
-    // ========================================================
+    /* =====================================================
+       METHOD NOT ALLOWED
+    ===================================================== */
 
     return res.status(405).json({
 
@@ -1231,14 +1167,14 @@ export default async function handler(
 
     });
 
+  }
 
-  } catch (err) {
+  catch (err) {
 
     console.error(
       "Academic API error:",
       err
     );
-
 
     return res.status(500).json({
 
