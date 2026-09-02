@@ -666,6 +666,7 @@ label{
 </div>
 
 <button class="secondary"
+  type="button"
   onclick="loadData()">
   ↻ Refresh
 </button>
@@ -760,6 +761,7 @@ Teacher-controlled AI content creation and question generation.
 <button
   id="noteCreatorTab"
   class="secondary active"
+  type="button"
   onclick="showAITool('note')">
   ✨ AI Note Creator
 </button>
@@ -767,6 +769,7 @@ Teacher-controlled AI content creation and question generation.
 <button
   id="questionCreatorTab"
   class="secondary"
+  type="button"
   onclick="showAITool('question')">
   ✨ AI Question Generator
 </button>
@@ -896,6 +899,7 @@ The selected academic fields provide structured context.
 
 <button
  id="generateNoteBtn"
+ type="button"
  class="primary"
  onclick="generateNoteDraft()">
 ✨ Generate Note Draft
@@ -922,12 +926,14 @@ until the teacher reviews and submits it for approval.
 <div class="ai-actions">
 
 <button
+ type="button"
  class="secondary"
  onclick="editNoteDraft()">
 Edit Draft
 </button>
 
 <button
+ type="button"
  class="primary"
  onclick="submitNoteForApproval()">
 Submit for Approval
@@ -1107,6 +1113,7 @@ UTME
 
 <button
  id="generateQuestionBtn"
+ type="button"
  class="primary"
  onclick="generateQuestionDraft()">
 ✨ Generate Question Draft
@@ -1133,12 +1140,14 @@ until reviewed and approved.
 <div class="ai-actions">
 
 <button
+ type="button"
  class="secondary"
  onclick="editQuestionDraft()">
 Edit Draft
 </button>
 
 <button
+ type="button"
  class="primary"
  onclick="submitQuestionsForApproval()">
 Submit for Approval
@@ -1551,14 +1560,31 @@ async function loadNoteBankStats(){
 
   try{
 
+    /*
+     * IMPORTANT:
+     * NoteBank statistics now use the existing
+     * /api/academic serverless function.
+     *
+     * This replaces the old:
+     * /api/notebank-stats
+     *
+     * This is necessary because the separate
+     * notebank-stats.js function was removed to
+     * remain within the Vercel Hobby function limit.
+     */
+
     const r =
       await fetch(
-        "/api/notebank-stats",
-        {cache:"no-store"}
+        "/api/academic?stats=1",
+        {
+          cache:"no-store"
+        }
       );
+
 
     const d =
       await safeJson(r);
+
 
     if(
       !r.ok ||
@@ -1571,20 +1597,33 @@ async function loadNoteBankStats(){
           "Unable to load NoteBank statistics."
         )
       );
+
     }
 
 
+    /*
+     * Update the four dashboard counters.
+     */
+
     $("nbDraftNotes").textContent =
-      d.draftNotes ?? 0;
+      Number(
+        d.draftNotes ?? 0
+      );
 
     $("nbPending").textContent =
-      d.pendingReview ?? 0;
+      Number(
+        d.pendingReview ?? 0
+      );
 
     $("nbPublished").textContent =
-      d.published ?? 0;
+      Number(
+        d.published ?? 0
+      );
 
     $("nbAIJobs").textContent =
-      d.aiJobs ?? 0;
+      Number(
+        d.aiJobs ?? 0
+      );
 
 
   }catch(e){
@@ -1593,6 +1632,11 @@ async function loadNoteBankStats(){
       "NoteBank statistics error:",
       e
     );
+
+    /*
+     * Keep the dashboard usable even if
+     * statistics temporarily fail.
+     */
 
   }
 
@@ -1610,11 +1654,15 @@ async function loadData(){
     const r =
       await fetch(
         "/api/academic",
-        {cache:"no-store"}
+        {
+          cache:"no-store"
+        }
       );
+
 
     const d =
       await safeJson(r);
+
 
     if(!r.ok)
       throw new Error(
@@ -1624,21 +1672,25 @@ async function loadData(){
         )
       );
 
+
     records =
       cleanRecords(
         d.records || []
       );
 
+
     populate();
 
     render();
 
-    /* IMPORTANT:
-       Load NoteBank counters after
-       Academic data has loaded.
-    */
 
-    loadNoteBankStats();
+    /*
+     * Load the live NoteBank statistics
+     * from the same Academic API.
+     */
+
+    await loadNoteBankStats();
+
 
     show("",true);
 
@@ -1751,6 +1803,7 @@ ${esc(r.status || "Active")}
 <td>
 
 <button
+ type="button"
  class="secondary"
  onclick="editRecord('${esc(r.airtableId)}')">
 Edit
@@ -1823,6 +1876,7 @@ ${esc(displayName(r))}
 <div class="record-action">
 
 <button
+ type="button"
  class="secondary"
  onclick="editRecord('${esc(r.airtableId)}')">
 Edit
@@ -3150,18 +3204,21 @@ ${f(
 <div class="ai-actions">
 
 <button
+ type="button"
  class="secondary"
  onclick="cancelNoteEdit()">
 Cancel
 </button>
 
 <button
+ type="button"
  class="secondary"
  onclick="saveNoteDraft()">
 💾 Save Draft
 </button>
 
 <button
+ type="button"
  class="primary"
  onclick="saveAndSubmitNote()">
 📤 Submit for Approval
@@ -3417,6 +3474,13 @@ async function saveNoteDraft(){
     );
 
 
+    /*
+     * Refresh statistics after saving.
+     */
+
+    await loadNoteBankStats();
+
+
     alert(
       "Note draft saved successfully."
     );
@@ -3603,13 +3667,18 @@ async function saveAndSubmitNote(){
     );
 
 
-    /* Refresh dashboard count */
+    /*
+     * Refresh NoteBank statistics.
+     *
+     * Draft Notes should decrease by 1.
+     * Pending Review should increase by 1.
+     */
 
-    loadNoteBankStats();
+    await loadNoteBankStats();
 
 
     alert(
-      "Note submitted for approval.\n\n" +
+      "Note submitted successfully for approval.\n\n" +
       "Status: UNDER REVIEW"
     );
 
