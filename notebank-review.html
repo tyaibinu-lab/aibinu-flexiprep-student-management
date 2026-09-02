@@ -4,64 +4,1776 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#08783f">
+
 <title>Aibinu Flexiprep | NoteBank Review Center</title>
+
 <style>
-:root{--g:#08783f;--gold:#d7a62a;--ink:#17382b;--muted:#68756e;--bg:#f4f7f5;--line:#dce6e0;--danger:#b42318;--ok:#e7f6ec}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}button,input,textarea,select{font:inherit}button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:not-allowed}.primary{background:var(--gold);color:var(--ink)}.secondary{background:#fff;color:var(--g);border:1px solid var(--line)}header{background:var(--g);color:#fff;padding:16px 5%}.header-inner{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:10px}.logo{background:var(--gold);color:var(--g);padding:11px;border-radius:10px;font-weight:800;font-size:20px}.brand b{font-size:18px}.brand small{display:block;opacity:.8;margin-top:3px}main{max-width:1200px;margin:25px auto;padding:0 16px}.top{display:flex;justify-content:space-between;align-items:end;gap:15px;flex-wrap:wrap}h1{margin:5px 0;font-size:38px}.muted{color:var(--muted);font-size:17px}.msg{margin:15px 0;padding:11px;border-radius:9px}.ok{background:var(--ok);color:var(--g)}.err{background:#fde9e7;color:var(--danger)}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:20px}.queue-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.count{display:inline-block;padding:6px 10px;border-radius:99px;background:var(--ok);color:var(--g);font-weight:800}.card{border:1px solid var(--line);border-radius:14px;padding:17px;margin-top:14px}.card h2{margin:0 0 7px}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.badge{display:inline-block;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:700;background:#fff7df;color:#765b00}.small{font-size:13px;color:var(--muted)}.target-box{margin-top:15px;padding:15px;border:1px solid var(--line);border-radius:12px;background:#f8fbf9}.target-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}.field label{display:block;font-weight:700;margin-bottom:6px}.field select,.field input,.comment textarea{width:100%;padding:12px;border:1px solid #ccd8d1;border-radius:9px;background:#fff;color:var(--ink)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.comment{margin-top:14px}.comment textarea{min-height:90px;resize:vertical}.note-body{margin-top:15px;border:1px solid var(--line);border-radius:12px;padding:15px;background:#f8fbf9}.section{margin-top:15px}.section h3{margin-bottom:6px}.content{white-space:pre-wrap;line-height:1.55}details{margin-top:13px}summary{cursor:pointer;font-weight:800;color:var(--g)}.empty{padding:30px 10px;text-align:center;color:var(--muted)}@media(max-width:700px){main{padding:0 12px}h1{font-size:31px}.panel{padding:13px}.actions button{width:100%}.target-grid{grid-template-columns:1fr}}
+:root{
+  --g:#08783f;
+  --gold:#d7a62a;
+  --ink:#17382b;
+  --muted:#68756e;
+  --bg:#f4f7f5;
+  --line:#dce6e0;
+  --danger:#b42318;
+  --ok:#e7f6ec
+}
+
+*{
+  box-sizing:border-box
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink)
+}
+
+button,input,textarea,select{
+  font:inherit
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  font-weight:700;
+  cursor:pointer
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed
+}
+
+.primary{
+  background:var(--gold);
+  color:var(--ink)
+}
+
+.secondary{
+  background:#fff;
+  color:var(--g);
+  border:1px solid var(--line)
+}
+
+header{
+  background:var(--g);
+  color:#fff;
+  padding:16px 5%
+}
+
+.header-inner{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  flex-wrap:wrap
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px
+}
+
+.logo{
+  background:var(--gold);
+  color:var(--g);
+  padding:11px;
+  border-radius:10px;
+  font-weight:800;
+  font-size:20px
+}
+
+.brand b{
+  font-size:18px
+}
+
+.brand small{
+  display:block;
+  opacity:.8;
+  margin-top:3px
+}
+
+main{
+  max-width:1200px;
+  margin:25px auto;
+  padding:0 16px
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:15px;
+  flex-wrap:wrap
+}
+
+h1{
+  margin:5px 0;
+  font-size:38px
+}
+
+.muted{
+  color:var(--muted);
+  font-size:17px
+}
+
+.msg{
+  margin:15px 0;
+  padding:11px;
+  border-radius:9px
+}
+
+.ok{
+  background:var(--ok);
+  color:var(--g)
+}
+
+.err{
+  background:#fde9e7;
+  color:var(--danger)
+}
+
+.panel{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  margin-top:20px
+}
+
+.queue-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap
+}
+
+.count{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:99px;
+  background:var(--ok);
+  color:var(--g);
+  font-weight:800
+}
+
+.card{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:17px;
+  margin-top:14px
+}
+
+.card h2{
+  margin:0 0 7px
+}
+
+.meta{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:10px 0
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:99px;
+  font-size:12px;
+  font-weight:700;
+  background:#fff7df;
+  color:#765b00
+}
+
+.small{
+  font-size:13px;
+  color:var(--muted)
+}
+
+.target-box{
+  margin-top:15px;
+  padding:15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#f8fbf9
+}
+
+.target-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:10px
+}
+
+.field label{
+  display:block;
+  font-weight:700;
+  margin-bottom:6px
+}
+
+.field select,
+.field input,
+.comment textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccd8d1;
+  border-radius:9px;
+  background:#fff;
+  color:var(--ink)
+}
+
+.actions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:13px
+}
+
+.comment{
+  margin-top:14px
+}
+
+.comment textarea{
+  min-height:90px;
+  resize:vertical
+}
+
+.note-body{
+  margin-top:15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:15px;
+  background:#f8fbf9
+}
+
+.section{
+  margin-top:15px
+}
+
+.section h3{
+  margin-bottom:6px
+}
+
+.content{
+  white-space:pre-wrap;
+  line-height:1.55
+}
+
+details{
+  margin-top:13px
+}
+
+summary{
+  cursor:pointer;
+  font-weight:800;
+  color:var(--g)
+}
+
+.empty{
+  padding:30px 10px;
+  text-align:center;
+  color:var(--muted)
+}
+
+@media(max-width:700px){
+
+  main{
+    padding:0 12px
+  }
+
+  h1{
+    font-size:31px
+  }
+
+  .panel{
+    padding:13px
+  }
+
+  .actions button{
+    width:100%
+  }
+
+  .target-grid{
+    grid-template-columns:1fr
+  }
+}
 </style>
 </head>
+
 <body>
-<header><div class="header-inner"><div class="brand"><div class="logo">AF</div><div><b>AIBINU FLEXIPREP</b><small>EDUCONSULT · NOTEBANK REVIEW</small></div></div><button class="secondary" type="button" onclick="location.href='/academic.html'">← Academic Management</button></div></header>
-<main>
-<div class="top"><div><small>AIBINU FLEXIPREP</small><h1>📋 NoteBank Review Center</h1><div class="muted">Review AI-generated notes before publication. Publication target is selected here and stored only in NoteBank_Publications.</div></div><button class="primary" type="button" onclick="loadQueue()">↻ Refresh Queue</button></div>
-<div id="msg"></div>
-<div class="panel">
-  <div class="queue-head"><div><h2>Notes Awaiting Approval</h2><div class="small">Only notes with status <b>Under Review</b> appear here.</div></div><span id="queueCount" class="count">0</span></div>
-  <div class="target-box">
-    <div class="field"><label for="reviewerName">Reviewer Name</label><input id="reviewerName" placeholder="Enter the reviewer's name"></div>
-    <div class="small" style="margin-top:6px">If the name matches a teacher record, the reviewer will be linked to Teachers.</div>
+
+<header>
+  <div class="header-inner">
+
+    <div class="brand">
+
+      <div class="logo">
+        AF
+      </div>
+
+      <div>
+        <b>AIBINU FLEXIPREP</b>
+        <small>
+          EDUCONSULT · NOTEBANK REVIEW
+        </small>
+      </div>
+
+    </div>
+
+    <button
+      class="secondary"
+      type="button"
+      onclick="location.href='/academic.html'">
+
+      ← Academic Management
+
+    </button>
+
   </div>
-  <div id="queue"><div class="empty">Loading review queue...</div></div>
-</div>
+</header>
+
+
+<main>
+
+  <div class="top">
+
+    <div>
+
+      <small>
+        AIBINU FLEXIPREP
+      </small>
+
+      <h1>
+        📋 NoteBank Review Center
+      </h1>
+
+      <div class="muted">
+        Review AI-generated notes before publication.
+        Publication target is selected here and stored
+        only in NoteBank_Publications.
+      </div>
+
+    </div>
+
+    <button
+      class="primary"
+      type="button"
+      onclick="loadQueue()">
+
+      ↻ Refresh Queue
+
+    </button>
+
+  </div>
+
+
+  <div id="msg"></div>
+
+
+  <div class="panel">
+
+    <div class="queue-head">
+
+      <div>
+
+        <h2>
+          Notes Awaiting Approval
+        </h2>
+
+        <div class="small">
+          Only notes with status
+          <b>Under Review</b>
+          appear here.
+        </div>
+
+      </div>
+
+      <span
+        id="queueCount"
+        class="count">
+
+        0
+
+      </span>
+
+    </div>
+
+
+    <div class="target-box">
+
+      <div class="field">
+
+        <label for="reviewerName">
+          Reviewer Name
+        </label>
+
+        <input
+          id="reviewerName"
+          placeholder="Enter the reviewer's name">
+
+      </div>
+
+      <div
+        class="small"
+        style="margin-top:6px">
+
+        If the name matches a teacher record,
+        the reviewer will be linked to Teachers.
+
+      </div>
+
+    </div>
+
+
+    <div id="queue">
+
+      <div class="empty">
+        Loading review queue...
+      </div>
+
+    </div>
+
+  </div>
+
 </main>
+
+
 <script>
+
 "use strict";
-const PROGRAMMES=["WAEC","NECO","UTME"];
-let classes=[];
-const $=id=>document.getElementById(id);
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"}[c]));
-function txt(v){return String(v??"").trim()}
-async function safeJson(r){const raw=await r.text();const type=r.headers.get("content-type")||"";if(!type.toLowerCase().includes("application/json"))throw new Error(raw||`Server returned ${r.status}.`);try{return raw?JSON.parse(raw):{}}catch{throw new Error("Server returned invalid JSON.")}}
-function show(message,ok=true){const b=$("msg");b.className=message?`msg ${ok?"ok":"err"}`:"";b.textContent=message||""}
-function value(note,...keys){for(const k of keys)if(note?.[k]!==undefined&&note?.[k]!==null&&txt(note[k]))return note[k];return ""}
-function section(label,v){v=txt(v);return v?`<div class="section"><h3>${esc(label)}</h3><div class="content">${esc(v)}</div></div>`:""}
-function renderNote(n){return `<div class="note-body">${section("Learning Objectives",value(n,"Learning Objectives"))}${section("Key Terms",value(n,"Key Terms"))}${section("Main Content",value(n,"Content"))}${section("Examples",value(n,"Examples"))}${section("Worked Examples",value(n,"Worked Examples"))}${section("Formulae",value(n,"Formulae"))}${section("Applications",value(n,"Applications"))}${section("Common Misconceptions",value(n,"Common Misconceptions"))}${section("Summary",value(n,"Summary"))}${section("Examination Tips",value(n,"Exam Tips"))}${section("WAEC Focus",value(n,"WAEC Focus"))}${section("NECO Focus",value(n,"NECO Focus"))}${section("UTME Focus",value(n,"UTME Focus"))}${section("Diagrams",value(n,"Diagrams"))}</div>`}
-function classId(c){const raw=txt(c.airtableId||c.id||c.recordId);const m=raw.match(/(?:^|\|)(rec[A-Za-z0-9]{14})$/);return m?m[1]:raw}
-function className(c){return txt(c.name||c.className||c["Class Name"]||c.Name)}
-function classProgramme(c){return txt(c.programme||c.Programme)}
-function classOptions(selectedProgramme="",selectedClass=""){
-  const p=txt(selectedProgramme).toLowerCase();
-  const filtered=classes.filter(c=>{const cp=classProgramme(c).toLowerCase();return !p||!cp||cp===p});
-  return `<option value="">Select target class</option>`+filtered.map(c=>`<option value="${esc(classId(c))}" ${classId(c)===selectedClass?"selected":""}>${esc(className(c))}${classProgramme(c)?` — ${esc(classProgramme(c))}`:""}</option>`).join("");
+
+
+/* ============================================================
+   GLOBAL DATA
+   ============================================================ */
+
+let programmes = [];
+
+let classes = [];
+
+
+const $ = id =>
+  document.getElementById(id);
+
+
+const esc = v =>
+  String(v ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[c])
+  );
+
+
+function txt(v){
+  return String(v ?? "").trim();
 }
-function programmeOptions(){return `<option value="">Select programme</option>`+PROGRAMMES.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("")}
-function renderCard(n,i){const id=n.airtableId||n["Note ID"];const title=value(n,"Title")||"Untitled Note";const subject=value(n,"Subject");const version=value(n,"Version")||"1";const updated=value(n,"Updated Date","Created Date");const cid=`comment_${i}`,pid=`programme_${i}`,clid=`class_${i}`;return `<article class="card" id="note_${i}"><h2>${esc(title)}</h2><div class="meta">${subject?`<span class="badge">${esc(subject)}</span>`:""}<span class="badge">Under Review</span><span class="badge">Version ${esc(version)}</span></div>${updated?`<div class="small">Last updated: ${esc(updated)}</div>`:""}<details><summary>📖 Read Full Note</summary>${renderNote(n)}</details><div class="target-box"><b>Publication Target</b><div class="small" style="margin-top:4px">These values are saved to <b>NoteBank_Publications</b>, not NoteBank_Notes.</div><div class="target-grid"><div class="field"><label for="${pid}">Target Programme</label><select id="${pid}" onchange="refreshClasses(${i})">${programmeOptions()}</select></div><div class="field"><label for="${clid}">Target Class</label><select id="${clid}">${classOptions()}</select></div></div></div><div class="comment"><label for="${cid}"><b>Reviewer Comment</b></label><textarea id="${cid}" placeholder="Add a review comment. Required when requesting changes."></textarea></div><div class="actions"><button class="secondary" type="button" onclick="requestChanges('${esc(id)}','${cid}')">✏️ Request Changes</button><button class="primary" type="button" onclick="approveNote('${esc(id)}','${cid}','${pid}','${clid}')">✓ Approve & Publish</button></div></article>`}
-function refreshClasses(i){const p=$("programme_"+i),c=$("class_"+i);if(p&&c)c.innerHTML=classOptions(p.value,c.value)}
-async function loadClasses(){try{const r=await fetch("/api/academic",{cache:"no-store"});const d=await safeJson(r);if(!r.ok)throw new Error(d.error||"Unable to load classes.");const records=Array.isArray(d.records)?d.records:[];classes=records.filter(x=>String(x.type||"").toLowerCase()==="class"&&className(x));}catch(e){console.warn("Class loading failed:",e);classes=[]}}
+
+
+/* ============================================================
+   SAFE JSON
+   ============================================================ */
+
+async function safeJson(r){
+
+  const raw =
+    await r.text();
+
+  const type =
+    r.headers.get("content-type") || "";
+
+  if(
+    !type
+      .toLowerCase()
+      .includes("application/json")
+  ){
+
+    throw new Error(
+      raw ||
+      `Server returned ${r.status}.`
+    );
+
+  }
+
+  try{
+
+    return raw
+      ? JSON.parse(raw)
+      : {};
+
+  }catch{
+
+    throw new Error(
+      "Server returned invalid JSON."
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   MESSAGE
+   ============================================================ */
+
+function show(message,ok=true){
+
+  const b =
+    $("msg");
+
+  b.className =
+    message
+      ? `msg ${ok ? "ok" : "err"}`
+      : "";
+
+  b.textContent =
+    message || "";
+
+}
+
+
+/* ============================================================
+   GET VALUE
+   ============================================================ */
+
+function value(note,...keys){
+
+  for(
+    const k of keys
+  ){
+
+    if(
+      note?.[k] !== undefined &&
+      note?.[k] !== null &&
+      txt(note[k])
+    ){
+
+      return note[k];
+
+    }
+
+  }
+
+  return "";
+
+}
+
+
+/* ============================================================
+   NOTE SECTION
+   ============================================================ */
+
+function section(label,v){
+
+  v =
+    txt(v);
+
+  return v
+    ? `
+      <div class="section">
+        <h3>${esc(label)}</h3>
+        <div class="content">
+          ${esc(v)}
+        </div>
+      </div>
+    `
+    : "";
+
+}
+
+
+/* ============================================================
+   RENDER NOTE
+   ============================================================ */
+
+function renderNote(n){
+
+  return `
+    <div class="note-body">
+
+      ${section(
+        "Learning Objectives",
+        value(n,"Learning Objectives")
+      )}
+
+      ${section(
+        "Key Terms",
+        value(n,"Key Terms")
+      )}
+
+      ${section(
+        "Main Content",
+        value(n,"Content")
+      )}
+
+      ${section(
+        "Examples",
+        value(n,"Examples")
+      )}
+
+      ${section(
+        "Worked Examples",
+        value(n,"Worked Examples")
+      )}
+
+      ${section(
+        "Formulae",
+        value(n,"Formulae")
+      )}
+
+      ${section(
+        "Applications",
+        value(n,"Applications")
+      )}
+
+      ${section(
+        "Common Misconceptions",
+        value(n,"Common Misconceptions")
+      )}
+
+      ${section(
+        "Summary",
+        value(n,"Summary")
+      )}
+
+      ${section(
+        "Examination Tips",
+        value(n,"Exam Tips")
+      )}
+
+      ${section(
+        "WAEC Focus",
+        value(n,"WAEC Focus")
+      )}
+
+      ${section(
+        "NECO Focus",
+        value(n,"NECO Focus")
+      )}
+
+      ${section(
+        "UTME Focus",
+        value(n,"UTME Focus")
+      )}
+
+      ${section(
+        "Diagrams",
+        value(n,"Diagrams")
+      )}
+
+    </div>
+  `;
+
+}
+
+
+/* ============================================================
+   CLASS HELPERS
+   ============================================================ */
+
+function classId(c){
+
+  const raw =
+    txt(
+      c.airtableId ||
+      c.id ||
+      c.recordId
+    );
+
+  const m =
+    raw.match(
+      /(?:^|\|)(rec[A-Za-z0-9]{14})$/
+    );
+
+  return m
+    ? m[1]
+    : raw;
+
+}
+
+
+function className(c){
+
+  return txt(
+    c.name ||
+    c.className ||
+    c["Class Name"] ||
+    c.Name
+  );
+
+}
+
+
+function classProgramme(c){
+
+  return txt(
+    c.programme ||
+    c.Programme
+  );
+
+}
+
+
+function programmeName(p){
+
+  return txt(
+    p.name ||
+    p.programme ||
+    p.code
+  );
+
+}
+
+
+/* ============================================================
+   PROGRAMME OPTIONS
+   ============================================================ */
+
+function programmeOptions(
+  selectedProgramme=""
+){
+
+  const selected =
+    txt(selectedProgramme)
+      .toLowerCase();
+
+  return `
+    <option value="">
+      Select target programme
+    </option>
+  ` +
+
+  programmes
+    .map(p => {
+
+      const name =
+        programmeName(p);
+
+      return `
+        <option
+          value="${esc(name)}"
+          ${
+            name.toLowerCase() === selected
+              ? "selected"
+              : ""
+          }>
+
+          ${esc(name)}
+
+        </option>
+      `;
+
+    })
+    .join("");
+
+}
+
+
+/* ============================================================
+   CLASS OPTIONS
+   ============================================================ */
+
+function classOptions(
+  selectedProgramme="",
+  selectedClass=""
+){
+
+  const p =
+    txt(selectedProgramme)
+      .toLowerCase();
+
+
+  /*
+   * Programme MUST be selected first.
+   */
+
+  if(!p){
+
+    return `
+      <option value="">
+        Select target programme first
+      </option>
+    `;
+
+  }
+
+
+  /*
+   * Only classes belonging to the
+   * selected programme are shown.
+   */
+
+  const filtered =
+    classes.filter(
+      c =>
+        classProgramme(c)
+          .toLowerCase() === p
+    );
+
+
+  const options =
+    filtered
+      .map(c => {
+
+        const id =
+          classId(c);
+
+        const name =
+          className(c);
+
+        return `
+          <option
+            value="${esc(id)}"
+            ${
+              id === selectedClass
+                ? "selected"
+                : ""
+            }>
+
+            ${esc(name)}
+
+          </option>
+        `;
+
+      })
+      .join("");
+
+
+  return `
+    <option value="">
+      ${
+        filtered.length
+          ? "Select target class"
+          : "No classes available for this programme"
+      }
+    </option>
+
+    ${options}
+  `;
+
+}
+
+
+/* ============================================================
+   CLASS STATE
+   ============================================================ */
+
+function setClassState(
+  select,
+  programme,
+  selectedClass=""
+){
+
+  if(!select)return;
+
+
+  const p =
+    txt(programme);
+
+
+  /*
+   * No programme:
+   * keep Target Class disabled.
+   */
+
+  if(!p){
+
+    select.disabled =
+      true;
+
+    select.innerHTML =
+      `
+        <option value="">
+          Select target programme first
+        </option>
+      `;
+
+    return;
+
+  }
+
+
+  /*
+   * Programme is ready.
+   * Now load its classes.
+   */
+
+  select.disabled =
+    false;
+
+  select.innerHTML =
+    classOptions(
+      p,
+      selectedClass
+    );
+
+}
+
+
+/* ============================================================
+   REFRESH CLASSES WHEN PROGRAMME CHANGES
+   ============================================================ */
+
+function refreshClasses(i){
+
+  const p =
+    $("programme_" + i);
+
+  const c =
+    $("class_" + i);
+
+
+  if(
+    p &&
+    c
+  ){
+
+    /*
+     * Clear previous class selection.
+     * The new programme controls the class list.
+     */
+
+    setClassState(
+      c,
+      p.value,
+      ""
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   RENDER REVIEW CARD
+   ============================================================ */
+
+function renderCard(n,i){
+
+  const id =
+    n.airtableId ||
+    n["Note ID"];
+
+
+  const title =
+    value(n,"Title") ||
+    "Untitled Note";
+
+
+  const subject =
+    value(n,"Subject");
+
+
+  const version =
+    value(n,"Version") ||
+    "1";
+
+
+  const updated =
+    value(
+      n,
+      "Updated Date",
+      "Created Date"
+    );
+
+
+  const cid =
+    `comment_${i}`;
+
+  const pid =
+    `programme_${i}`;
+
+  const clid =
+    `class_${i}`;
+
+
+  return `
+
+    <article
+      class="card"
+      id="note_${i}">
+
+      <h2>
+        ${esc(title)}
+      </h2>
+
+
+      <div class="meta">
+
+        ${
+          subject
+            ? `
+              <span class="badge">
+                ${esc(subject)}
+              </span>
+            `
+            : ""
+        }
+
+        <span class="badge">
+          Under Review
+        </span>
+
+        <span class="badge">
+          Version ${esc(version)}
+        </span>
+
+      </div>
+
+
+      ${
+        updated
+          ? `
+            <div class="small">
+              Last updated:
+              ${esc(updated)}
+            </div>
+          `
+          : ""
+      }
+
+
+      <details>
+
+        <summary>
+          📖 Read Full Note
+        </summary>
+
+        ${renderNote(n)}
+
+      </details>
+
+
+      <div class="target-box">
+
+        <b>
+          Publication Target
+        </b>
+
+
+        <div
+          class="small"
+          style="margin-top:4px">
+
+          Select the programme first.
+          Target Class will then load only
+          classes belonging to that programme.
+
+          These values are saved to
+          <b>NoteBank_Publications</b>,
+          not NoteBank_Notes.
+
+        </div>
+
+
+        <div class="target-grid">
+
+
+          <!-- TARGET PROGRAMME -->
+
+          <div class="field">
+
+            <label
+              for="${pid}">
+
+              Target Programme
+
+            </label>
+
+
+            <select
+              id="${pid}"
+              onchange="refreshClasses(${i})">
+
+              ${programmeOptions()}
+
+            </select>
+
+          </div>
+
+
+          <!-- TARGET CLASS -->
+
+          <div class="field">
+
+            <label
+              for="${clid}">
+
+              Target Class
+
+            </label>
+
+
+            <select
+              id="${clid}"
+              disabled>
+
+              <option value="">
+
+                Select target programme first
+
+              </option>
+
+            </select>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- REVIEWER COMMENT -->
+
+      <div class="comment">
+
+        <label
+          for="${cid}">
+
+          <b>
+            Reviewer Comment
+          </b>
+
+        </label>
+
+
+        <textarea
+          id="${cid}"
+          placeholder="Add a review comment. Required when requesting changes.">
+        </textarea>
+
+      </div>
+
+
+      <!-- ACTIONS -->
+
+      <div class="actions">
+
+        <button
+          class="secondary"
+          type="button"
+          onclick="requestChanges(
+            '${esc(id)}',
+            '${cid}'
+          )">
+
+          ✏️ Request Changes
+
+        </button>
+
+
+        <button
+          class="primary"
+          type="button"
+          onclick="approveNote(
+            '${esc(id)}',
+            '${cid}',
+            '${pid}',
+            '${clid}'
+          )">
+
+          ✓ Approve & Publish
+
+        </button>
+
+      </div>
+
+
+    </article>
+
+  `;
+
+}
+
+
+/* ============================================================
+   LOAD ACADEMIC TARGETS
+   ============================================================
+
+   IMPORTANT:
+
+   Programme and Class data are loaded together FIRST.
+
+   The review queue is NOT rendered until this finishes.
+
+   This fixes the original loading-order problem.
+   ============================================================ */
+
+async function loadAcademicTargets(){
+
+  const r =
+    await fetch(
+      "/api/academic",
+      {
+        cache:"no-store"
+      }
+    );
+
+
+  const d =
+    await safeJson(r);
+
+
+  if(!r.ok){
+
+    throw new Error(
+      d.error ||
+      "Unable to load academic programmes and classes."
+    );
+
+  }
+
+
+  const records =
+    Array.isArray(d.records)
+      ? d.records
+      : [];
+
+
+  /* ==========================================================
+     BUILD PROGRAMME LIST
+     ========================================================== */
+
+  const seen =
+    new Set();
+
+  programmes =
+    [];
+
+
+  for(
+    const x of records
+  ){
+
+    if(
+      String(x.type || "")
+        .toLowerCase()
+        !== "programme"
+    ){
+
+      continue;
+
+    }
+
+
+    const name =
+      programmeName(x);
+
+
+    const key =
+      name.toLowerCase();
+
+
+    if(
+      !name ||
+      seen.has(key)
+    ){
+
+      continue;
+
+    }
+
+
+    seen.add(key);
+
+
+    programmes.push({
+      ...x,
+      name
+    });
+
+  }
+
+
+  /*
+   * Fallback only if Academic API
+   * contains no programme records.
+   */
+
+  if(!programmes.length){
+
+    for(
+      const name of [
+        "WAEC",
+        "NECO",
+        "UTME"
+      ]
+    ){
+
+      programmes.push({
+        name,
+        programme:name,
+        type:"Programme"
+      });
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     BUILD CLASS LIST
+     ==========================================================
+
+     IMPORTANT:
+
+     Do NOT include classes that do not have
+     a programme relationship.
+
+     This prevents unrelated classes from
+     appearing under the wrong programme.
+     ========================================================== */
+
+  classes =
+    records.filter(
+      x =>
+
+        String(x.type || "")
+          .toLowerCase()
+          === "class"
+
+        &&
+
+        className(x)
+
+        &&
+
+        classProgramme(x)
+    );
+
+}
+
+
+/* ============================================================
+   LOAD REVIEW QUEUE
+   ============================================================ */
+
 async function loadQueue(){
-  $("queue").innerHTML='<div class="empty">Loading review queue...</div>';show("");
-  try{await loadClasses();const r=await fetch("/api/note-reviews?list=review",{cache:"no-store"});const d=await safeJson(r);if(!r.ok||d.success!==true)throw new Error(d.error||"Unable to load review queue.");const notes=Array.isArray(d.notes)?d.notes:[];$("queueCount").textContent=notes.length;if(!notes.length){$("queue").innerHTML='<div class="empty">🎉 No notes are currently awaiting approval.</div>';return}$("queue").innerHTML=notes.map(renderCard).join("");}
-  catch(e){console.error(e);$("queue").innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`;show(e.message,false)}
+
+  $("queue").innerHTML =
+    `
+      <div class="empty">
+        Loading programmes and classes...
+      </div>
+    `;
+
+
+  $("queueCount")
+    .textContent = "0";
+
+
+  show("");
+
+
+  try{
+
+    /*
+     * ========================================================
+     * STEP 1
+     *
+     * Load PROGRAMMES + CLASSES first.
+     * ========================================================
+     */
+
+    await loadAcademicTargets();
+
+
+    /*
+     * ========================================================
+     * STEP 2
+     *
+     * Only after the target data is ready do we
+     * load the NoteBank review queue.
+     * ========================================================
+     */
+
+    const r =
+      await fetch(
+        "/api/note-reviews?list=review",
+        {
+          cache:"no-store"
+        }
+      );
+
+
+    const d =
+      await safeJson(r);
+
+
+    if(
+      !r.ok ||
+      d.success !== true
+    ){
+
+      throw new Error(
+        d.error ||
+        "Unable to load review queue."
+      );
+
+    }
+
+
+    const notes =
+      Array.isArray(d.notes)
+        ? d.notes
+        : [];
+
+
+    $("queueCount")
+      .textContent =
+      notes.length;
+
+
+    if(!notes.length){
+
+      $("queue").innerHTML =
+        `
+          <div class="empty">
+
+            🎉 No notes are currently
+            awaiting approval.
+
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    /*
+     * Target Programme is now ready
+     * before each card is created.
+     *
+     * Target Class starts disabled and
+     * becomes available only after the
+     * programme is selected.
+     */
+
+    $("queue").innerHTML =
+      notes
+        .map(renderCard)
+        .join("");
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    $("queue").innerHTML =
+      `
+        <div class="empty">
+
+          ❌ ${esc(e.message)}
+
+        </div>
+      `;
+
+
+    show(
+      e.message,
+      false
+    );
+
+  }
+
 }
-async function reviewAction(noteId,commentId,action,programmeId,classId){
-  const reviewer=txt($("reviewerName").value);const comment=txt($(commentId)?.value);if(!reviewer){show("Enter the reviewer name first.",false);$("reviewerName").focus();return}if(action==="request_changes"&&!comment){show("Reviewer comment is required when requesting changes.",false);$(commentId).focus();return}
-  let targetProgramme="",targetClass="";if(action==="approve"){targetProgramme=txt($(programmeId)?.value);targetClass=txt($(classId)?.value);if(!targetProgramme){show("Select the Target Programme before publishing.",false);return}if(!targetClass){show("Select the Target Class before publishing.",false);return}}
-  const button=document.activeElement;if(button)button.disabled=true;
-  try{const r=await fetch("/api/note-reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({noteId,action,reviewer,reviewerComment:comment,targetProgramme,targetClass})});const d=await safeJson(r);if(!r.ok||d.success!==true)throw new Error(d.error||"Review operation failed.");show(d.message||"Review completed successfully.",true);await loadQueue();}catch(e){console.error(e);show(e.message,false)}finally{if(button)button.disabled=false}
+
+
+/* ============================================================
+   REVIEW ACTION
+   ============================================================ */
+
+async function reviewAction(
+  noteId,
+  commentId,
+  action,
+  programmeId,
+  classId
+){
+
+  const reviewer =
+    txt(
+      $("reviewerName").value
+    );
+
+
+  const comment =
+    txt(
+      $(commentId)?.value
+    );
+
+
+  /* ==========================================================
+     REVIEWER VALIDATION
+     ========================================================== */
+
+  if(!reviewer){
+
+    show(
+      "Enter the reviewer name first.",
+      false
+    );
+
+    $("reviewerName")
+      .focus();
+
+    return;
+
+  }
+
+
+  /* ==========================================================
+     COMMENT VALIDATION
+     ========================================================== */
+
+  if(
+    action === "request_changes" &&
+    !comment
+  ){
+
+    show(
+      "Reviewer comment is required when requesting changes.",
+      false
+    );
+
+    $(commentId)
+      .focus();
+
+    return;
+
+  }
+
+
+  let targetProgramme = "";
+
+  let targetClass = "";
+
+
+  /* ==========================================================
+     PUBLICATION TARGET VALIDATION
+     ========================================================== */
+
+  if(
+    action === "approve"
+  ){
+
+    targetProgramme =
+      txt(
+        $(programmeId)?.value
+      );
+
+
+    targetClass =
+      txt(
+        $(classId)?.value
+      );
+
+
+    if(!targetProgramme){
+
+      show(
+        "Select the Target Programme before publishing.",
+        false
+      );
+
+      return;
+
+    }
+
+
+    if(!targetClass){
+
+      show(
+        "Select the Target Class before publishing.",
+        false
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     DISABLE ACTIVE BUTTON
+     ========================================================== */
+
+  const button =
+    document.activeElement;
+
+
+  if(button){
+
+    button.disabled =
+      true;
+
+  }
+
+
+  try{
+
+    const r =
+      await fetch(
+        "/api/note-reviews",
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              noteId,
+
+              action,
+
+              reviewer,
+
+              reviewerComment:
+                comment,
+
+              targetProgramme,
+
+              targetClass
+
+            })
+
+        }
+      );
+
+
+    const d =
+      await safeJson(r);
+
+
+    if(
+      !r.ok ||
+      d.success !== true
+    ){
+
+      throw new Error(
+        d.error ||
+        "Review operation failed."
+      );
+
+    }
+
+
+    show(
+      d.message ||
+      "Review completed successfully.",
+      true
+    );
+
+
+    /*
+     * Reload everything in the correct
+     * order after the action.
+     */
+
+    await loadQueue();
+
+
+  }catch(e){
+
+    console.error(e);
+
+    show(
+      e.message,
+      false
+    );
+
+
+  }finally{
+
+    if(button){
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
 }
-function approveNote(noteId,commentId,programmeId,classId){if(!confirm("Approve this note and publish it to the selected programme and class?"))return;reviewAction(noteId,commentId,"approve",programmeId,classId)}
-function requestChanges(noteId,commentId){reviewAction(noteId,commentId,"request_changes")}
+
+
+/* ============================================================
+   APPROVE NOTE
+   ============================================================ */
+
+function approveNote(
+  noteId,
+  commentId,
+  programmeId,
+  classId
+){
+
+  if(
+    !confirm(
+      "Approve this note and publish it to the selected programme and class?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  reviewAction(
+    noteId,
+    commentId,
+    "approve",
+    programmeId,
+    classId
+  );
+
+}
+
+
+/* ============================================================
+   REQUEST CHANGES
+   ============================================================ */
+
+function requestChanges(
+  noteId,
+  commentId
+){
+
+  reviewAction(
+    noteId,
+    commentId,
+    "request_changes"
+  );
+
+}
+
+
+/* ============================================================
+   INITIAL LOAD
+   ============================================================ */
+
 loadQueue();
+
 </script>
+
 </body>
 </html>
