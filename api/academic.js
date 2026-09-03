@@ -1,6 +1,9 @@
 // api/academic.js
-// Aibinu Flexiprep Educonsult
-// MERGED ACADEMIC MANAGEMENT + NOTEBOOK STATS API
+// Aibinu Flexiprep Student Management System
+// Academic Management API + NoteBank Dashboard Statistics
+
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "app285TkNT13HPdqi";
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
 
 const TABLES = {
   academic: "tbljnjBdJrYr1WXGY",
@@ -9,45 +12,67 @@ const TABLES = {
   teachers: "tblVjuSJe4R5kcOZr"
 };
 
-const PROGRAMMES = ["WAEC", "NECO", "UTME"];
-
 const STATS_TABLES = {
   notes: "tblsEjHgHA7vhPgm0",
   approvals: "tblJHGCDxEpdjm46y",
   aiJobs: "tbldFSYwYcTMtMm9A"
 };
 
-// ---------------------------------------------------------
-// CONFIG
-// ---------------------------------------------------------
+function airtableUrl(table, recordId = "") {
+  return `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${table}${recordId ? "/" + recordId : ""}`;
+}
 
-function config() {
-  const token = process.env.AIRTABLE_PAT;
-  const baseId =
-    process.env.AIRTABLE_BASE_ID || "app285TkNT13HPdqi";
-
-  if (!token) {
-    throw new Error("AIRTABLE_PAT is not configured");
-  }
-
+function headers() {
   return {
-    token,
-    baseId
+    Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+    "Content-Type": "application/json"
   };
 }
 
-// ---------------------------------------------------------
-// AIRTABLE HELPERS
-// ---------------------------------------------------------
+async function airtableFetch(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...headers(),
+      ...(options.headers || {})
+    }
+  });
+
+  const text = await response.text();
+
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { error: text };
+  }
+
+  if (!response.ok) {
+    const message =
+      data?.error?.message ||
+      data?.error ||
+      `Airtable request failed (${response.status})`;
+
+    throw new Error(message);
+  }
+
+  return data;
+}
 
 async function listAll(baseId, tableId, token) {
-  const rows = [];
-  let offset = "";
+  let records = [];
+  let offset = null;
 
   do {
+    const params = new URLSearchParams();
+
+    if (offset) {
+      params.set("offset", offset);
+    }
+
     const url =
       `https://api.airtable.com/v0/${baseId}/${tableId}` +
-      (offset ? `?offset=${encodeURIComponent(offset)}` : "");
+      (params.toString() ? `?${params.toString()}` : "");
 
     const response = await fetch(url, {
       headers: {
@@ -55,222 +80,77 @@ async function listAll(baseId, tableId, token) {
       }
     });
 
+    const text = await response.text();
+
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { error: text };
+    }
+
     if (!response.ok) {
-      const text = await response.text();
       throw new Error(
-        `Airtable GET failed ${response.status}: ${text}`
+        data?.error?.message ||
+        data?.error ||
+        `Airtable request failed (${response.status})`
       );
     }
 
-    const data = await response.json();
-
-    rows.push(...(data.records || []));
-    offset = data.offset || "";
+    records = records.concat(data.records || []);
+    offset = data.offset || null;
   } while (offset);
 
-  return rows;
+  return records;
 }
 
-async function airtableWrite(
-  baseId,
-  tableId,
-  token,
-  method,
-  recordId,
-  fields
-) {
-  const url =
-    `https://api.airtable.com/v0/${baseId}/${tableId}` +
-    (recordId ? `/${recordId}` : "");
-
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      fields
-    })
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-
-    throw new Error(
-      `Airtable ${method} failed ${response.status}: ${text}`
-    );
-  }
-
-  return response.json();
-}
-
-// ---------------------------------------------------------
-// GENERAL FIELD HELPERS
-// ---------------------------------------------------------
-
-function firstValue(fields, names, fallback = "") {
-  for (const name of names) {
-    if (
-      fields &&
-      fields[name] !== undefined &&
-      fields[name] !== null &&
-      fields[name] !== ""
-    ) {
-      return fields[name];
-    }
-  }
-
-  return fallback;
-}
-
-function textValue(value) {
-  if (
-    value &&
-    typeof value === "object" &&
-    !Array.isArray(value)
-  ) {
-    return String(value.name || "").trim();
+function fieldValue(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return String(
+      value.name ||
+      value.value ||
+      ""
+    ).trim();
   }
 
   return String(value ?? "").trim();
 }
 
-// ---------------------------------------------------------
-// RECORD MAPPERS
-// ---------------------------------------------------------
-
-function mapAcademic(record) {
-  const f = record.fields || {};
-
-  return {
-    id: record.id,
-
-    academicId: firstValue(
-      f,
-      ["Academic ID", "ID", "Record ID"],
-      record.id
-    ),
-
-    programme: firstValue(
-      f,
-      ["Programme", "Program"],
-      ""
-    ),
-
-    className: firstValue(
-      f,
-      ["Class Name", "Class", "Level"],
-      ""
-    ),
-
-    subject: firstValue(
-      f,
-      ["Subject", "Subject Name"],
-      ""
-    ),
-
-    teacher: firstValue(
-      f,
-      ["Teacher", "Teacher Name"],
-      ""
-    ),
-
-    title: firstValue(
-      f,
-      ["Title", "Assignment Title", "Name"],
-      ""
-    ),
-
-    type: firstValue(
-      f,
-      ["Type", "Content Type"],
-      ""
-    ),
-
-    description: firstValue(
-      f,
-      ["Description", "Details"],
-      ""
-    ),
-
-    status: firstValue(
-      f,
-      ["Status"],
-      ""
-    ),
-
-    date: firstValue(
-      f,
-      ["Date", "Due Date", "Created"],
-      ""
-    ),
-
-    createdAt: firstValue(
-      f,
-      ["Created At", "Created"],
-      ""
-    ),
-
-    updatedAt: firstValue(
-      f,
-      ["Updated At", "Last Updated"],
-      ""
-    )
-  };
-}
+/* =========================================================
+   RECORD MAPPERS
+   ========================================================= */
 
 function mapClass(record) {
   const f = record.fields || {};
 
   return {
     id: record.id,
+    recordId: record.id,
+    type: "Class",
 
-    classId: firstValue(
-      f,
-      ["Class ID", "ID"],
-      record.id
+    name: fieldValue(
+      f["Class Name"] ??
+      f["Level"] ??
+      f["Name"] ??
+      f["Class"]
     ),
 
-    // IMPORTANT:
-    // Class is shared across WAEC / NECO / UTME.
-    className: firstValue(
-      f,
-      ["Class Name", "Level", "Name", "Class"],
-      ""
+    code: fieldValue(
+      f["Class ID"] ??
+      f["Code"]
     ),
 
-    level: firstValue(
-      f,
-      ["Level", "Class Name", "Class"],
-      ""
+    programme: fieldValue(f["Programme"]),
+    level: fieldValue(
+      f["Level"] ??
+      f["Class Name"]
     ),
 
-    programme: firstValue(
-      f,
-      ["Programme", "Program"],
-      ""
-    ),
+    capacity: f["Capacity"] ?? "",
+    teacher: fieldValue(f["Class Teacher"]),
+    status: fieldValue(f["Status"]) || "Active",
 
-    capacity: Number(
-      firstValue(
-        f,
-        ["Capacity"],
-        0
-      )
-    ) || 0,
-
-    classTeacher: firstValue(
-      f,
-      ["Class Teacher", "Teacher", "Teacher Name"],
-      ""
-    ),
-
-    status: firstValue(
-      f,
-      ["Status"],
-      "Active"
-    )
+    notes: fieldValue(f["Notes"])
   };
 }
 
@@ -279,36 +159,24 @@ function mapSubject(record) {
 
   return {
     id: record.id,
+    recordId: record.id,
+    type: "Subject",
 
-    subjectId: firstValue(
-      f,
-      ["Subject ID", "ID"],
-      record.id
+    name: fieldValue(
+      f["Subject Name"] ??
+      f["Name"] ??
+      f["Subject"]
     ),
 
-    subjectName: firstValue(
-      f,
-      ["Subject Name", "Name", "Subject"],
-      ""
+    code: fieldValue(
+      f["Subject ID"] ??
+      f["Code"]
     ),
 
-    code: firstValue(
-      f,
-      ["Code", "Subject Code"],
-      ""
-    ),
+    programme: fieldValue(f["Programme"]),
+    status: fieldValue(f["Status"]) || "Active",
 
-    category: firstValue(
-      f,
-      ["Category"],
-      ""
-    ),
-
-    status: firstValue(
-      f,
-      ["Status"],
-      "Active"
-    )
+    notes: fieldValue(f["Notes"])
   };
 }
 
@@ -317,985 +185,945 @@ function mapTeacher(record) {
 
   return {
     id: record.id,
+    recordId: record.id,
+    type: "Teacher",
 
-    teacherId: firstValue(
-      f,
-      ["Teacher ID", "ID"],
-      record.id
+    name: fieldValue(
+      f["Teacher Name"] ??
+      f["Name"] ??
+      f["Teacher"]
     ),
 
-    name: firstValue(
-      f,
-      ["Teacher Name", "Name", "Teacher"],
-      ""
+    code: fieldValue(
+      f["Teacher ID"] ??
+      f["Code"]
     ),
 
-    email: firstValue(
-      f,
-      ["Email"],
-      ""
+    subject: fieldValue(f["Subject"]),
+    status: fieldValue(f["Status"]) || "Active",
+
+    notes: fieldValue(f["Notes"])
+  };
+}
+
+function mapAcademic(record) {
+  const f = record.fields || {};
+
+  return {
+    id: record.id,
+    recordId: record.id,
+    type: fieldValue(f["Type"]),
+
+    name: fieldValue(f["Name"]),
+    code: fieldValue(f["Code"]),
+    programme: fieldValue(f["Programme"]),
+
+    className: fieldValue(
+      f["Class Name"] ??
+      f["Class"]
     ),
 
-    phone: firstValue(
-      f,
-      ["Phone", "Phone Number"],
-      ""
+    subject: fieldValue(f["Subject"]),
+
+    teacher: fieldValue(
+      f["Teacher"] ??
+      f["Teacher Name"]
     ),
 
-    subject: firstValue(
-      f,
-      ["Subject", "Specialization"],
-      ""
-    ),
+    status: fieldValue(f["Status"]) || "Active",
 
-    status: firstValue(
-      f,
-      ["Status"],
-      "Active"
+    notes: fieldValue(
+      f["Notes"] ??
+      f["Description"]
     )
   };
 }
 
-// ---------------------------------------------------------
-// ID GENERATOR
-// ---------------------------------------------------------
+/* =========================================================
+   NOTEBOOK STATISTICS
+   ========================================================= */
 
-function gen(prefix) {
-  const now = new Date();
+async function getNoteBankStats() {
+  const [
+    notes,
+    approvals,
+    aiJobs
+  ] = await Promise.all([
+    listAll(
+      AIRTABLE_BASE_ID,
+      STATS_TABLES.notes,
+      AIRTABLE_TOKEN
+    ),
 
-  const year = now.getFullYear();
+    listAll(
+      AIRTABLE_BASE_ID,
+      STATS_TABLES.approvals,
+      AIRTABLE_TOKEN
+    ),
 
-  const random = Math.floor(
-    Math.random() * 900000
-  ) + 100000;
+    listAll(
+      AIRTABLE_BASE_ID,
+      STATS_TABLES.aiJobs,
+      AIRTABLE_TOKEN
+    )
+  ]);
 
-  return `${prefix}-${year}-${random}`;
-}
+  const noteDrafts = notes.filter(record => {
+    const status = fieldValue(
+      record.fields?.Status
+    ).toLowerCase();
 
-// ---------------------------------------------------------
-// PROGRAMME RECORDS
-// ---------------------------------------------------------
+    return [
+      "ai draft",
+      "draft",
+      "changes requested"
+    ].includes(status);
+  }).length;
 
-function uniqueProgrammeRecords(records) {
-  const found = new Set();
+  const published = notes.filter(record => {
+    const status = fieldValue(
+      record.fields?.Status
+    ).toLowerCase();
 
-  for (const record of records) {
-    const programme = textValue(
-      record.fields?.Programme
+    return status === "published";
+  }).length;
+
+  const pendingReview = approvals.filter(record => {
+    const status = fieldValue(
+      record.fields?.Status
+    ).toLowerCase();
+
+    return [
+      "pending",
+      "submitted",
+      "under review",
+      "pending review"
+    ].includes(status);
+  }).length;
+
+  const generatedAIJobs = aiJobs.filter(record => {
+    return (
+      fieldValue(
+        record.fields?.Status
+      ).toLowerCase() === "generated"
     );
+  });
 
-    if (programme) {
-      found.add(programme.toUpperCase());
-    }
-  }
+  const aiNoteJobs = generatedAIJobs.filter(record => {
+    return (
+      fieldValue(
+        record.fields?.["Content Type"]
+      ).toLowerCase() === "note"
+    );
+  }).length;
 
-  return PROGRAMMES.map(programme => ({
-    programme,
-    active: found.has(programme)
-  }));
+  const aiQuestionJobs = generatedAIJobs.filter(record => {
+    return (
+      fieldValue(
+        record.fields?.["Content Type"]
+      ).toLowerCase() === "question"
+    );
+  }).length;
+
+  /*
+    Draft Content is intentionally:
+
+      NoteBank drafts
+      +
+      generated AI question jobs
+  */
+
+  const draftContent =
+    noteDrafts +
+    aiQuestionJobs;
+
+  return {
+    success: true,
+
+    draftContent,
+
+    // Backward compatibility
+    draftNotes: draftContent,
+
+    noteDrafts,
+
+    draftQuestions: aiQuestionJobs,
+
+    pendingReview,
+
+    published,
+
+    aiJobs: aiJobs.length,
+
+    generatedAIJobs:
+      generatedAIJobs.length,
+
+    aiNoteJobs,
+
+    aiQuestionJobs,
+
+    generatedAt:
+      new Date().toISOString()
+  };
 }
 
-// ---------------------------------------------------------
-// MAIN HANDLER
-// ---------------------------------------------------------
+/* =========================================================
+   MAIN API HANDLER
+   ========================================================= */
 
 export default async function handler(req, res) {
-  try {
-    const { token, baseId } = config();
 
-    // =====================================================
-    // NOTEBOOK DASHBOARD STATISTICS
-    //
-    // GET /api/academic?stats=1
-    // =====================================================
+  try {
+
+    if (!AIRTABLE_TOKEN) {
+      return res.status(500).json({
+        success: false,
+        error: "AIRTABLE_TOKEN is not configured."
+      });
+    }
+
+    /* =====================================================
+       NOTEBOOK DASHBOARD STATISTICS
+
+       URL:
+       /api/academic?stats=1
+
+       This replaces the old:
+       /api/academic-stats
+       ===================================================== */
 
     if (
       req.method === "GET" &&
       String(req.query?.stats || "") === "1"
     ) {
-      const [
-        notes,
-        approvals,
-        aiJobs
-      ] = await Promise.all([
-        listAll(
-          baseId,
-          STATS_TABLES.notes,
-          token
-        ),
 
-        listAll(
-          baseId,
-          STATS_TABLES.approvals,
-          token
-        ),
+      const stats =
+        await getNoteBankStats();
 
-        listAll(
-          baseId,
-          STATS_TABLES.aiJobs,
-          token
-        )
-      ]);
-
-      // ---------------------------------------------------
-      // NOTE DRAFTS
-      // ---------------------------------------------------
-
-      const noteDrafts = notes.filter(record => {
-        const status = textValue(
-          record.fields?.Status
-        ).toLowerCase();
-
-        return [
-          "ai draft",
-          "draft",
-          "changes requested"
-        ].includes(status);
-      }).length;
-
-      // ---------------------------------------------------
-      // PUBLISHED NOTES
-      // ---------------------------------------------------
-
-      const published = notes.filter(record => {
-        const status = textValue(
-          record.fields?.Status
-        ).toLowerCase();
-
-        return status === "published";
-      }).length;
-
-      // ---------------------------------------------------
-      // PENDING REVIEWS
-      // ---------------------------------------------------
-
-      const pendingReview = approvals.filter(record => {
-        const status = textValue(
-          record.fields?.Status
-        ).toLowerCase();
-
-        return [
-          "pending",
-          "submitted",
-          "under review",
-          "pending review"
-        ].includes(status);
-      }).length;
-
-      // ---------------------------------------------------
-      // GENERATED AI JOBS
-      // ---------------------------------------------------
-
-      const generatedAIJobs = aiJobs.filter(record => {
-        const status = textValue(
-          record.fields?.Status
-        ).toLowerCase();
-
-        return status === "generated";
-      });
-
-      // ---------------------------------------------------
-      // GENERATED AI NOTES
-      // ---------------------------------------------------
-
-      const aiNoteJobs = generatedAIJobs.filter(record => {
-        const contentType = textValue(
-          record.fields?.["Content Type"]
-        ).toLowerCase();
-
-        return contentType === "note";
-      }).length;
-
-      // ---------------------------------------------------
-      // GENERATED AI QUESTIONS
-      // ---------------------------------------------------
-
-      const aiQuestionJobs = generatedAIJobs.filter(record => {
-        const contentType = textValue(
-          record.fields?.["Content Type"]
-        ).toLowerCase();
-
-        return contentType === "question";
-      }).length;
-
-      // ---------------------------------------------------
-      // DASHBOARD DRAFT CONTENT
-      //
-      // Draft Content =
-      // Note drafts + generated AI question jobs
-      // ---------------------------------------------------
-
-      const draftContent =
-        noteDrafts + aiQuestionJobs;
-
-      return res.status(200).json({
-        success: true,
-
-        // Main dashboard values
-        draftContent,
-        published,
-        pendingReview,
-        aiJobs: aiJobs.length,
-
-        // Detailed values
-        draftNotes: draftContent,
-        noteDrafts,
-        draftQuestions: aiQuestionJobs,
-
-        generatedAIJobs:
-          generatedAIJobs.length,
-
-        aiNoteJobs,
-        aiQuestionJobs,
-
-        generatedAt:
-          new Date().toISOString()
-      });
+      return res
+        .status(200)
+        .json(stats);
     }
 
-    // =====================================================
-    // GET — ACADEMIC MANAGEMENT
-    // =====================================================
+    /* =====================================================
+       GET ALL ACADEMIC DATA
+       ===================================================== */
 
     if (req.method === "GET") {
+
       const [
         academicRecords,
         classRecords,
         subjectRecords,
         teacherRecords
       ] = await Promise.all([
+
         listAll(
-          baseId,
+          AIRTABLE_BASE_ID,
           TABLES.academic,
-          token
+          AIRTABLE_TOKEN
         ),
 
         listAll(
-          baseId,
+          AIRTABLE_BASE_ID,
           TABLES.classes,
-          token
+          AIRTABLE_TOKEN
         ),
 
         listAll(
-          baseId,
+          AIRTABLE_BASE_ID,
           TABLES.subjects,
-          token
+          AIRTABLE_TOKEN
         ),
 
         listAll(
-          baseId,
+          AIRTABLE_BASE_ID,
           TABLES.teachers,
-          token
+          AIRTABLE_TOKEN
         )
       ]);
 
-      const assignments =
-        academicRecords.map(mapAcademic);
+      const records = [
 
-      const classes =
-        classRecords.map(mapClass);
+        ...academicRecords.map(
+          mapAcademic
+        ),
 
-      const subjects =
-        subjectRecords.map(mapSubject);
+        /*
+          Classes are SHARED academic levels.
 
-      const teachers =
-        teacherRecords.map(mapTeacher);
+          Programme does NOT filter them.
 
-      const programmes =
-        uniqueProgrammeRecords(
-          academicRecords
-        );
+          Therefore SS1, SS2 and SS3
+          remain available for WAEC,
+          NECO and UTME.
+        */
+
+        ...classRecords.map(
+          mapClass
+        ),
+
+        ...subjectRecords.map(
+          mapSubject
+        ),
+
+        ...teacherRecords.map(
+          mapTeacher
+        )
+      ];
 
       return res.status(200).json({
         success: true,
-
-        assignments,
-
-        programmes,
-
-        classes,
-
-        subjects,
-
-        teachers,
-
-        counts: {
-          assignments:
-            assignments.length,
-
-          programmes:
-            programmes.length,
-
-          classes:
-            classes.length,
-
-          subjects:
-            subjects.length,
-
-          teachers:
-            teachers.length
-        }
+        records
       });
     }
 
-    // =====================================================
-    // POST
-    // =====================================================
+    /* =====================================================
+       CREATE
+       ===================================================== */
 
     if (req.method === "POST") {
+
       const body =
         typeof req.body === "string"
           ? JSON.parse(req.body)
-          : (req.body || {});
+          : req.body || {};
 
       const type =
-        String(
-          body.type ||
-          body.recordType ||
-          ""
-        ).trim();
+        String(body.type || "").trim();
 
-      // ---------------------------------------------------
-      // CREATE PROGRAMME
-      // ---------------------------------------------------
+      if (!type) {
+        return res.status(400).json({
+          success: false,
+          error: "Record type is required."
+        });
+      }
 
-      if (
-        type.toLowerCase() ===
-        "programme"
-      ) {
-        const programme =
+      /* ---------------------------------------------------
+         CLASS
+         --------------------------------------------------- */
+
+      if (type === "Class") {
+
+        const className =
           String(
-            body.programme ||
+            body.className ||
             body.name ||
+            body.level ||
             ""
-          ).trim().toUpperCase();
+          ).trim();
 
-        if (
-          !PROGRAMMES.includes(programme)
-        ) {
+        if (!className) {
           return res.status(400).json({
             success: false,
-            error:
-              "Invalid programme. Use WAEC, NECO or UTME."
+            error: "Class name is required."
           });
         }
 
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.academic,
-            token,
-            "POST",
-            null,
+        const fields = {
+
+          "Class Name":
+            className,
+
+          "Level":
+            String(
+              body.level ||
+              className
+            ).trim(),
+
+          "Class ID":
+            String(
+              body.code ||
+              `CLS-${Date.now()}`
+            ).trim(),
+
+          "Capacity":
+            body.capacity === "" ||
+            body.capacity == null
+              ? undefined
+              : Number(body.capacity),
+
+          "Class Teacher":
+            body.teacher || "",
+
+          "Status":
+            body.status || "Active",
+
+          "Programme":
+            body.programme || ""
+        };
+
+        Object.keys(fields).forEach(key => {
+          if (fields[key] === undefined) {
+            delete fields[key];
+          }
+        });
+
+        const data =
+          await airtableFetch(
+            airtableUrl(
+              TABLES.classes
+            ),
             {
-              Programme: programme
+              method: "POST",
+              body: JSON.stringify({
+                fields
+              })
             }
           );
 
         return res.status(201).json({
           success: true,
-          record: mapAcademic(record)
+          record: mapClass(data)
         });
       }
 
-      // ---------------------------------------------------
-      // CREATE ASSIGNMENT
-      // ---------------------------------------------------
+      /* ---------------------------------------------------
+         SUBJECT
+         --------------------------------------------------- */
 
-      if (
-        type.toLowerCase() ===
-        "assignment"
-      ) {
-        const fields = {
-          "Academic ID":
-            body.academicId ||
-            gen("ACAD"),
+      if (type === "Subject") {
 
-          "Programme":
-            body.programme || "",
-
-          "Class Name":
-            body.className ||
-            body.class ||
-            "",
-
-          "Subject":
-            body.subject || "",
-
-          "Teacher":
-            body.teacher || "",
-
-          "Title":
-            body.title || "",
-
-          "Type":
-            "Assignment",
-
-          "Description":
-            body.description || "",
-
-          "Status":
-            body.status || "Active",
-
-          "Date":
-            body.date || "",
-
-          "Created At":
-            new Date().toISOString()
-        };
-
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.academic,
-            token,
-            "POST",
-            null,
-            fields
-          );
-
-        return res.status(201).json({
-          success: true,
-          record: mapAcademic(record)
-        });
-      }
-
-      // ---------------------------------------------------
-      // CREATE CLASS
-      // ---------------------------------------------------
-
-      if (
-        type.toLowerCase() ===
-        "class"
-      ) {
-        const className =
-          body.className ||
-          body.level ||
-          body.name ||
-          "";
-
-        if (!className) {
-          return res.status(400).json({
-            success: false,
-            error:
-              "Class Name is required."
-          });
-        }
-
-        const fields = {
-          "Class ID":
-            body.classId ||
-            gen("CLS"),
-
-          // Keep both fields synchronized.
-          "Class Name":
-            className,
-
-          "Level":
-            body.level ||
-            className,
-
-          "Programme":
-            body.programme || "",
-
-          "Capacity":
-            Number(
-              body.capacity || 25
-            ),
-
-          "Class Teacher":
-            body.classTeacher ||
-            body.teacher ||
-            "",
-
-          "Status":
-            body.status ||
-            "Active"
-        };
-
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.classes,
-            token,
-            "POST",
-            null,
-            fields
-          );
-
-        return res.status(201).json({
-          success: true,
-          record: mapClass(record)
-        });
-      }
-
-      // ---------------------------------------------------
-      // CREATE SUBJECT
-      // ---------------------------------------------------
-
-      if (
-        type.toLowerCase() ===
-        "subject"
-      ) {
-        const subjectName =
-          body.subjectName ||
-          body.name ||
-          body.subject ||
-          "";
-
-        if (!subjectName) {
-          return res.status(400).json({
-            success: false,
-            error:
-              "Subject Name is required."
-          });
-        }
-
-        const fields = {
-          "Subject ID":
-            body.subjectId ||
-            gen("SUB"),
-
-          "Subject Name":
-            subjectName,
-
-          "Code":
-            body.code || "",
-
-          "Category":
-            body.category || "",
-
-          "Status":
-            body.status ||
-            "Active"
-        };
-
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.subjects,
-            token,
-            "POST",
-            null,
-            fields
-          );
-
-        return res.status(201).json({
-          success: true,
-          record: mapSubject(record)
-        });
-      }
-
-      // ---------------------------------------------------
-      // CREATE TEACHER
-      // ---------------------------------------------------
-
-      if (
-        type.toLowerCase() ===
-        "teacher"
-      ) {
         const name =
-          body.name ||
-          body.teacherName ||
-          body.teacher ||
-          "";
+          String(
+            body.name ||
+            body.subject ||
+            ""
+          ).trim();
 
         if (!name) {
           return res.status(400).json({
             success: false,
-            error:
-              "Teacher Name is required."
+            error: "Subject name is required."
           });
         }
 
         const fields = {
-          "Teacher ID":
-            body.teacherId ||
-            gen("TCH"),
+
+          "Subject Name":
+            name,
+
+          "Subject ID":
+            body.code ||
+            `SUB-${Date.now()}`,
+
+          "Programme":
+            body.programme || "",
+
+          "Status":
+            body.status || "Active",
+
+          "Notes":
+            body.notes || ""
+        };
+
+        const data =
+          await airtableFetch(
+            airtableUrl(
+              TABLES.subjects
+            ),
+            {
+              method: "POST",
+              body: JSON.stringify({
+                fields
+              })
+            }
+          );
+
+        return res.status(201).json({
+          success: true,
+          record: mapSubject(data)
+        });
+      }
+
+      /* ---------------------------------------------------
+         TEACHER
+         --------------------------------------------------- */
+
+      if (type === "Teacher") {
+
+        const name =
+          String(
+            body.name ||
+            body.teacher ||
+            ""
+          ).trim();
+
+        if (!name) {
+          return res.status(400).json({
+            success: false,
+            error: "Teacher name is required."
+          });
+        }
+
+        const fields = {
 
           "Teacher Name":
             name,
 
-          "Email":
-            body.email || "",
-
-          "Phone":
-            body.phone || "",
+          "Teacher ID":
+            body.code ||
+            `TCH-${Date.now()}`,
 
           "Subject":
             body.subject || "",
 
           "Status":
-            body.status ||
-            "Active"
+            body.status || "Active",
+
+          "Notes":
+            body.notes || ""
         };
 
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.teachers,
-            token,
-            "POST",
-            null,
-            fields
+        const data =
+          await airtableFetch(
+            airtableUrl(
+              TABLES.teachers
+            ),
+            {
+              method: "POST",
+              body: JSON.stringify({
+                fields
+              })
+            }
           );
 
         return res.status(201).json({
           success: true,
-          record: mapTeacher(record)
+          record: mapTeacher(data)
         });
       }
 
-      return res.status(400).json({
-        success: false,
-        error:
-          `Unsupported POST type: ${type}`
+      /* ---------------------------------------------------
+         ASSIGNMENT / ACADEMIC RECORD
+         --------------------------------------------------- */
+
+      if (type === "Assignment") {
+
+        if (
+          !body.className ||
+          !body.subject ||
+          !body.teacher
+        ) {
+          return res.status(400).json({
+            success: false,
+            error:
+              "Class, Subject and Teacher are required."
+          });
+        }
+      }
+
+      const fields = {
+
+        "Type":
+          type,
+
+        "Name":
+          String(
+            body.name || ""
+          ).trim(),
+
+        "Code":
+          String(
+            body.code || ""
+          ).trim(),
+
+        "Programme":
+          String(
+            body.programme || ""
+          ).trim(),
+
+        "Class Name":
+          String(
+            body.className || ""
+          ).trim(),
+
+        "Subject":
+          String(
+            body.subject || ""
+          ).trim(),
+
+        "Teacher":
+          String(
+            body.teacher || ""
+          ).trim(),
+
+        "Status":
+          String(
+            body.status ||
+            "Active"
+          ).trim(),
+
+        "Notes":
+          String(
+            body.notes || ""
+          ).trim()
+      };
+
+      const data =
+        await airtableFetch(
+          airtableUrl(
+            TABLES.academic
+          ),
+          {
+            method: "POST",
+            body: JSON.stringify({
+              fields
+            })
+          }
+        );
+
+      return res.status(201).json({
+        success: true,
+        record: mapAcademic(data)
       });
     }
 
-    // =====================================================
-    // PUT
-    // =====================================================
+    /* =====================================================
+       UPDATE
+       ===================================================== */
 
-    if (req.method === "PUT") {
+    if (
+      req.method === "PUT" ||
+      req.method === "PATCH"
+    ) {
+
       const body =
         typeof req.body === "string"
           ? JSON.parse(req.body)
-          : (req.body || {});
-
-      const type =
-        String(
-          body.type ||
-          body.recordType ||
-          ""
-        ).trim().toLowerCase();
+          : req.body || {};
 
       const recordId =
-        body.id ||
-        body.recordId;
+        body.recordId ||
+        body.id;
 
       if (!recordId) {
         return res.status(400).json({
           success: false,
-          error:
-            "Record ID is required."
+          error: "Record ID is required."
         });
       }
 
-      // ---------------------------------------------------
-      // UPDATE ACADEMIC / ASSIGNMENT
-      // ---------------------------------------------------
+      const type =
+        String(
+          body.type || ""
+        ).trim();
 
-      if (
-        type === "academic" ||
-        type === "assignment"
-      ) {
-        const fields = {};
+      /* ---------------------------------------------------
+         CLASS UPDATE
+         --------------------------------------------------- */
 
-        if (
-          body.programme !== undefined
-        ) {
-          fields["Programme"] =
-            body.programme;
-        }
-
-        if (
-          body.className !== undefined
-        ) {
-          fields["Class Name"] =
-            body.className;
-        }
-
-        if (
-          body.subject !== undefined
-        ) {
-          fields["Subject"] =
-            body.subject;
-        }
-
-        if (
-          body.teacher !== undefined
-        ) {
-          fields["Teacher"] =
-            body.teacher;
-        }
-
-        if (
-          body.title !== undefined
-        ) {
-          fields["Title"] =
-            body.title;
-        }
-
-        if (
-          body.description !== undefined
-        ) {
-          fields["Description"] =
-            body.description;
-        }
-
-        if (
-          body.status !== undefined
-        ) {
-          fields["Status"] =
-            body.status;
-        }
-
-        if (
-          body.date !== undefined
-        ) {
-          fields["Date"] =
-            body.date;
-        }
-
-        fields["Updated At"] =
-          new Date().toISOString();
-
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.academic,
-            token,
-            "PATCH",
-            recordId,
-            fields
-          );
-
-        return res.status(200).json({
-          success: true,
-          record:
-            mapAcademic(record)
-        });
-      }
-
-      // ---------------------------------------------------
-      // UPDATE CLASS
-      // ---------------------------------------------------
-
-      if (type === "class") {
-        const fields = {};
+      if (type === "Class") {
 
         const className =
-          body.className ??
-          body.level ??
-          body.name;
+          String(
+            body.className ||
+            body.name ||
+            body.level ||
+            ""
+          ).trim();
 
-        if (
-          className !== undefined
-        ) {
-          // Keep both Class Name and Level
-          // synchronized.
-          fields["Class Name"] =
-            className;
+        const fields = {
 
-          fields["Level"] =
-            body.level ??
-            className;
-        }
+          "Class Name":
+            className,
 
-        if (
-          body.programme !== undefined
-        ) {
-          fields["Programme"] =
-            body.programme;
-        }
+          "Level":
+            String(
+              body.level ||
+              className
+            ).trim(),
 
-        if (
-          body.capacity !== undefined
-        ) {
-          fields["Capacity"] =
-            Number(body.capacity);
-        }
+          "Class ID":
+            String(
+              body.code || ""
+            ).trim(),
 
-        if (
-          body.classTeacher !== undefined
-        ) {
-          fields["Class Teacher"] =
-            body.classTeacher;
-        }
+          "Capacity":
+            body.capacity === "" ||
+            body.capacity == null
+              ? undefined
+              : Number(body.capacity),
 
-        if (
-          body.status !== undefined
-        ) {
-          fields["Status"] =
-            body.status;
-        }
+          "Class Teacher":
+            body.teacher || "",
 
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.classes,
-            token,
-            "PATCH",
-            recordId,
-            fields
+          "Status":
+            body.status || "Active",
+
+          "Programme":
+            body.programme || ""
+        };
+
+        Object.keys(fields).forEach(key => {
+          if (fields[key] === undefined) {
+            delete fields[key];
+          }
+        });
+
+        const data =
+          await airtableFetch(
+            airtableUrl(
+              TABLES.classes,
+              recordId
+            ),
+            {
+              method: "PATCH",
+              body: JSON.stringify({
+                fields
+              })
+            }
           );
 
         return res.status(200).json({
           success: true,
-          record:
-            mapClass(record)
+          record: mapClass(data)
         });
       }
 
-      // ---------------------------------------------------
-      // UPDATE SUBJECT
-      // ---------------------------------------------------
+      /* ---------------------------------------------------
+         SUBJECT UPDATE
+         --------------------------------------------------- */
 
-      if (type === "subject") {
-        const fields = {};
+      if (type === "Subject") {
 
-        if (
-          body.subjectName !== undefined
-        ) {
-          fields["Subject Name"] =
-            body.subjectName;
-        }
+        const fields = {
 
-        if (
-          body.name !== undefined &&
-          body.subjectName === undefined
-        ) {
-          fields["Subject Name"] =
-            body.name;
-        }
+          "Subject Name":
+            body.name ||
+            body.subject ||
+            "",
 
-        if (
-          body.code !== undefined
-        ) {
-          fields["Code"] =
-            body.code;
-        }
+          "Subject ID":
+            body.code || "",
 
-        if (
-          body.category !== undefined
-        ) {
-          fields["Category"] =
-            body.category;
-        }
+          "Programme":
+            body.programme || "",
 
-        if (
-          body.status !== undefined
-        ) {
-          fields["Status"] =
-            body.status;
-        }
+          "Status":
+            body.status || "Active",
 
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.subjects,
-            token,
-            "PATCH",
-            recordId,
-            fields
+          "Notes":
+            body.notes || ""
+        };
+
+        const data =
+          await airtableFetch(
+            airtableUrl(
+              TABLES.subjects,
+              recordId
+            ),
+            {
+              method: "PATCH",
+              body: JSON.stringify({
+                fields
+              })
+            }
           );
 
         return res.status(200).json({
           success: true,
-          record:
-            mapSubject(record)
+          record: mapSubject(data)
         });
       }
 
-      // ---------------------------------------------------
-      // UPDATE TEACHER
-      // ---------------------------------------------------
+      /* ---------------------------------------------------
+         TEACHER UPDATE
+         --------------------------------------------------- */
 
-      if (type === "teacher") {
-        const fields = {};
+      if (type === "Teacher") {
 
-        if (
-          body.name !== undefined
-        ) {
-          fields["Teacher Name"] =
-            body.name;
-        }
+        const fields = {
 
-        if (
-          body.teacherName !== undefined
-        ) {
-          fields["Teacher Name"] =
-            body.teacherName;
-        }
+          "Teacher Name":
+            body.name ||
+            body.teacher ||
+            "",
 
-        if (
-          body.email !== undefined
-        ) {
-          fields["Email"] =
-            body.email;
-        }
+          "Teacher ID":
+            body.code || "",
 
-        if (
-          body.phone !== undefined
-        ) {
-          fields["Phone"] =
-            body.phone;
-        }
+          "Subject":
+            body.subject || "",
 
-        if (
-          body.subject !== undefined
-        ) {
-          fields["Subject"] =
-            body.subject;
-        }
+          "Status":
+            body.status || "Active",
 
-        if (
-          body.status !== undefined
-        ) {
-          fields["Status"] =
-            body.status;
-        }
+          "Notes":
+            body.notes || ""
+        };
 
-        const record =
-          await airtableWrite(
-            baseId,
-            TABLES.teachers,
-            token,
-            "PATCH",
-            recordId,
-            fields
+        const data =
+          await airtableFetch(
+            airtableUrl(
+              TABLES.teachers,
+              recordId
+            ),
+            {
+              method: "PATCH",
+              body: JSON.stringify({
+                fields
+              })
+            }
           );
 
         return res.status(200).json({
           success: true,
-          record:
-            mapTeacher(record)
+          record: mapTeacher(data)
         });
       }
 
-      return res.status(400).json({
-        success: false,
-        error:
-          `Unsupported PUT type: ${type}`
+      /* ---------------------------------------------------
+         ACADEMIC / ASSIGNMENT UPDATE
+         --------------------------------------------------- */
+
+      const fields = {
+
+        "Type":
+          type,
+
+        "Name":
+          String(
+            body.name || ""
+          ).trim(),
+
+        "Code":
+          String(
+            body.code || ""
+          ).trim(),
+
+        "Programme":
+          String(
+            body.programme || ""
+          ).trim(),
+
+        "Class Name":
+          String(
+            body.className || ""
+          ).trim(),
+
+        "Subject":
+          String(
+            body.subject || ""
+          ).trim(),
+
+        "Teacher":
+          String(
+            body.teacher || ""
+          ).trim(),
+
+        "Status":
+          String(
+            body.status ||
+            "Active"
+          ).trim(),
+
+        "Notes":
+          String(
+            body.notes || ""
+          ).trim()
+      };
+
+      const data =
+        await airtableFetch(
+          airtableUrl(
+            TABLES.academic,
+            recordId
+          ),
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              fields
+            })
+          }
+        );
+
+      return res.status(200).json({
+        success: true,
+        record: mapAcademic(data)
       });
     }
 
-    // =====================================================
-    // METHOD NOT ALLOWED
-    // =====================================================
+    /* =====================================================
+       DELETE
+       ===================================================== */
+
+    if (req.method === "DELETE") {
+
+      const recordId =
+        req.query?.id ||
+        req.body?.id ||
+        req.body?.recordId;
+
+      const type =
+        String(
+          req.query?.type ||
+          req.body?.type ||
+          ""
+        ).trim();
+
+      if (!recordId) {
+        return res.status(400).json({
+          success: false,
+          error: "Record ID is required."
+        });
+      }
+
+      let table;
+
+      if (type === "Class") {
+        table = TABLES.classes;
+      } else if (type === "Subject") {
+        table = TABLES.subjects;
+      } else if (type === "Teacher") {
+        table = TABLES.teachers;
+      } else {
+        table = TABLES.academic;
+      }
+
+      await airtableFetch(
+        airtableUrl(
+          table,
+          recordId
+        ),
+        {
+          method: "DELETE"
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        deleted: recordId
+      });
+    }
+
+    /* =====================================================
+       METHOD NOT ALLOWED
+       ===================================================== */
 
     res.setHeader(
       "Allow",
-      "GET,POST,PUT"
+      "GET,POST,PUT,PATCH,DELETE"
     );
 
     return res.status(405).json({
       success: false,
-      error: "Method not allowed"
+      error:
+        `Method ${req.method} not allowed.`
     });
 
   } catch (error) {
+
     console.error(
-      "Academic API error:",
+      "Academic API Error:",
       error
     );
 
     return res.status(500).json({
       success: false,
       error:
-        error.message ||
-        "Internal server error"
+        error?.message ||
+        "Internal server error."
     });
   }
 }
