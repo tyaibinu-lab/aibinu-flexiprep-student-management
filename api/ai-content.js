@@ -1,2459 +1,693 @@
-// ============================================================
-// AIBINU FLEXIPREP EDUCONSULT
-// AI CONTENT API
-// File: api/ai-content.js
-//
-// Vercel Serverless Function
-//
-// Endpoint:
-// POST /api/ai-content
-//
-// Supports:
-//   1. AI Note generation
-//   2. AI Question generation
-//   3. Multiple question generation
-//   4. Mixed Difficulty
-//   5. Mixed Bloom Level
-//   6. Airtable AI job logging
-//   7. NoteBank draft creation
-//   8. CBT Question draft creation
-//
-// Environment variables:
-//   OPENAI_API_KEY
-//   OPENAI_MODEL
-//   AIRTABLE_PAT
-//   AIRTABLE_BASE_ID
-// ============================================================
+from pathlib import Path
 
+# Build a robust NoteBank visual renderer that does not depend on
+# window.currentAIResult or temporary chat attachment URLs.
+frontend = r'''/* ============================================================
+   AIBINU FLEXIPREP — NoteBank Visual Learning Engine v2
+   File: academic-note-visuals.js
 
-const AIRTABLE_API =
-  "https://api.airtable.com/v0";
+   INSTALL:
+   Add this file to academic.html immediately before </body>:
+       <script src="/academic-note-visuals.js"></script>
 
+   IMPORTANT:
+   - Does NOT replace existing Academic Management functions.
+   - Hooks the existing /api/ai-content fetch response.
+   - Does NOT use temporary chat.openai.com / chatgpt.com attachment URLs.
+   - Visuals are rendered locally from safe structured JSON.
+   - Simulations are trusted frontend code; the AI supplies only
+     the simulation name and numeric parameters.
+============================================================ */
 
-const OPENAI_API =
-  "https://api.openai.com/v1/responses";
+(function () {
+  "use strict";
 
+  const MAX_VISUALS = 40;
 
-const OPENAI_MODEL =
-  process.env.OPENAI_MODEL || "gpt-5.6-luna";
-
-
-// ============================================================
-// VERIFIED AIRTABLE TABLE IDs
-// ============================================================
-
-const TABLES = {
-
-  AI_JOBS:
-    "tbldFSYwYcTMtMm9A",
-
-  NOTES:
-    "tblsEjHgHA7vhPgm0",
-
-  QUESTIONS:
-    "tblWz5hU4tpVvMJbF"
-
-};
-
-
-// ============================================================
-// VERCEL HANDLER
-// ============================================================
-
-export default async function handler(req, res) {
-
-
-  // ----------------------------------------------------------
-  // CORS
-  // ----------------------------------------------------------
-
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "*"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, GET, OPTIONS"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
-
-
-  if (req.method === "OPTIONS") {
-
-    return res
-      .status(200)
-      .end();
-
-  }
-
-
-  // ----------------------------------------------------------
-  // HEALTH CHECK
-  // ----------------------------------------------------------
-
-  if (req.method === "GET") {
-
-    return res.status(200).json({
-
-      success: true,
-
-      service:
-        "AIBINU Flexiprep AI Content API",
-
-      model:
-        OPENAI_MODEL,
-
-      airtableConfigured:
-        Boolean(
-          process.env.AIRTABLE_PAT
-        ),
-
-      baseConfigured:
-        Boolean(
-          process.env.AIRTABLE_BASE_ID
-        ),
-
-      openaiConfigured:
-        Boolean(
-          process.env.OPENAI_API_KEY
-        )
-
-    });
-
-  }
-
-
-  // ----------------------------------------------------------
-  // ONLY POST
-  // ----------------------------------------------------------
-
-  if (req.method !== "POST") {
-
-    return res.status(405).json({
-
-      success: false,
-
-      error:
-        "Method not allowed."
-
-    });
-
-  }
-
-
-  try {
-
-    const config =
-      getConfig();
-
-
-    const body =
-      req.body || {};
-
-
-    const contentType =
-      clean(
-        body.contentType ||
-        body.type ||
-        body.mode
-      ).toLowerCase();
-
-
-    // --------------------------------------------------------
-    // NOTE
-    // --------------------------------------------------------
-
-    if (
-      contentType === "note" ||
-      contentType === "notes" ||
-      contentType === "generate-note"
-    ) {
-
-      const result =
-        await generateNote(
-          config,
-          body
-        );
-
-
-      return res.status(200).json({
-
-        success: true,
-
-        ...result
-
-      });
-
+  const SIMS = {
+    projectile_motion: {
+      title: "Projectile Motion",
+      defaults: { velocity: 20, angle: 45, gravity: 9.81 }
+    },
+    ohms_law: {
+      title: "Ohm's Law",
+      defaults: { voltage: 12, resistance: 6 }
+    },
+    hookes_law: {
+      title: "Hooke's Law",
+      defaults: { force: 5, springConstant: 50 }
+    },
+    uniform_acceleration: {
+      title: "Uniform Acceleration",
+      defaults: { u: 5, acceleration: 2, time: 5 }
+    },
+    simple_pendulum: {
+      title: "Simple Pendulum",
+      defaults: { length: 1, gravity: 9.81 }
+    },
+    series_parallel_circuit: {
+      title: "Series & Parallel Circuit",
+      defaults: { resistance1: 4, resistance2: 6, voltage: 12 }
     }
-
-
-    // --------------------------------------------------------
-    // QUESTION
-    // --------------------------------------------------------
-
-    if (
-      contentType === "question" ||
-      contentType === "questions" ||
-      contentType === "generate-question"
-    ) {
-
-      const result =
-        await generateQuestions(
-          config,
-          body
-        );
-
-
-      return res.status(200).json({
-
-        success: true,
-
-        ...result
-
-      });
-
-    }
-
-
-    return res.status(400).json({
-
-      success: false,
-
-      error:
-        "Invalid contentType. Use Note or Question."
-
-    });
-
-
-  } catch (error) {
-
-    console.error(
-      "AI CONTENT API ERROR:",
-      error
-    );
-
-
-    return res.status(500).json({
-
-      success: false,
-
-      error:
-        error.message ||
-        "AI content generation failed."
-
-    });
-
-  }
-
-}
-
-
-// ============================================================
-// ENVIRONMENT
-// ============================================================
-
-function getConfig() {
-
-  const config = {
-
-    openaiKey:
-      process.env.OPENAI_API_KEY,
-
-    airtablePat:
-      process.env.AIRTABLE_PAT,
-
-    airtableBaseId:
-      process.env.AIRTABLE_BASE_ID
-
   };
 
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, s => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[s]));
 
-  const missing = [];
+  const num = (v, fallback = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+  };
 
-
-  if (!config.openaiKey) {
-
-    missing.push(
-      "OPENAI_API_KEY"
-    );
-
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
   }
 
+  /* ---------- Lightweight safe equation formatter ---------- */
 
-  if (!config.airtablePat) {
-
-    missing.push(
-      "AIRTABLE_PAT"
-    );
-
+  function formatEquation(latex) {
+    let s = esc(latex || "");
+    s = s.replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,
+      '<span class="nbv-frac"><span>$1</span><span>$2</span></span>');
+    s = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, "√($1)");
+    s = s.replace(/\\times/g, " × ");
+    s = s.replace(/\\cdot/g, " · ");
+    s = s.replace(/\\pm/g, " ± ");
+    s = s.replace(/\\pi/g, "π");
+    s = s.replace(/\\theta/g, "θ");
+    s = s.replace(/\\Delta/g, "Δ");
+    s = s.replace(/\\alpha/g, "α");
+    s = s.replace(/\\beta/g, "β");
+    s = s.replace(/\\gamma/g, "γ");
+    s = s.replace(/\\lambda/g, "λ");
+    s = s.replace(/\^(\{([^{}]+)\}|([A-Za-z0-9+\-]+))/g,
+      (_, all, a, b) => `<sup>${a || b}</sup>`);
+    s = s.replace(/_((\{([^{}]+)\})|([A-Za-z0-9+\-]+))/g,
+      (_, all, a, b, c) => `<sub>${b || c}</sub>`);
+    s = s.replace(/\\\\/g, "");
+    return s;
   }
 
-
-  if (!config.airtableBaseId) {
-
-    missing.push(
-      "AIRTABLE_BASE_ID"
-    );
-
+  function renderEquation(v) {
+    const box = document.createElement("article");
+    box.className = "nbv-card nbv-equation";
+    box.innerHTML =
+      `<div class="nbv-card-title">📐 Equation</div>
+       <div class="nbv-eq">${formatEquation(v.latex)}</div>
+       <div class="nbv-caption">${esc(v.caption || "Key equation")}</div>
+       ${v.variables ? `<div class="nbv-variables">${esc(v.variables)}</div>` : ""}`;
+    return box;
   }
 
+  /* ---------- SVG helpers ---------- */
 
-  if (missing.length) {
-
-    throw new Error(
-      `Missing environment variables: ${missing.join(", ")}`
-    );
-
+  function svgWrap(inner, label) {
+    return `<svg viewBox="0 0 720 360" role="img" aria-label="${esc(label)}"
+      xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
   }
 
-
-  return config;
-
-}
-
-
-// ============================================================
-// BASIC HELPERS
-// ============================================================
-
-function clean(value) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-
-    return "";
-
+  function line(x1, y1, x2, y2, extra = "") {
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+      stroke="currentColor" stroke-width="2" ${extra}/>`;
   }
 
-
-  return String(value).trim();
-
-}
-
-
-function makeId(prefix) {
-
-  return (
-    `${prefix}-${Date.now()}-` +
-    `${Math.floor(
-      Math.random() * 100000
-    )}`
-  );
-
-}
-
-
-// ============================================================
-// NORMALIZATION
-// ============================================================
-
-function normalizeDifficulty(value) {
-
-  const valid = [
-
-    "Easy",
-    "Medium",
-    "Hard"
-
-  ];
-
-
-  const found =
-    valid.find(
-
-      item =>
-        item.toLowerCase() ===
-        clean(value).toLowerCase()
-
-    );
-
-
-  return found || "Medium";
-
-}
-
-
-function normalizeBloom(value) {
-
-  const valid = [
-
-    "Remember",
-    "Understand",
-    "Apply",
-    "Analyze",
-    "Evaluate",
-    "Create"
-
-  ];
-
-
-  const found =
-    valid.find(
-
-      item =>
-        item.toLowerCase() ===
-        clean(value).toLowerCase()
-
-    );
-
-
-  return found || "Understand";
-
-}
-
-
-function normalizeQuestionType(value) {
-
-  const valid = [
-
-    "MCQ",
-    "Theory",
-    "Calculation",
-    "Practical",
-    "Objective"
-
-  ];
-
-
-  const found =
-    valid.find(
-
-      item =>
-        item.toLowerCase() ===
-        clean(value).toLowerCase()
-
-    );
-
-
-  return found || "MCQ";
-
-}
-
-
-function normalizeExamTypes(value) {
-
-  const valid = [
-
-    "WAEC",
-    "NECO",
-    "UTME",
-    "General",
-    "IJMB",
-    "JUPEB"
-
-  ];
-
-
-  let values;
-
-
-  if (Array.isArray(value)) {
-
-    values = value;
-
-  } else {
-
-    values =
-      clean(value)
-        .split(",")
-        .map(
-          item =>
-            item.trim()
-        );
-
+  function text(x, y, t, extra = "") {
+    return `<text x="${x}" y="${y}" font-family="Arial,sans-serif"
+      font-size="18" fill="currentColor" ${extra}>${esc(t)}</text>`;
   }
 
+  function drawDiagram(type, labels) {
+    const t = String(type || "").toLowerCase();
+    const L = Array.isArray(labels) ? labels : [];
 
-  const result =
-    values.filter(
-
-      item =>
-        valid.some(
-
-          validItem =>
-            validItem.toLowerCase() ===
-            String(item).toLowerCase()
-
-        )
-
-    );
-
-
-  return result.length
-    ? result
-    : ["General"];
-
-}
-
-
-// ============================================================
-// MIXED DISTRIBUTION
-// ============================================================
-
-function createBalancedList(
-  count,
-  values
-) {
-
-  const result = [];
-
-
-  for (
-    let i = 0;
-    i < count;
-    i++
-  ) {
-
-    result.push(
-      values[
-        i % values.length
-      ]
-    );
-
-  }
-
-
-  // Shuffle
-
-  for (
-    let i = result.length - 1;
-    i > 0;
-    i--
-  ) {
-
-    const j =
-      Math.floor(
-        Math.random() *
-        (i + 1)
+    if (t.includes("projectile")) {
+      return svgWrap(
+        `<path d="M90 285 Q260 55 600 255" fill="none" stroke="currentColor" stroke-width="4"/>
+         ${line(70,285,650,285)}
+         ${line(90,300,90,45)}
+         <circle cx="90" cy="285" r="9" fill="currentColor"/>
+         ${text(100,275,"launch")}
+         ${text(475,245,"trajectory")}
+         ${text(30,55,"y")}
+         ${text(625,310,"x")}`,
+        "Projectile motion diagram"
       );
-
-
-    [
-      result[i],
-      result[j]
-    ] = [
-      result[j],
-      result[i]
-    ];
-
-  }
-
-
-  return result;
-
-}
-
-
-function getDifficultyList(
-  count,
-  difficulty
-) {
-
-  const value =
-    clean(difficulty);
-
-
-  if (
-    !value ||
-    value.toLowerCase() !==
-    "mixed"
-  ) {
-
-    return Array(
-      count
-    ).fill(
-
-      normalizeDifficulty(
-        value || "Medium"
-      )
-
-    );
-
-  }
-
-
-  return createBalancedList(
-
-    count,
-
-    [
-      "Easy",
-      "Medium",
-      "Hard"
-    ]
-
-  );
-
-}
-
-
-function getBloomList(
-  count,
-  bloom
-) {
-
-  const value =
-    clean(bloom);
-
-
-  if (
-    !value ||
-    value.toLowerCase() !==
-    "mixed"
-  ) {
-
-    return Array(
-      count
-    ).fill(
-
-      normalizeBloom(
-        value || "Apply"
-      )
-
-    );
-
-  }
-
-
-  return createBalancedList(
-
-    count,
-
-    [
-      "Remember",
-      "Understand",
-      "Apply",
-      "Analyze",
-      "Evaluate",
-      "Create"
-    ]
-
-  );
-
-}
-
-
-// ============================================================
-// AIRTABLE REQUEST
-// ============================================================
-
-async function airtableRequest(
-  config,
-  tableId,
-  method,
-  body
-) {
-
-  const url =
-    `${AIRTABLE_API}/` +
-    `${config.airtableBaseId}/` +
-    `${tableId}`;
-
-
-  const options = {
-
-    method,
-
-    headers: {
-
-      Authorization:
-        `Bearer ${config.airtablePat}`,
-
-      "Content-Type":
-        "application/json"
-
     }
 
-  };
+    if (t.includes("wave")) {
+      return svgWrap(
+        `${line(50,180,670,180)}
+         <path d="M50 180 C90 80 130 80 170 180 S250 280 290 180
+                  S370 80 410 180 S490 280 530 180 S610 80 650 180"
+           fill="none" stroke="currentColor" stroke-width="4"/>
+         ${text(265,75,"wavelength λ")}
+         ${text(315,215,"equilibrium")}`,
+        "Wave diagram"
+      );
+    }
 
+    if (t.includes("ray") || t.includes("reflection") || t.includes("refraction")) {
+      return svgWrap(
+        `${line(70,270,650,270)}
+         ${line(360,60,360,320,"stroke-dasharray='8 7'")}
+         ${line(110,215,360,270)}
+         ${line(360,270,610,125)}
+         ${text(85,205,"incident ray")}
+         ${text(500,120,"reflected/refracted ray")}
+         ${text(375,85,"normal")}
+         ${text(520,300,"surface")}`,
+        "Ray diagram"
+      );
+    }
 
-  if (
-    body !== undefined
-  ) {
+    if (t.includes("circuit")) {
+      return svgWrap(
+        `${line(120,90,600,90)}${line(120,270,600,270)}
+         ${line(120,90,120,155)}${line(120,205,120,270)}
+         ${line(600,90,600,270)}
+         <rect x="105" y="155" width="30" height="50" fill="white" stroke="currentColor" stroke-width="3"/>
+         ${line(95,165,135,165)}${line(100,195,130,195)}
+         <rect x="330" y="245" width="100" height="50" fill="white" stroke="currentColor" stroke-width="3"/>
+         ${text(348,277,"resistor")}
+         ${text(78,145,"cell")}`,
+        "Simple circuit diagram"
+      );
+    }
 
-    options.body =
-      JSON.stringify(body);
+    if (t.includes("force") || t.includes("free_body")) {
+      return svgWrap(
+        `<rect x="280" y="145" width="160" height="100" fill="white" stroke="currentColor" stroke-width="3"/>
+         ${line(360,145,360,65,"marker-end='url(#a)'")}
+         ${line(440,195,590,195,"marker-end='url(#a)'")}
+         ${line(280,195,130,195,"marker-end='url(#a)'")}
+         ${line(360,245,360,325,"marker-end='url(#a)'")}
+         ${text(330,200,"object")}
+         ${text(370,70,"weight")}
+         ${text(470,180,"force")}`,
+        "Free-body force diagram"
+      );
+    }
 
+    const labelsSvg = L.slice(0, 12).map((x, i) =>
+      `<rect x="${60 + (i % 3) * 215}" y="${70 + Math.floor(i / 3) * 65}"
+        width="190" height="42" rx="8" fill="currentColor" opacity=".08"/>
+       ${text(75 + (i % 3) * 215, 97 + Math.floor(i / 3) * 65, x)}`
+    ).join("");
+
+    return svgWrap(
+      `<rect x="35" y="35" width="650" height="290" rx="16"
+        fill="none" stroke="currentColor" stroke-width="2"
+        stroke-dasharray="8 8"/>
+       ${labelsSvg || text(215,185,"Teacher-directed labelled diagram")}`,
+      "Educational diagram"
+    );
   }
 
+  function renderDiagram(v) {
+    const box = document.createElement("article");
+    box.className = "nbv-card nbv-diagram";
+    box.innerHTML =
+      `<div class="nbv-card-title">🔬 ${esc(v.title || "Educational Diagram")}</div>
+       <div class="nbv-svg">${drawDiagram(v.diagram, v.labels)}</div>
+       <p>${esc(v.description || "Study the labelled diagram carefully.")}</p>`;
+    return box;
+  }
 
-  const response =
-    await fetch(
-      url,
-      options
-    );
+  /* ---------- Graph ---------- */
 
+  function renderGraph(v) {
+    const box = document.createElement("article");
+    box.className = "nbv-card nbv-graph";
+    const points = Array.isArray(v.data) ? v.data : [];
+    const cleanPoints = points.map(p => [num(p?.[0], NaN), num(p?.[1], NaN)])
+      .filter(p => Number.isFinite(p[0]) && Number.isFinite(p[1])).slice(0, 100);
 
-  const text =
-    await response.text();
+    let plot = "";
+    if (cleanPoints.length) {
+      const xs = cleanPoints.map(p => p[0]);
+      const ys = cleanPoints.map(p => p[1]);
+      const xmin = Math.min(...xs), xmax = Math.max(...xs);
+      const ymin = Math.min(...ys), ymax = Math.max(...ys);
+      const dx = xmax - xmin || 1, dy = ymax - ymin || 1;
+      plot = cleanPoints.map(p =>
+        `${70 + ((p[0] - xmin) / dx) * 590},${295 - ((p[1] - ymin) / dy) * 245}`
+      ).join(" ");
+    }
 
+    box.innerHTML =
+      `<div class="nbv-card-title">📈 ${esc(v.title || "Graph")}</div>
+       <div class="nbv-svg">
+         ${svgWrap(
+           `${line(70,295,660,295)}${line(70,295,70,50)}
+            ${plot ? `<polyline points="${plot}" fill="none" stroke="currentColor" stroke-width="4"/>
+            ${cleanPoints.map((p, i) => {
+              const xs = cleanPoints.map(q => q[0]), ys = cleanPoints.map(q => q[1]);
+              const x = 70 + ((p[0] - Math.min(...xs)) / (Math.max(...xs)-Math.min(...xs)||1))*590;
+              const y = 295 - ((p[1] - Math.min(...ys)) / (Math.max(...ys)-Math.min(...ys)||1))*245;
+              return `<circle cx="${x}" cy="${y}" r="5" fill="currentColor"/>`;
+            }).join("")}` : ""}
+            ${text(340,335,v.xLabel || "x")}
+            ${text(18,70,v.yLabel || "y")}`,
+           v.title || "Graph"
+         )}
+       </div>
+       <div class="nbv-graph-meta"><span>X: ${esc(v.xLabel || "x")}</span>
+       <span>Y: ${esc(v.yLabel || "y")}</span></div>`;
+    return box;
+  }
 
-  let data;
+  /* ---------- Interactive parameter explorer ---------- */
 
+  function renderInteractive(v) {
+    const box = document.createElement("article");
+    box.className = "nbv-card nbv-interactive";
+    box.innerHTML =
+      `<div class="nbv-card-title">🎛️ ${esc(v.title || "Interactive Exploration")}</div>
+       <p>${esc(v.instructions || "Adjust the variables and observe the change.")}</p>
+       <div class="nbv-controls"></div>
+       <div class="nbv-output">Adjust a parameter to explore the relationship.</div>`;
 
-  try {
+    const controls = box.querySelector(".nbv-controls");
+    const output = box.querySelector(".nbv-output");
+    const params = Array.isArray(v.parameters) ? v.parameters.slice(0, 12) : [];
 
-    data =
-      JSON.parse(text);
-
-  } catch {
-
-    data = {
-
-      raw:
-        text
-
+    const update = () => {
+      const values = {};
+      controls.querySelectorAll("input[data-name]").forEach(i => values[i.dataset.name] = Number(i.value));
+      const names = Object.keys(values);
+      if (names.length >= 2) {
+        const a = values[names[0]], b = values[names[1]];
+        output.textContent = `${names[0]} = ${a}; ${names[1]} = ${b}`;
+      } else if (names.length === 1) {
+        output.textContent = `${names[0]} = ${values[names[0]]}`;
+      }
     };
 
+    params.forEach(p => {
+      let min = num(p?.min, 0), max = num(p?.max, 100);
+      if (max <= min) max = min + 100;
+      const step = num(p?.step, 1) > 0 ? num(p.step, 1) : 1;
+      const value = clamp(num(p?.value, min), min, max);
+
+      const row = document.createElement("label");
+      row.className = "nbv-slider";
+      row.innerHTML =
+        `<span>${esc(p?.name || "Parameter")}</span>
+         <input data-name="${esc(p?.name || "Parameter")}" type="range"
+           min="${min}" max="${max}" step="${step}" value="${value}">
+         <output>${value}</output>`;
+      const input = row.querySelector("input");
+      const out = row.querySelector("output");
+      input.addEventListener("input", () => {
+        out.value = input.value;
+        update();
+      });
+      controls.appendChild(row);
+    });
+
+    update();
+    return box;
   }
 
+  /* ---------- Real simulations ---------- */
 
-  if (!response.ok) {
-
-    console.error(
-      "AIRTABLE ERROR:",
-      data
-    );
-
-
-    throw new Error(
-
-      data?.error?.message ||
-
-      data?.error?.type ||
-
-      `Airtable error ${response.status}`
-
-    );
-
+  function simValue(vars, keys, fallback) {
+    for (const k of keys) {
+      if (vars && Number.isFinite(Number(vars[k]))) return Number(vars[k]);
+    }
+    return fallback;
   }
 
+  function addSlider(container, label, value, min, max, step, onChange) {
+    const row = document.createElement("label");
+    row.className = "nbv-slider";
+    row.innerHTML =
+      `<span>${esc(label)}</span>
+       <input type="range" min="${min}" max="${max}" step="${step}" value="${value}">
+       <output>${value}</output>`;
+    const input = row.querySelector("input");
+    const output = row.querySelector("output");
+    input.addEventListener("input", () => {
+      output.value = input.value;
+      onChange(Number(input.value));
+    });
+    container.appendChild(row);
+    return input;
+  }
 
-  return data;
+  function renderSimulation(v) {
+    const type = String(v.simulation || "").toLowerCase();
+    if (!SIMS[type]) return null;
 
-}
+    const vars = v.variables || {};
+    const box = document.createElement("article");
+    box.className = "nbv-card nbv-simulation";
+    box.innerHTML =
+      `<div class="nbv-card-title">🧪 ${esc(v.title || SIMS[type].title)}</div>
+       <p>${esc(v.instructions || "Adjust the controls and observe the result.")}</p>
+       <div class="nbv-sim-controls"></div>
+       <canvas class="nbv-canvas" width="760" height="360"></canvas>
+       <div class="nbv-sim-result"></div>`;
 
+    const controls = box.querySelector(".nbv-sim-controls");
+    const canvas = box.querySelector("canvas");
+    const ctx = canvas.getContext("2d");
+    const result = box.querySelector(".nbv-sim-result");
 
-// ============================================================
-// CREATE ONE RECORD
-// ============================================================
+    const state = {};
+    Object.assign(state, SIMS[type].defaults, vars);
 
-async function createRecord(
-  config,
-  tableId,
-  fields
-) {
+    function drawProjectile() {
+      const u = clamp(num(state.velocity, 20), 1, 100);
+      const angle = clamp(num(state.angle, 45), 5, 85) * Math.PI / 180;
+      const g = clamp(num(state.gravity, 9.81), 0.1, 30);
+      const T = 2 * u * Math.sin(angle) / g;
+      const R = u * u * Math.sin(2 * angle) / g;
+      const H = u * u * Math.sin(angle) ** 2 / (2 * g);
 
-  return airtableRequest(
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.beginPath();
+      for (let i=0;i<=100;i++) {
+        const t = T*i/100;
+        const x = u*Math.cos(angle)*t;
+        const y = u*Math.sin(angle)*t - .5*g*t*t;
+        const px = 45 + (x/Math.max(R,1))*650;
+        const py = 300 - (y/Math.max(H,1))*240;
+        i ? ctx.lineTo(px,py) : ctx.moveTo(px,py);
+      }
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(40,300); ctx.lineTo(710,300); ctx.stroke();
+      ctx.beginPath(); ctx.arc(45,300,7,0,Math.PI*2); ctx.fill();
+      result.textContent =
+        `Range R = ${R.toFixed(2)} m  |  Maximum height H = ${H.toFixed(2)} m  |  Time of flight = ${T.toFixed(2)} s`;
+    }
 
-    config,
+    function drawOhm() {
+      const V = clamp(num(state.voltage,12),0,50);
+      const R = clamp(num(state.resistance,6),0.1,100);
+      const I = V/R;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.beginPath(); ctx.moveTo(90,180); ctx.lineTo(670,180); ctx.stroke();
+      ctx.strokeRect(320,145,120,70);
+      ctx.fillText("R",375,185);
+      ctx.beginPath(); ctx.arc(90,180,30,0,Math.PI*2); ctx.stroke();
+      ctx.fillText("+",82,172); ctx.fillText("−",82,198);
+      result.textContent = `Current I = V/R = ${I.toFixed(3)} A`;
+    }
 
-    tableId,
+    function drawHooke() {
+      const F = clamp(num(state.force,5),0,50);
+      const k = clamp(num(state.springConstant,50),1,200);
+      const x = F/k;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const base = 100, top = 180;
+      ctx.beginPath(); ctx.moveTo(base,top);
+      for(let i=0;i<12;i++){
+        const xx = base + i*15;
+        const yy = top + (i%2?18:-18);
+        ctx.lineTo(xx,yy);
+      }
+      ctx.lineTo(base+180+x*500,top); ctx.stroke();
+      ctx.fillRect(base+180+x*500,top-25,65,50);
+      result.textContent = `Extension x = F/k = ${x.toFixed(3)} m`;
+    }
 
-    "POST",
+    function drawUniform() {
+      const u = num(state.u,5);
+      const a = num(state.acceleration,2);
+      const t = clamp(num(state.time,5),0,20);
+      const s = u*t + .5*a*t*t;
+      const v2 = u + a*t;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const distance = clamp(s,0,500);
+      ctx.beginPath(); ctx.moveTo(50,230); ctx.lineTo(50+distance,230); ctx.stroke();
+      ctx.fillRect(45+distance,215,25,25);
+      result.textContent = `Displacement s = ${s.toFixed(2)} m  |  Final velocity v = ${v2.toFixed(2)} m/s`;
+    }
 
-    {
+    function drawPendulum() {
+      const L = clamp(num(state.length,1),0.2,5);
+      const g = clamp(num(state.gravity,9.81),0.1,30);
+      const period = 2*Math.PI*Math.sqrt(L/g);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const pivotX=380,pivotY=55, scale=Math.min(230/L,70);
+      const bobX=pivotX+Math.sin(.65)*L*scale;
+      const bobY=pivotY+Math.cos(.65)*L*scale;
+      ctx.beginPath(); ctx.moveTo(pivotX,pivotY); ctx.lineTo(bobX,bobY); ctx.stroke();
+      ctx.beginPath(); ctx.arc(bobX,bobY,22,0,Math.PI*2); ctx.fill();
+      result.textContent = `Period T = 2π√(L/g) = ${period.toFixed(3)} s`;
+    }
 
-      records: [
+    function drawCircuit() {
+      const R1 = clamp(num(state.resistance1,4),0.1,100);
+      const R2 = clamp(num(state.resistance2,6),0.1,100);
+      const V = clamp(num(state.voltage,12),0,100);
+      const series = R1 + R2;
+      const parallel = 1/(1/R1 + 1/R2);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.beginPath(); ctx.moveTo(90,90); ctx.lineTo(670,90); ctx.lineTo(670,270); ctx.lineTo(90,270); ctx.closePath(); ctx.stroke();
+      ctx.strokeRect(250,65,90,50); ctx.strokeRect(420,65,90,50);
+      ctx.fillText("R1",280,95); ctx.fillText("R2",450,95);
+      result.textContent =
+        `Series Req = ${series.toFixed(2)} Ω  |  Parallel Req = ${parallel.toFixed(2)} Ω  |  Series current = ${(V/series).toFixed(3)} A`;
+    }
 
-        {
-          fields
-        }
+    const redraw = {
+      projectile_motion: drawProjectile,
+      ohms_law: drawOhm,
+      hookes_law: drawHooke,
+      uniform_acceleration: drawUniform,
+      simple_pendulum: drawPendulum,
+      series_parallel_circuit: drawCircuit
+    };
 
+    const limits = {
+      projectile_motion: [
+        ["Initial velocity u (m/s)", "velocity", 1, 100, .5],
+        ["Angle θ (°)", "angle", 5, 85, 1],
+        ["Gravity g (m/s²)", "gravity", .1, 30, .1]
       ],
+      ohms_law: [
+        ["Voltage V (V)", "voltage", 0, 50, .5],
+        ["Resistance R (Ω)", "resistance", .1, 100, .1]
+      ],
+      hookes_law: [
+        ["Force F (N)", "force", 0, 50, .5],
+        ["Spring constant k (N/m)", "springConstant", 1, 200, 1]
+      ],
+      uniform_acceleration: [
+        ["Initial velocity u (m/s)", "u", -20, 50, .5],
+        ["Acceleration a (m/s²)", "acceleration", -10, 20, .1],
+        ["Time t (s)", "time", 0, 20, .1]
+      ],
+      simple_pendulum: [
+        ["Length L (m)", "length", .2, 5, .1],
+        ["Gravity g (m/s²)", "gravity", .1, 30, .1]
+      ],
+      series_parallel_circuit: [
+        ["Resistance R1 (Ω)", "resistance1", .1, 100, .1],
+        ["Resistance R2 (Ω)", "resistance2", .1, 100, .1],
+        ["Voltage V (V)", "voltage", 0, 100, .5]
+      ]
+    };
 
-      typecast: true
+    (limits[type] || []).forEach(([label,key,min,max,step]) => {
+      const value = clamp(num(state[key], SIMS[type].defaults[key]), min, max);
+      state[key] = value;
+      addSlider(controls, label, value, min, max, step, value2 => {
+        state[key] = value2;
+        redraw[type]();
+      });
+    });
 
+    redraw[type]();
+    return box;
+  }
+
+  function renderImage(v) {
+    /* Deliberately does not use AI-generated URLs. */
+    const box = document.createElement("article");
+    box.className = "nbv-card nbv-image-spec";
+    box.innerHTML =
+      `<div class="nbv-card-title">🖼️ ${esc(v.caption || "Educational Illustration")}</div>
+       <div class="nbv-image-note">
+         <strong>Illustration specification</strong>
+         <p>${esc(v.alt || "Educational image")}</p>
+         ${v.imageQuery ? `<small>Suggested image subject: ${esc(v.imageQuery)}</small>` : ""}
+       </div>
+       <div class="nbv-image-warning">
+         No temporary AI attachment URL is used here. A permanent image can be attached
+         later through the teacher-controlled NoteBank asset workflow.
+       </div>`;
+    return box;
+  }
+
+  function renderVisual(v) {
+    if (!v || typeof v !== "object") return null;
+    switch (String(v.type || "").toLowerCase()) {
+      case "equation": return renderEquation(v);
+      case "diagram": return renderDiagram(v);
+      case "image": return renderImage(v);
+      case "graph": return renderGraph(v);
+      case "interactive": return renderInteractive(v);
+      case "simulation": return renderSimulation(v);
+      default: return null;
     }
-
-  );
-
-}
-
-
-// ============================================================
-// CREATE MANY RECORDS
-// Airtable maximum = 10 records/request
-// ============================================================
-
-async function createManyRecords(
-  config,
-  tableId,
-  records
-) {
-
-  const created = [];
-
-
-  for (
-    let i = 0;
-    i < records.length;
-    i += 10
-  ) {
-
-    const chunk =
-      records.slice(
-        i,
-        i + 10
-      );
-
-
-    const result =
-      await airtableRequest(
-
-        config,
-
-        tableId,
-
-        "POST",
-
-        {
-
-          records:
-            chunk.map(
-              fields => ({
-                fields
-              })
-            ),
-
-          typecast:
-            true
-
-        }
-
-      );
-
-
-    if (
-      Array.isArray(
-        result.records
-      )
-    ) {
-
-      created.push(
-        ...result.records
-      );
-
-    }
-
   }
 
-
-  return created;
-
-}
-
-
-// ============================================================
-// OPENAI RESPONSES API
-//
-// IMPORTANT FIX:
-//
-// When using:
-//
-// text.format.type = "json_object"
-//
-// the request must explicitly tell the model to return JSON.
-//
-// We therefore include JSON in BOTH:
-//   1. instructions
-//   2. input
-//
-// This fixes the error:
-// "Response input messages must contain the word 'json'..."
-// ============================================================
-
-async function callOpenAI(
-  config,
-  instructions,
-  input
-) {
-
-
-  const safeInstructions = `
-
-${instructions}
-
-IMPORTANT JSON OUTPUT REQUIREMENT:
-
-Return the response as valid JSON.
-
-The response must be JSON only.
-
-Do not use Markdown code fences.
-
-Do not write explanations outside
-the JSON object.
-
-`;
-
-
-  const safeInput = `
-
-IMPORTANT:
-The required response format is JSON.
-
-${input}
-
-REMINDER:
-Return valid JSON only.
-
-`;
-
-
-  const response =
-    await fetch(
-
-      OPENAI_API,
-
-      {
-
-        method:
-          "POST",
-
-        headers: {
-
-          Authorization:
-            `Bearer ${config.openaiKey}`,
-
-          "Content-Type":
-            "application/json"
-
-        },
-
-        body:
-          JSON.stringify({
-
-            model:
-              OPENAI_MODEL,
-
-            store:
-              false,
-
-            instructions:
-              safeInstructions,
-
-            input:
-              safeInput,
-
-            text: {
-
-              format: {
-
-                type:
-                  "json_object"
-
-              }
-
-            }
-
-          })
-
+  function injectStyles() {
+    if (document.getElementById("nbv-styles")) return;
+    const s = document.createElement("style");
+    s.id = "nbv-styles";
+    s.textContent = `
+      .nbv-visuals{margin:20px 0;display:grid;gap:16px}
+      .nbv-card{background:#fff;border:1px solid #dfe7e2;border-radius:16px;padding:18px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
+      .nbv-card-title{font-size:18px;font-weight:800;margin-bottom:10px;color:#17382b}
+      .nbv-eq{font-family:Georgia,"Times New Roman",serif;font-size:28px;text-align:center;padding:20px;background:#f4f7f5;border-left:5px solid #d7a62a;border-radius:12px;overflow:auto}
+      .nbv-eq sup{font-size:.65em}.nbv-eq sub{font-size:.65em}
+      .nbv-frac{display:inline-flex;vertical-align:middle;flex-direction:column;text-align:center;line-height:1.05;margin:0 .15em}
+      .nbv-frac span:first-child{border-bottom:1px solid currentColor;padding:0 .2em}
+      .nbv-frac span:last-child{padding:0 .2em}
+      .nbv-caption,.nbv-variables{margin-top:8px;text-align:center;color:#6c7872}
+      .nbv-svg{width:100%;overflow:auto;background:#fbfdfc;border-radius:12px;padding:8px}
+      .nbv-svg svg{width:100%;min-width:520px;height:auto}
+      .nbv-graph-meta{display:flex;justify-content:space-between;color:#6c7872;font-size:13px}
+      .nbv-controls{display:grid;gap:6px}
+      .nbv-slider{display:grid;grid-template-columns:minmax(130px,190px) 1fr 65px;gap:10px;align-items:center;margin:8px 0}
+      .nbv-slider input{width:100%}.nbv-slider output{font-weight:700}
+      .nbv-canvas{display:block;width:100%;height:auto;background:#fbfdfc;border:1px solid #dfe7e2;border-radius:12px;margin-top:12px}
+      .nbv-sim-result,.nbv-output{margin-top:10px;padding:11px;border-radius:10px;background:#f4f7f5;font-weight:700}
+      .nbv-image-note{padding:18px;border-radius:12px;background:#f4f7f5}
+      .nbv-image-warning{margin-top:10px;font-size:12px;color:#6c7872}
+      @media(max-width:600px){
+        .nbv-slider{grid-template-columns:1fr}
+        .nbv-eq{font-size:22px}
       }
-
-    );
-
-
-  const responseText =
-    await response.text();
-
-
-  let data;
-
-
-  try {
-
-    data =
-      JSON.parse(
-        responseText
-      );
-
-  } catch {
-
-    throw new Error(
-
-      `OpenAI returned an invalid response: ${responseText.slice(0, 500)}`
-
-    );
-
+    `;
+    document.head.appendChild(s);
   }
 
-
-  if (!response.ok) {
-
-    console.error(
-      "OPENAI ERROR:",
-      data
-    );
-
-
-    throw new Error(
-
-      data?.error?.message ||
-
-      `OpenAI error ${response.status}`
-
-    );
-
+  function getVisualsFromResponse(data) {
+    return data && data.note && Array.isArray(data.note.visualComponents)
+      ? data.note.visualComponents.slice(0, MAX_VISUALS)
+      : [];
   }
 
+  function mountVisuals(data) {
+    const visuals = getVisualsFromResponse(data);
+    if (!visuals.length) return;
 
-  if (
-    data.output_text
-  ) {
+    const host = document.getElementById("notePromptPreview");
+    if (!host) return;
 
-    return data
-      .output_text
-      .trim();
+    const old = document.getElementById("nbv-visuals");
+    if (old) old.remove();
 
-  }
+    injectStyles();
 
+    const wrap = document.createElement("section");
+    wrap.id = "nbv-visuals";
+    wrap.className = "nbv-visuals";
 
-  let output = "";
+    const heading = document.createElement("h3");
+    heading.textContent = "📐 Visual Learning Components";
+    wrap.appendChild(heading);
 
-
-  if (
-    Array.isArray(
-      data.output
-    )
-  ) {
-
-    for (
-      const item
-      of data.output
-    ) {
-
-      if (
-        !Array.isArray(
-          item.content
-        )
-      ) {
-
-        continue;
-
+    visuals.forEach(v => {
+      try {
+        const el = renderVisual(v);
+        if (el) wrap.appendChild(el);
+      } catch (e) {
+        console.warn("NoteBank visual skipped:", e);
       }
+    });
 
-
-      for (
-        const content
-        of item.content
-      ) {
-
-        if (
-          content.type ===
-          "output_text"
-        ) {
-
-          output +=
-            content.text || "";
-
-        }
-
-      }
-
-    }
-
+    host.parentNode.insertBefore(wrap, host);
   }
 
+  /* ----------------------------------------------------------
+     KEY FIX:
+     The previous add-on depended on window.currentAIResult.
+     academic.html assigns currentAIResult internally, so that
+     assumption is unreliable for let/const scoped variables.
 
-  if (!output.trim()) {
+     Instead, intercept the existing fetch response. This works
+     without changing generateNoteDraft() and without replacing
+     any Academic Management function.
+  ---------------------------------------------------------- */
 
-    throw new Error(
-      "OpenAI returned no usable output."
-    );
+  const originalFetch = window.fetch.bind(window);
 
-  }
-
-
-  return output.trim();
-
-}
-
-
-// ============================================================
-// PARSE AI JSON
-// ============================================================
-
-function parseAIJSON(text) {
-
-  const cleaned =
-    clean(text)
-
-      .replace(
-        /^```json/i,
-        ""
-      )
-
-      .replace(
-        /^```/i,
-        ""
-      )
-
-      .replace(
-        /```$/i,
-        ""
-      )
-
-      .trim();
-
-
-  try {
-
-    return JSON.parse(
-      cleaned
-    );
-
-  } catch (_) {
-
-    // Continue
-
-  }
-
-
-  const first =
-    cleaned.indexOf("{");
-
-
-  const last =
-    cleaned.lastIndexOf("}");
-
-
-  if (
-    first !== -1 &&
-    last !== -1 &&
-    last > first
-  ) {
+  window.fetch = async function (...args) {
+    const response = await originalFetch(...args);
 
     try {
-
-      return JSON.parse(
-
-        cleaned.slice(
-          first,
-          last + 1
-        )
-
-      );
-
-    } catch (_) {
-
-      // Continue
-
+      const url = typeof args[0] === "string" ? args[0] : (args[0] && args[0].url) || "";
+      if (String(url).includes("/api/ai-content")) {
+        const clone = response.clone();
+        clone.json().then(data => {
+          if (data && data.success === true && data.note) {
+            mountVisuals(data);
+          }
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn("NoteBank visual hook error:", e);
     }
 
-  }
-
-
-  throw new Error(
-    "AI returned invalid JSON."
-  );
-
-}
-
-
-// ============================================================
-// LOG AI JOB
-// ============================================================
-
-async function logAIJob(
-  config,
-  data
-) {
-
-  try {
-
-    const fields = {
-
-      "AI Job ID":
-        makeId("AI"),
-
-      "Content Type":
-        data.contentType,
-
-      "Prompt":
-        clean(data.prompt),
-
-      "AI Output":
-        clean(data.aiOutput),
-
-      "Model":
-        OPENAI_MODEL,
-
-      "Status":
-        "Generated",
-
-      "Created Date":
-        new Date().toISOString()
-
-    };
-
-
-    if (
-      data.requestedBy
-    ) {
-
-      fields["Requested By"] =
-        [data.requestedBy];
-
-    }
-
-
-    if (
-      data.subjectId
-    ) {
-
-      fields["Subject"] =
-        [data.subjectId];
-
-    }
-
-
-    if (
-      data.topicId
-    ) {
-
-      fields["Topic"] =
-        [data.topicId];
-
-    }
-
-
-    if (
-      data.classId
-    ) {
-
-      fields["Class"] =
-        [data.classId];
-
-    }
-
-
-    return await createRecord(
-
-      config,
-
-      TABLES.AI_JOBS,
-
-      fields
-
-    );
-
-  } catch (error) {
-
-    console.error(
-      "AI JOB LOGGING ERROR:",
-      error.message
-    );
-
-
-    // Logging failure must not
-    // destroy generated content.
-
-    return null;
-
-  }
-
-}
-
-
-// ============================================================
-// GENERATE NOTE
-// ============================================================
-
-async function generateNote(
-  config,
-  body
-) {
-
-  const subject =
-    clean(body.subject);
-
-
-  const subjectId =
-    clean(body.subjectId);
-
-
-  const topic =
-    clean(body.topic);
-
-
-  const topicId =
-    clean(body.topicId);
-
-
-  const className =
-    clean(body.className) ||
-    "SS1";
-
-
-  const classId =
-    clean(body.classId);
-
-
-  const programme =
-    clean(body.programme) ||
-    "General";
-
-
-  const requestedBy =
-    clean(body.requestedBy);
-
-
-  const teacherPrompt =
-    clean(
-
-      body.teacherPrompt ||
-      body.prompt
-
-    );
-
-
-  const examTypes =
-    normalizeExamTypes(
-      body.examTypes
-    );
-
-
-  if (!subject) {
-
-    throw new Error(
-      "Subject is required."
-    );
-
-  }
-
-
-  if (!topic) {
-
-    throw new Error(
-      "Topic is required."
-    );
-
-  }
-
-
-  if (!teacherPrompt) {
-
-    throw new Error(
-      "Teacher prompt is required."
-    );
-
-  }
-
-
-  const instructions = `
-
-You are the official AI academic
-content assistant for
-AIBINU FLEXIPREP EDUCONSULT.
-
-You assist qualified teachers
-in preparing examination content.
-
-The TEACHER'S PROMPT is the
-PRIMARY instruction.
-
-Target students:
-
-Nigerian secondary-school students.
-
-Standards:
-
-WAEC
-NECO
-UTME
-
-where applicable.
-
-Content must be:
-
-- Accurate
-- Clear
-- Engaging
-- Examination-oriented
-- Age appropriate
-- Scientifically correct
-- Mathematically correct where applicable
-- Well structured
-
-Do not claim that the material
-has been teacher-approved.
-
-Do not claim that it has been
-published.
-
-Return ONLY valid JSON.
-
-`;
-
-
-  const input = `
-
-RESPONSE FORMAT: JSON
-
-INSTITUTION:
-AIBINU FLEXIPREP EDUCONSULT
-
-SUBJECT:
-${subject}
-
-CLASS:
-${className}
-
-PROGRAMME:
-${programme}
-
-TOPIC:
-${topic}
-
-EXAMINATION FOCUS:
-${examTypes.join(", ")}
-
-TEACHER'S PROMPT:
-${teacherPrompt}
-
-
-Create a comprehensive examination
-study note.
-
-The note must contain:
-
-1. Strong title
-2. Learning objectives
-3. Introduction
-4. Detailed teaching content
-5. Key terms
-6. Examples
-7. Worked examples where applicable
-8. Summary
-9. Examination tips
-10. WAEC focus
-11. NECO focus
-12. UTME focus
-
-
-Return exactly this JSON structure:
-
-{
-  "title": "",
-  "learningObjectives": "",
-  "keyTerms": "",
-  "content": "",
-  "examples": "",
-  "workedExamples": "",
-  "summary": "",
-  "examTips": "",
-  "waecFocus": "",
-  "necoFocus": "",
-  "utmeFocus": ""
-}
-
-Return JSON only.
-
-`;
-
-
-  const aiText =
-    await callOpenAI(
-
-      config,
-
-      instructions,
-
-      input
-
-    );
-
-
-  const note =
-    parseAIJSON(
-      aiText
-    );
-
-
-  const now =
-    new Date().toISOString();
-
-
-  const fields = {
-
-    "Note ID":
-      makeId("NOTE"),
-
-    "Title":
-      clean(note.title) ||
-      `${subject}: ${topic}`,
-
-    "Content":
-      clean(note.content),
-
-    "Learning Objectives":
-      clean(
-        note.learningObjectives
-      ),
-
-    "Key Terms":
-      clean(note.keyTerms),
-
-    "Examples":
-      clean(note.examples),
-
-    "Worked Examples":
-      clean(
-        note.workedExamples
-      ),
-
-    "Summary":
-      clean(note.summary),
-
-    "Exam Tips":
-      clean(note.examTips),
-
-    "WAEC Focus":
-      clean(note.waecFocus),
-
-    "NECO Focus":
-      clean(note.necoFocus),
-
-    "UTME Focus":
-      clean(note.utmeFocus),
-
-    "Version":
-      "1.0",
-
-    "Status":
-      "AI Draft",
-
-    "Created Date":
-      now,
-
-    "Updated Date":
-      now
-
+    return response;
   };
 
-
-  // Linked Topic
-
-  if (topicId) {
-
-    fields["Topic"] =
-      [topicId];
-
-  }
-
-
-  // Linked Created By
-
-  if (requestedBy) {
-
-    fields["Created By"] =
-      [requestedBy];
-
-  }
-
-
-  const createdNote =
-    await createRecord(
-
-      config,
-
-      TABLES.NOTES,
-
-      fields
-
-    );
-
-
-  await logAIJob(
-
-    config,
-
-    {
-
-      requestedBy,
-
-      contentType:
-        "Note",
-
-      subjectId,
-
-      topicId,
-
-      classId,
-
-      prompt:
-        teacherPrompt,
-
-      aiOutput:
-        aiText
-
-    }
-
-  );
-
-
-  return {
-
-    message:
-      "AI note generated successfully.",
-
-    note: {
-
-      id:
-        createdNote
-          ?.records
-          ?.at(0)
-          ?.id ||
-        null,
-
-      ...note,
-
-      status:
-        "AI Draft"
-
-    }
-
-  };
-
-}
-
-
-// ============================================================
-// GENERATE QUESTIONS
-// ============================================================
-
-async function generateQuestions(
-  config,
-  body
-) {
-
-  const subject =
-    clean(body.subject);
-
-
-  const subjectId =
-    clean(body.subjectId);
-
-
-  const topic =
-    clean(body.topic);
-
-
-  const className =
-    clean(body.className) ||
-    "SS1";
-
-
-  const classId =
-    clean(body.classId);
-
-
-  const programme =
-    clean(body.programme) ||
-    "General";
-
-
-  const requestedBy =
-    clean(body.requestedBy);
-
-
-  const teacherPrompt =
-    clean(
-
-      body.teacherPrompt ||
-      body.prompt
-
-    );
-
-
-  const examTypes =
-    normalizeExamTypes(
-      body.examTypes
-    );
-
-
-  const count =
-    Math.max(
-
-      1,
-
-      Math.min(
-
-        100,
-
-        Number(
-
-          body.numberOfQuestions ||
-          body.numberQuestions ||
-          body.count ||
-          body.questionCount ||
-          1
-
-        )
-
-      )
-
-    );
-
-
-  const difficulty =
-    clean(
-
-      body.difficulty ||
-      "Medium"
-
-    );
-
-
-  const bloomLevel =
-    clean(
-
-      body.bloomLevel ||
-      "Apply"
-
-    );
-
-
-  const questionType =
-    normalizeQuestionType(
-
-      body.questionType ||
-      "MCQ"
-
-    );
-
-
-  const source =
-    clean(
-
-      body.source ||
-      "AI Generated"
-
-    );
-
-
-  const year =
-    Number(
-
-      body.year ||
-      2026
-
-    );
-
-
-  const marks =
-    Number(
-
-      body.marks ||
-      1
-
-    );
-
-
-  if (!subject) {
-
-    throw new Error(
-      "Subject is required."
-    );
-
-  }
-
-
-  if (!topic) {
-
-    throw new Error(
-      "Topic is required."
-    );
-
-  }
-
-
-  if (!teacherPrompt) {
-
-    throw new Error(
-      "Teacher prompt is required."
-    );
-
-  }
-
-
-  // ----------------------------------------------------------
-  // CREATE ACTUAL ASSIGNMENTS
-  // ----------------------------------------------------------
-
-  const difficultyList =
-    getDifficultyList(
-
-      count,
-
-      difficulty
-
-    );
-
-
-  const bloomList =
-    getBloomList(
-
-      count,
-
-      bloomLevel
-
-    );
-
-
-  // ----------------------------------------------------------
-  // GENERATE IN BATCHES
-  // ----------------------------------------------------------
-
-  const generatedQuestions =
-    [];
-
-
-  const allPrompts =
-    [];
-
-
-  for (
-    let start = 0;
-    start < count;
-    start += 10
-  ) {
-
-    const batchEnd =
-      Math.min(
-
-        start + 10,
-
-        count
-
-      );
-
-
-    const batchSize =
-      batchEnd - start;
-
-
-    const batchAssignments =
-      [];
-
-
-    for (
-      let i = 0;
-      i < batchSize;
-      i++
-    ) {
-
-      const index =
-        start + i;
-
-
-      batchAssignments.push({
-
-        number:
-          index + 1,
-
-        difficulty:
-          difficultyList[index],
-
-        bloomLevel:
-          bloomList[index]
-
-      });
-
-    }
-
-
-    const assignmentText =
-      batchAssignments
-
-        .map(
-
-          item =>
-
-            `Question ${item.number}: Difficulty=${item.difficulty}; Bloom=${item.bloomLevel}`
-
-        )
-
-        .join("\n");
-
-
-    const instructions = `
-
-You are an expert Nigerian
-secondary-school examination
-question setter.
-
-Institution:
-
-AIBINU FLEXIPREP EDUCONSULT
-
-Standards:
-
-WAEC
-NECO
-UTME
-
-The teacher's prompt is important.
-
-However, the backend assignment
-for each question is FINAL.
-
-You MUST obey the exact
-difficulty and Bloom Level
-specified for every question.
-
-Do NOT substitute your own
-difficulty.
-
-Do NOT substitute your own
-Bloom Level.
-
-Return ONLY valid JSON.
-
-`;
-
-
-    const input = `
-
-RESPONSE FORMAT: JSON
-
-SUBJECT:
-${subject}
-
-CLASS:
-${className}
-
-PROGRAMME:
-${programme}
-
-TOPIC:
-${topic}
-
-EXAMINATION FOCUS:
-${examTypes.join(", ")}
-
-QUESTION TYPE:
-${questionType}
-
-TEACHER'S PROMPT:
-${teacherPrompt}
-
-
-GENERATE EXACTLY
-${batchSize} QUESTIONS.
-
-
-MANDATORY QUESTION ASSIGNMENTS:
-
-${assignmentText}
-
-
-For MCQ questions:
-
-- Four options only.
-- Option A
-- Option B
-- Option C
-- Option D
-
-Exactly ONE option must be correct.
-
-Do NOT use:
-
-"All of the above"
-
-"None of the above"
-
-
-Distractors must be plausible.
-
-The correct answer must actually
-match the question.
-
-Provide a useful explanation.
-
-Questions should be appropriate
-for Nigerian secondary-school
-students and the selected
-examination focus.
-
-
-Return this exact JSON structure:
-
-{
-  "questions": [
-    {
-      "question": "",
-      "optionA": "",
-      "optionB": "",
-      "optionC": "",
-      "optionD": "",
-      "correctAnswer": "A",
-      "bloomLevel": "",
-      "difficulty": "",
-      "explanation": "",
-      "questionType": "MCQ",
-      "marks": 1,
-      "source": "",
-      "year": 2026
-    }
-  ]
-}
-
-IMPORTANT:
-
-Return exactly
-${batchSize} question objects.
-
-Preserve the order:
-
-Question 1
-Question 2
-Question 3
-...
-
-Return JSON only.
-
-`;
-
-
-    const aiText =
-      await callOpenAI(
-
-        config,
-
-        instructions,
-
-        input
-
-      );
-
-
-    const parsed =
-      parseAIJSON(
-        aiText
-      );
-
-
-    if (
-      !Array.isArray(
-        parsed.questions
-      )
-    ) {
-
-      throw new Error(
-        "AI did not return a questions array."
-      );
-
-    }
-
-
-    if (
-      parsed.questions.length !==
-      batchSize
-    ) {
-
-      throw new Error(
-
-        `AI returned ${parsed.questions.length} questions instead of ${batchSize}.`
-
-      );
-
-    }
-
-
-    for (
-      let i = 0;
-      i < parsed.questions.length;
-      i++
-    ) {
-
-      const q =
-        parsed.questions[i];
-
-
-      const globalIndex =
-        start + i;
-
-
-      // ------------------------------------------------------
-      // BACKEND VALUES ARE AUTHORITATIVE
-      // ------------------------------------------------------
-
-      q.difficulty =
-        difficultyList[
-          globalIndex
-        ];
-
-
-      q.bloomLevel =
-        bloomList[
-          globalIndex
-        ];
-
-
-      q.questionType =
-        normalizeQuestionType(
-          questionType
-        );
-
-
-      q.marks =
-        Number(
-
-          q.marks ||
-          marks ||
-          1
-
-        );
-
-
-      q.source =
-        clean(
-
-          q.source ||
-          source
-
-        );
-
-
-      q.year =
-        Number(
-
-          q.year ||
-          year
-
-        );
-
-
-      q.correctAnswer =
-        clean(
-          q.correctAnswer
-        ).toUpperCase();
-
-
-      // ------------------------------------------------------
-      // VALIDATE ANSWER
-      // ------------------------------------------------------
-
-      if (
-        ![
-          "A",
-          "B",
-          "C",
-          "D"
-        ].includes(
-          q.correctAnswer
-        )
-      ) {
-
-        throw new Error(
-
-          `Invalid correct answer in Question ${globalIndex + 1}.`
-
-        );
-
-      }
-
-
-      // ------------------------------------------------------
-      // VALIDATE QUESTION TEXT
-      // ------------------------------------------------------
-
-      if (
-        !clean(q.question)
-      ) {
-
-        throw new Error(
-
-          `Question ${globalIndex + 1} has no question text.`
-
-        );
-
-      }
-
-
-      // ------------------------------------------------------
-      // VALIDATE OPTIONS
-      // ------------------------------------------------------
-
-      if (
-
-        !clean(q.optionA) ||
-
-        !clean(q.optionB) ||
-
-        !clean(q.optionC) ||
-
-        !clean(q.optionD)
-
-      ) {
-
-        throw new Error(
-
-          `Question ${globalIndex + 1} has incomplete options.`
-
-        );
-
-      }
-
-
-      generatedQuestions.push(
-        q
-      );
-
-    }
-
-
-    allPrompts.push(
-      input
-    );
-
-  }
-
-
-  // ==========================================================
-  // PREPARE AIRTABLE RECORDS
-  // ==========================================================
-
-  const airtableRecords =
-    generatedQuestions.map(
-
-      (question) => {
-
-        const fields = {
-
-          "Question ID":
-            makeId("Q"),
-
-          "Topic":
-            topic,
-
-          "Question":
-            clean(
-              question.question
-            ),
-
-          "Option A":
-            clean(
-              question.optionA
-            ),
-
-          "Option B":
-            clean(
-              question.optionB
-            ),
-
-          "Option C":
-            clean(
-              question.optionC
-            ),
-
-          "Option D":
-            clean(
-              question.optionD
-            ),
-
-          "Correct Answer":
-            question.correctAnswer,
-
-          "Bloom Level":
-            normalizeBloom(
-              question.bloomLevel
-            ),
-
-          "Difficulty":
-            normalizeDifficulty(
-              question.difficulty
-            ),
-
-          "Explanation":
-            clean(
-              question.explanation
-            ),
-
-          "Status":
-            "Draft",
-
-          "Publication Status":
-            "Draft",
-
-          "Question Type":
-            normalizeQuestionType(
-              question.questionType
-            ),
-
-          "Programme":
-            programme,
-
-          "Marks":
-            Number(
-              question.marks ||
-              marks ||
-              1
-            ),
-
-          "Source":
-            clean(
-              question.source ||
-              source
-            ),
-
-          "Year":
-            Number(
-              question.year ||
-              year
-            ),
-
-          "Exam Type":
-            examTypes
-
-        };
-
-
-        // ------------------------------------------------------
-        // LINK SUBJECT
-        // ------------------------------------------------------
-
-        if (subjectId) {
-
-          fields["Subject"] =
-            [subjectId];
-
-        }
-
-
-        // ------------------------------------------------------
-        // LINK CLASS
-        // ------------------------------------------------------
-
-        if (classId) {
-
-          fields["Class"] =
-            [classId];
-
-        }
-
-
-        // ------------------------------------------------------
-        // LINK CREATOR
-        // ------------------------------------------------------
-
-        if (requestedBy) {
-
-          fields["Created By"] =
-            [requestedBy];
-
-        }
-
-
-        return fields;
-
-      }
-
-    );
-
-
-  // ==========================================================
-  // SAVE QUESTIONS
-  // ==========================================================
-
-  const createdQuestions =
-    await createManyRecords(
-
-      config,
-
-      TABLES.QUESTIONS,
-
-      airtableRecords
-
-    );
-
-
-  // ==========================================================
-  // LOG ONE AI JOB
-  // ==========================================================
-
-  await logAIJob(
-
-    config,
-
-    {
-
-      requestedBy,
-
-      contentType:
-        "Question",
-
-      subjectId,
-
-      topicId:
-        null,
-
-      classId,
-
-      prompt:
-        teacherPrompt,
-
-      aiOutput:
-        JSON.stringify(
-          generatedQuestions
-        )
-
-    }
-
-  );
-
-
-  // ==========================================================
-  // RETURN
-  // ==========================================================
-
-  return {
-
-    message:
-      `${generatedQuestions.length} AI questions generated successfully.`,
-
-    count:
-      generatedQuestions.length,
-
-    questions:
-
-      generatedQuestions.map(
-
-        (question, index) => ({
-
-          id:
-            createdQuestions[
-              index
-            ]?.id ||
-            null,
-
-          questionId:
-            airtableRecords[
-              index
-            ]["Question ID"],
-
-          ...question,
-
-          status:
-            "Draft",
-
-          publicationStatus:
-            "Draft"
-
-        })
-
-      )
-
-  };
-
-}
+  console.log("Aibinu Flexiprep NoteBank Visual Learning Engine v2 loaded.");
+})();
+'''
+
+backend = Path("/mnt/data/ai-content.js").read_text(encoding="utf-8")
+
+Path("/mnt/data/academic-note-visuals-v2.js").write_text(frontend, encoding="utf-8")
+Path("/mnt/data/ai-content-enhanced.js").write_text(backend, encoding="utf-8")
+
+# Installation guide
+guide = """AIBINU FLEXIPREP — NoteBank Visual Upgrade v2
+
+FILES
+1. ai-content-enhanced.js
+   Replace: api/ai-content.js
+2. academic-note-visuals-v2.js
+   Add to the website as: academic-note-visuals.js
+   Place immediately before </body> in academic.html.
+
+IMPORTANT
+- Do not store temporary chatgpt.com/backend-api/estuary/content URLs.
+- The visual engine renders equations, diagrams, graphs and simulations locally.
+- The frontend hooks the existing /api/ai-content response, so it does not depend
+  on window.currentAIResult and does not replace generateNoteDraft().
+- Existing Academic Management tabs and NoteBank workflow are preserved.
+
+SIMULATIONS INCLUDED
+- projectile_motion
+- ohms_law
+- hookes_law
+- uniform_acceleration
+- simple_pendulum
+- series_parallel_circuit
+
+AFTER INSTALLATION
+1. Generate a new Physics note such as "Projectile Motion".
+2. Confirm the AI response shows "Visual Learning Components".
+3. Test the sliders and simulation canvas.
+4. Confirm the NoteBank record remains "AI Draft".
+5. Teacher can then edit and submit for approval.
+
+NOTE
+The backend stores structured visual specifications. The Images attachment field is
+not populated with temporary AI URLs. Permanent image assets should be uploaded
+through a trusted storage/teacher asset workflow.
+"""
+Path("/mnt/data/NoteBank-Visual-Upgrade-v2-README.txt").write_text(guide, encoding="utf-8")
+
+print("Created:")
+print("/mnt/data/ai-content-enhanced.js")
+print("/mnt/data/academic-note-visuals-v2.js")
+print("/mnt/data/NoteBank-Visual-Upgrade-v2-README.txt")
