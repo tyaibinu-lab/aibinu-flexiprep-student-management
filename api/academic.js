@@ -189,10 +189,11 @@ function mapTeacher(record) {
     type: "Teacher",
 
     name: fieldValue(
-      f["Teacher Name"] ??
-      f["Name"] ??
-      f["Teacher"]
-    ),
+  f["Full Name"] ??
+  f["Teacher Name"] ??
+  f["Name"] ??
+  f["Teacher"]
+),
 
     code: fieldValue(
       f["Teacher ID"] ??
@@ -443,11 +444,56 @@ export default async function handler(req, res) {
         )
       ]);
 
-      const records = [
+      const programmeRecords = [
+  {
+    id: "programme-waec",
+    recordId: "programme-waec",
+    type: "Programme",
+    name: "WAEC",
+    code: "WAEC",
+    programme: "WAEC",
+    status: "Active"
+  },
+  {
+    id: "programme-neco",
+    recordId: "programme-neco",
+    type: "Programme",
+    name: "NECO",
+    code: "NECO",
+    programme: "NECO",
+    status: "Active"
+  },
+  {
+    id: "programme-utme",
+    recordId: "programme-utme",
+    type: "Programme",
+    name: "UTME",
+    code: "UTME",
+    programme: "UTME",
+    status: "Active"
+  }
+];
 
-        ...academicRecords.map(
-          mapAcademic
-        ),
+const records = [
+
+  ...programmeRecords,
+
+  ...academicRecords.map(
+    mapAcademic
+  ),
+
+  ...classRecords.map(
+    mapClass
+  ),
+
+  ...subjectRecords.map(
+    mapSubject
+  ),
+
+  ...teacherRecords.map(
+    mapTeacher
+  )
+];
 
         /*
           Classes are SHARED academic levels.
