@@ -1397,6 +1397,7 @@ if (req.method === "GET" && !noteId) {
         "Common Misconceptions",
 
         "Diagrams",
+        "Visual Components",
 
         "Teacher Prompt",
 
