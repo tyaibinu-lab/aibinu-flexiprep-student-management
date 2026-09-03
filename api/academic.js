@@ -3,7 +3,7 @@
 // Academic Management API + NoteBank Dashboard Statistics
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "app285TkNT13HPdqi";
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_PAT || process.env.AIRTABLE_TOKEN;
 
 const TABLES = {
   academic: "tbljnjBdJrYr1WXGY",
