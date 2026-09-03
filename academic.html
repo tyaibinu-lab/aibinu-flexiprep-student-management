@@ -4,6 +4,7 @@
 /* =========================================================
    AIBINU FLEXIPREP
    ACADEMIC MANAGEMENT FRONTEND
+   SAFE DOM INITIALISATION VERSION
    ========================================================= */
 
 let records = [];
@@ -32,44 +33,69 @@ const esc = s =>
 
 
 async function safeJson(r) {
-  const type = r.headers.get("content-type") || "";
-  const text = await r.text();
 
-  if (type.toLowerCase().includes("application/json")) {
+  const type =
+    r.headers.get("content-type") || "";
+
+  const text =
+    await r.text();
+
+  if (
+    type
+      .toLowerCase()
+      .includes("application/json")
+  ) {
+
     try {
-      return text ? JSON.parse(text) : {};
+
+      return text
+        ? JSON.parse(text)
+        : {};
+
     } catch (e) {
-      throw new Error("Server returned invalid JSON.");
+
+      throw new Error(
+        "Server returned invalid JSON."
+      );
     }
   }
 
   if (!text) {
+
     throw new Error(
       `Server returned an empty response (${r.status}).`
     );
   }
 
-  throw new Error(text.slice(0, 1200));
+  throw new Error(
+    text.slice(0, 1200)
+  );
 }
 
 
 function errMsg(d, fallback) {
+
   return typeof d?.error === "string"
     ? d.error
-    : d?.error?.message || d?.message || fallback;
+    : d?.error?.message ||
+      d?.message ||
+      fallback;
 }
 
 
 function show(message, ok) {
+
   const e = $("msg");
 
   if (!e) return;
 
-  e.className = message
-    ? "msg " + (ok ? "ok" : "err")
-    : "msg";
+  e.className =
+    message
+      ? "msg " + (ok ? "ok" : "err")
+      : "msg";
 
-  e.textContent = message || "";
+  e.textContent =
+    message || "";
 }
 
 
@@ -78,15 +104,16 @@ function show(message, ok) {
    ========================================================= */
 
 function cleanRecords(data) {
+
   return (Array.isArray(data) ? data : [])
     .filter(r => {
-      if (!r || !r.type) return false;
 
-      /*
-       * Assignments need Class + Subject + Teacher.
-       * Other records need a name.
-       */
+      if (!r || !r.type) {
+        return false;
+      }
+
       if (r.type === "Assignment") {
+
         return Boolean(
           r.className &&
           r.subject &&
@@ -94,13 +121,17 @@ function cleanRecords(data) {
         );
       }
 
-      return String(r.name || "").trim();
+      return String(
+        r.name || ""
+      ).trim();
     });
 }
 
 
 function displayName(r) {
+
   if (r.type === "Assignment") {
+
     return [
       r.className,
       r.subject,
@@ -119,7 +150,9 @@ function displayName(r) {
    ========================================================= */
 
 function unique(type) {
-  const seen = new Set();
+
+  const seen =
+    new Set();
 
   return records
     .filter(r =>
@@ -128,15 +161,25 @@ function unique(type) {
       String(r.name || "").trim()
     )
     .filter(r => {
-      const key = r.name.trim().toLowerCase();
 
-      if (seen.has(key)) return false;
+      const key =
+        String(r.name)
+          .trim()
+          .toLowerCase();
+
+      if (seen.has(key)) {
+        return false;
+      }
 
       seen.add(key);
+
       return true;
     })
     .sort((a, b) =>
-      String(a.name).localeCompare(String(b.name))
+      String(a.name)
+        .localeCompare(
+          String(b.name)
+        )
     );
 }
 
@@ -146,16 +189,20 @@ function unique(type) {
    ========================================================= */
 
 function fill(id, type, placeholder) {
-  const e = $(id);
+
+  const e =
+    $(id);
 
   if (!e) return;
 
-  const list = unique(type);
+  const list =
+    unique(type);
 
   e.innerHTML =
     "<option value=''>" +
     placeholder +
     "</option>" +
+
     list
       .map(r =>
         `<option value="${esc(r.name)}">${esc(r.name)}</option>`
@@ -165,10 +212,7 @@ function fill(id, type, placeholder) {
 
 
 function populate() {
-  /*
-   * Programme is virtual and supplied by the backend.
-   * Classes, Subjects and Teachers come from Airtable.
-   */
+
   fill(
     "programme",
     "Programme",
@@ -200,15 +244,25 @@ function populate() {
    ========================================================= */
 
 async function loadNoteBankStats() {
+
   try {
-    const r = await fetch(
-      "/api/academic?stats=1",
-      { cache: "no-store" }
-    );
 
-    const d = await safeJson(r);
+    const r =
+      await fetch(
+        "/api/academic?stats=1",
+        {
+          cache: "no-store"
+        }
+      );
 
-    if (!r.ok || d.success !== true) {
+    const d =
+      await safeJson(r);
+
+    if (
+      !r.ok ||
+      d.success !== true
+    ) {
+
       throw new Error(
         errMsg(
           d,
@@ -217,23 +271,50 @@ async function loadNoteBankStats() {
       );
     }
 
-    $("nbDraftNotes").textContent =
-      Number(
-        d.draftContent ??
-        d.draftNotes ??
-        0
-      );
+    const draft =
+      $("nbDraftNotes");
 
-    $("nbPending").textContent =
-      Number(d.pendingReview ?? 0);
+    const pending =
+      $("nbPending");
 
-    $("nbPublished").textContent =
-      Number(d.published ?? 0);
+    const published =
+      $("nbPublished");
 
-    $("nbAIJobs").textContent =
-      Number(d.aiJobs ?? 0);
+    const jobs =
+      $("nbAIJobs");
+
+    if (draft) {
+      draft.textContent =
+        Number(
+          d.draftContent ??
+          d.draftNotes ??
+          0
+        );
+    }
+
+    if (pending) {
+      pending.textContent =
+        Number(
+          d.pendingReview ?? 0
+        );
+    }
+
+    if (published) {
+      published.textContent =
+        Number(
+          d.published ?? 0
+        );
+    }
+
+    if (jobs) {
+      jobs.textContent =
+        Number(
+          d.aiJobs ?? 0
+        );
+    }
 
   } catch (e) {
+
     console.error(
       "NoteBank statistics error:",
       e
@@ -247,15 +328,22 @@ async function loadNoteBankStats() {
    ========================================================= */
 
 async function loadData() {
-  try {
-    const r = await fetch(
-      "/api/academic",
-      { cache: "no-store" }
-    );
 
-    const d = await safeJson(r);
+  try {
+
+    const r =
+      await fetch(
+        "/api/academic",
+        {
+          cache: "no-store"
+        }
+      );
+
+    const d =
+      await safeJson(r);
 
     if (!r.ok) {
+
       throw new Error(
         errMsg(
           d,
@@ -264,19 +352,28 @@ async function loadData() {
       );
     }
 
-    records = cleanRecords(
-      d.records || []
-    );
+    records =
+      cleanRecords(
+        d.records || []
+      );
 
     populate();
+
     render();
 
     await loadNoteBankStats();
 
-    show("", true);
+    show(
+      "",
+      true
+    );
 
   } catch (e) {
-    console.error(e);
+
+    console.error(
+      "Academic data error:",
+      e
+    );
 
     show(
       e.message ||
@@ -292,7 +389,10 @@ async function loadData() {
    ========================================================= */
 
 function matchesSearch(r, q) {
-  if (!q) return true;
+
+  if (!q) {
+    return true;
+  }
 
   return `
     ${r.type || ""}
@@ -323,9 +423,11 @@ function render() {
     "Assignment"
   ].forEach(type => {
 
-    const e = $("count" + type);
+    const e =
+      $("count" + type);
 
     if (e) {
+
       e.textContent =
         records.filter(
           r => r.type === type
@@ -334,19 +436,22 @@ function render() {
   });
 
 
-  /*
-   * When NoteBank is selected,
-   * Academic records are hidden.
-   */
-  if (currentType === "NoteBank") {
+  if (
+    currentType === "NoteBank"
+  ) {
     return;
   }
 
 
+  const search =
+    $("search");
+
   const q =
-    $("search").value
-      .toLowerCase()
-      .trim();
+    search
+      ? search.value
+          .toLowerCase()
+          .trim()
+      : "";
 
 
   const data =
@@ -363,137 +468,199 @@ function render() {
      DESKTOP TABLE
      ------------------------- */
 
-  $("rows").innerHTML =
-    data.map(r => {
+  const rows =
+    $("rows");
 
-      const id =
-        String(r.airtableId || "");
+  if (rows) {
 
-      return `
+    rows.innerHTML =
+      data.map(r => {
+
+        const id =
+          String(
+            r.airtableId || ""
+          );
+
+        return `
+          <tr>
+
+            <td>
+              ${esc(r.type)}
+            </td>
+
+            <td>
+              <b>
+                ${esc(displayName(r))}
+              </b>
+            </td>
+
+            <td>
+              ${esc(r.code)}
+            </td>
+
+            <td>
+              ${esc(r.programme)}
+            </td>
+
+            <td>
+              ${esc(r.className)}
+            </td>
+
+            <td>
+              ${esc(r.subject)}
+            </td>
+
+            <td>
+              ${esc(r.teacher)}
+            </td>
+
+            <td>
+              <span class="badge">
+                ${esc(
+                  r.status ||
+                  "Active"
+                )}
+              </span>
+            </td>
+
+            <td>
+
+              ${
+                r.type === "Programme"
+                  ? ""
+                  : `
+                    <button
+                      type="button"
+                      class="secondary"
+                      onclick="editRecord('${esc(id)}')">
+                      Edit
+                    </button>
+                  `
+              }
+
+            </td>
+
+          </tr>
+        `;
+
+      }).join("")
+
+      ||
+
+      `
         <tr>
-          <td>${esc(r.type)}</td>
-
-          <td>
-            <b>${esc(displayName(r))}</b>
-          </td>
-
-          <td>${esc(r.code)}</td>
-
-          <td>${esc(r.programme)}</td>
-
-          <td>${esc(r.className)}</td>
-
-          <td>${esc(r.subject)}</td>
-
-          <td>${esc(r.teacher)}</td>
-
-          <td>
-            <span class="badge">
-              ${esc(r.status || "Active")}
-            </span>
-          </td>
-
-          <td>
-            ${
-              r.type === "Programme"
-                ? ""
-                : `
-                  <button
-                    type="button"
-                    class="secondary"
-                    onclick="editRecord('${esc(id)}')">
-                    Edit
-                  </button>
-                `
-            }
+          <td colspan="9">
+            No academic records found.
           </td>
         </tr>
       `;
-    }).join("")
-    ||
-    `
-      <tr>
-        <td colspan="9">
-          No academic records found.
-        </td>
-      </tr>
-    `;
+  }
 
 
   /* -------------------------
      MOBILE RECORDS
      ------------------------- */
 
-  $("mobileRecords").innerHTML =
-    data.map(r => {
+  const mobile =
+    $("mobileRecords");
 
-      const id =
-        String(r.airtableId || "");
+  if (mobile) {
 
-      return `
-        <div class="record-card">
+    mobile.innerHTML =
+      data.map(r => {
 
-          <div class="record-title">
-            ${esc(displayName(r))}
-          </div>
+        const id =
+          String(
+            r.airtableId || ""
+          );
 
-          <div class="record-grid">
+        return `
+          <div class="record-card">
 
-            <div class="record-field">
-              <small>Type</small>
-              <div>${esc(r.type)}</div>
+            <div class="record-title">
+              ${esc(
+                displayName(r)
+              )}
             </div>
 
-            <div class="record-field">
-              <small>Code</small>
-              <div>${esc(r.code)}</div>
-            </div>
+            <div class="record-grid">
 
-            <div class="record-field">
-              <small>Programme</small>
-              <div>${esc(r.programme)}</div>
-            </div>
-
-            <div class="record-field">
-              <small>Class</small>
-              <div>${esc(r.className)}</div>
-            </div>
-
-            <div class="record-field">
-              <small>Subject</small>
-              <div>${esc(r.subject)}</div>
-            </div>
-
-            <div class="record-field">
-              <small>Teacher</small>
-              <div>${esc(r.teacher)}</div>
-            </div>
-
-            <div class="record-field">
-              <small>Status</small>
-              <div>${esc(r.status || "Active")}</div>
-            </div>
-
-          </div>
-
-          ${
-            r.type === "Programme"
-              ? ""
-              : `
-                <div class="record-action">
-                  <button
-                    type="button"
-                    class="secondary"
-                    onclick="editRecord('${esc(id)}')">
-                    Edit
-                  </button>
+              <div class="record-field">
+                <small>Type</small>
+                <div>
+                  ${esc(r.type)}
                 </div>
-              `
-          }
+              </div>
 
-        </div>
-      `;
-    }).join("");
+              <div class="record-field">
+                <small>Code</small>
+                <div>
+                  ${esc(r.code)}
+                </div>
+              </div>
+
+              <div class="record-field">
+                <small>Programme</small>
+                <div>
+                  ${esc(r.programme)}
+                </div>
+              </div>
+
+              <div class="record-field">
+                <small>Class</small>
+                <div>
+                  ${esc(r.className)}
+                </div>
+              </div>
+
+              <div class="record-field">
+                <small>Subject</small>
+                <div>
+                  ${esc(r.subject)}
+                </div>
+              </div>
+
+              <div class="record-field">
+                <small>Teacher</small>
+                <div>
+                  ${esc(r.teacher)}
+                </div>
+              </div>
+
+              <div class="record-field">
+                <small>Status</small>
+                <div>
+                  ${esc(
+                    r.status ||
+                    "Active"
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            ${
+              r.type === "Programme"
+                ? ""
+                : `
+                  <div class="record-action">
+
+                    <button
+                      type="button"
+                      class="secondary"
+                      onclick="editRecord('${esc(id)}')">
+                      Edit
+                    </button>
+
+                  </div>
+                `
+            }
+
+          </div>
+        `;
+
+      }).join("");
+  }
 }
 
 
@@ -503,8 +670,15 @@ function render() {
 
 function toggle() {
 
+  const typeEl =
+    $("type");
+
+  if (!typeEl) {
+    return;
+  }
+
   const type =
-    $("type").value;
+    typeEl.value;
 
   const assignment =
     type === "Assignment";
@@ -516,18 +690,32 @@ function toggle() {
     type === "Subject";
 
 
-  /*
-   * Programme is NOT an Airtable CRUD record.
-   * It is a controlled virtual list.
-   */
-  $("nameWrap").style.display =
-    assignment ? "none" : "block";
+  const nameWrap =
+    $("nameWrap");
+
+  const codeWrap =
+    $("codeWrap");
 
 
-  $("codeWrap").style.display =
-    (programme || subject)
-      ? "block"
-      : "none";
+  if (nameWrap) {
+
+    nameWrap.style.display =
+      assignment
+        ? "none"
+        : "block";
+  }
+
+
+  if (codeWrap) {
+
+    codeWrap.style.display =
+      (
+        programme ||
+        subject
+      )
+        ? "block"
+        : "none";
+  }
 
 
   [
@@ -537,33 +725,62 @@ function toggle() {
     "teacherWrap"
   ].forEach(id => {
 
-    $(id).style.display =
-      assignment
-        ? "block"
-        : "none";
+    const e =
+      $(id);
+
+    if (e) {
+
+      e.style.display =
+        assignment
+          ? "block"
+          : "none";
+    }
   });
 
 
-  $("name").required =
-    !assignment;
+  const name =
+    $("name");
+
+  const className =
+    $("className");
+
+  const subjectEl =
+    $("subject");
+
+  const teacher =
+    $("teacher");
+
+  if (name) {
+    name.required =
+      !assignment;
+  }
+
+  if (className) {
+    className.required =
+      assignment;
+  }
+
+  if (subjectEl) {
+    subjectEl.required =
+      assignment;
+  }
+
+  if (teacher) {
+    teacher.required =
+      assignment;
+  }
 
 
-  $("className").required =
-    assignment;
+  const label =
+    $("nameLabel");
 
+  if (label) {
 
-  $("subject").required =
-    assignment;
-
-
-  $("teacher").required =
-    assignment;
-
-
-  $("nameLabel").textContent =
-    programme
-      ? "Programme"
-      : type;
+    label.textContent =
+      programme
+        ? "Programme"
+        : type;
+  }
 }
 
 
@@ -573,79 +790,132 @@ function toggle() {
 
 function openForm(r = null) {
 
-  editing = r;
+  editing =
+    r;
 
-  $("formTitle").textContent =
-    r
-      ? "Edit Academic Record"
-      : "Add Academic Record";
+  const title =
+    $("formTitle");
+
+  if (title) {
+
+    title.textContent =
+      r
+        ? "Edit Academic Record"
+        : "Add Academic Record";
+  }
 
 
-  $("academicForm").reset();
+  const form =
+    $("academicForm");
 
-  $("formMsg").textContent = "";
+  if (form) {
+    form.reset();
+  }
 
-  $("formMsg").className = "";
+
+  const formMsg =
+    $("formMsg");
+
+  if (formMsg) {
+
+    formMsg.textContent =
+      "";
+
+    formMsg.className =
+      "";
+  }
 
 
   if (r) {
 
-    $("type").value =
-      r.type;
+    if ($("type")) {
+      $("type").value =
+        r.type;
+    }
 
-    $("name").value =
-      r.name || "";
+    if ($("name")) {
+      $("name").value =
+        r.name || "";
+    }
 
-    $("code").value =
-      r.code || "";
+    if ($("code")) {
+      $("code").value =
+        r.code || "";
+    }
 
-    $("programme").value =
-      r.programme || "";
+    if ($("programme")) {
+      $("programme").value =
+        r.programme || "";
+    }
 
-    $("className").value =
-      r.className || "";
+    if ($("className")) {
+      $("className").value =
+        r.className || "";
+    }
 
-    $("subject").value =
-      r.subject || "";
+    if ($("subject")) {
+      $("subject").value =
+        r.subject || "";
+    }
 
-    $("teacher").value =
-      r.teacher || "";
+    if ($("teacher")) {
+      $("teacher").value =
+        r.teacher || "";
+    }
 
-    $("status").value =
-      r.status || "Active";
+    if ($("status")) {
+      $("status").value =
+        r.status || "Active";
+    }
 
-    $("notes").value =
-      r.notes || "";
+    if ($("notes")) {
+      $("notes").value =
+        r.notes || "";
+    }
 
   } else {
 
     /*
-     * IMPORTANT:
-     * New records should NOT default to Programme.
-     * WAEC / NECO / UTME are controlled virtual values.
-     *
-     * Default to Class because that is the most common
-     * academic-management record being created.
+     * Programme is virtual.
+     * Default new records to Class.
      */
-    $("type").value = "Class";
+
+    if ($("type")) {
+      $("type").value =
+        "Class";
+    }
   }
 
 
   toggle();
 
-  $("modal")
-    .classList
-    .add("show");
+
+  const modal =
+    $("modal");
+
+  if (modal) {
+
+    modal.classList.add(
+      "show"
+    );
+  }
 }
 
 
 function closeForm() {
 
-  $("modal")
-    .classList
-    .remove("show");
+  const modal =
+    $("modal");
 
-  editing = null;
+  if (modal) {
+
+    modal.classList.remove(
+      "show"
+    );
+  }
+
+  editing =
+    null;
 }
 
 
@@ -653,17 +923,18 @@ function editRecord(id) {
 
   const r =
     records.find(
-      x => x.airtableId === id
+      x =>
+        x.airtableId === id
     );
 
-  if (!r) return;
+  if (!r) {
+    return;
+  }
 
 
-  /*
-   * Virtual Programme records cannot
-   * be edited through Airtable CRUD.
-   */
-  if (r.type === "Programme") {
+  if (
+    r.type === "Programme"
+  ) {
 
     show(
       "Programmes are controlled values: WAEC, NECO and UTME.",
@@ -679,96 +950,58 @@ function editRecord(id) {
 
 
 /* =========================================================
-   ACADEMIC TABS
-   ========================================================= */
-
-$("tabs").addEventListener(
-  "click",
-  e => {
-
-    const b =
-      e.target.closest(
-        "[data-type]"
-      );
-
-    if (!b) return;
-
-
-    currentType =
-      b.dataset.type;
-
-
-    document
-      .querySelectorAll(
-        "#tabs [data-type]"
-      )
-      .forEach(x =>
-        x.classList.remove("active")
-      );
-
-
-    b.classList.add("active");
-
-
-    const nb =
-      currentType === "NoteBank";
-
-
-    $("academicRecords")
-      .style.display =
-        nb ? "none" : "block";
-
-
-    $("noteBank")
-      .classList
-      .toggle("active", nb);
-
-
-    if (nb) {
-      loadNoteBankStats();
-    } else {
-      render();
-    }
-  }
-);
-
-
-/* =========================================================
    AI TOOL TABS
    ========================================================= */
 
 function showAITool(t) {
 
-  $("noteCreator")
-    .classList
-    .toggle(
+  const noteCreator =
+    $("noteCreator");
+
+  const questionCreator =
+    $("questionCreator");
+
+  const noteTab =
+    $("noteCreatorTab");
+
+  const questionTab =
+    $("questionCreatorTab");
+
+
+  if (noteCreator) {
+
+    noteCreator.classList.toggle(
       "active",
       t === "note"
     );
+  }
 
 
-  $("questionCreator")
-    .classList
-    .toggle(
+  if (questionCreator) {
+
+    questionCreator.classList.toggle(
       "active",
       t === "question"
     );
+  }
 
 
-  $("noteCreatorTab")
-    .classList
-    .toggle(
+  if (noteTab) {
+
+    noteTab.classList.toggle(
       "active",
       t === "note"
     );
+  }
 
 
-  $("questionCreatorTab")
-    .classList
-    .toggle(
+  if (questionTab) {
+
+    questionTab.classList.toggle(
       "active",
       t === "question"
     );
+  }
 }
 
 
@@ -796,28 +1029,28 @@ function buildNotePrompt() {
 
   const subject =
     $("aiNoteSubject")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const cls =
     $("aiNoteClass")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const programme =
     $("aiNoteProgramme")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const topic =
     $("aiNoteTopic")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const teacherPrompt =
     $("aiNotePrompt")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const e =
     exams("noteExam");
@@ -829,6 +1062,7 @@ function buildNotePrompt() {
     !topic ||
     !teacherPrompt
   ) {
+
     throw new Error(
       "Select Subject, Class, Topic and enter the teacher prompt."
     );
@@ -838,16 +1072,22 @@ function buildNotePrompt() {
   const examinationFocus =
     e.length
       ? e
-      : ["WAEC", "NECO", "UTME"];
+      : [
+          "WAEC",
+          "NECO",
+          "UTME"
+        ];
 
 
   return {
 
-    contentType: "Note",
+    contentType:
+      "Note",
 
     subject,
 
-    className: cls,
+    className:
+      cls,
 
     programme,
 
@@ -884,23 +1124,23 @@ function buildQuestionPrompt() {
 
   const subject =
     $("aiQuestionSubject")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const cls =
     $("aiQuestionClass")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const programme =
     $("aiQuestionProgramme")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const topic =
     $("aiQuestionTopic")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const count =
     Math.max(
@@ -909,27 +1149,27 @@ function buildQuestionPrompt() {
         100,
         Number(
           $("aiQuestionCount")
-            .value || 1
+            ?.value || 1
         )
       )
     );
 
   const difficulty =
     $("aiQuestionDifficulty")
-      .value;
+      ?.value || "";
 
   const bloomLevel =
     $("aiQuestionBloom")
-      .value;
+      ?.value || "";
 
   const questionType =
     $("aiQuestionType")
-      .value;
+      ?.value || "";
 
   const teacherPrompt =
     $("aiQuestionPrompt")
-      .value
-      .trim();
+      ?.value
+      .trim() || "";
 
   const e =
     exams("questionExam");
@@ -941,6 +1181,7 @@ function buildQuestionPrompt() {
     !topic ||
     !teacherPrompt
   ) {
+
     throw new Error(
       "Select Subject, Class, Topic and enter the teacher prompt."
     );
@@ -950,16 +1191,22 @@ function buildQuestionPrompt() {
   const examinationFocus =
     e.length
       ? e
-      : ["WAEC", "NECO", "UTME"];
+      : [
+          "WAEC",
+          "NECO",
+          "UTME"
+        ];
 
 
   return {
 
-    contentType: "Question",
+    contentType:
+      "Question",
 
     subject,
 
-    className: cls,
+    className:
+      cls,
 
     programme,
 
@@ -1005,14 +1252,21 @@ Do not approve or publish.`
 function noteKey(n) {
 
   return (
+
     n?.["Note ID"] ||
+
     n?.noteId ||
+
     n?.airtableId ||
+
     n?.id ||
 
     currentAIResult?.raw?.note?.["Note ID"] ||
+
     currentAIResult?.raw?.note?.noteId ||
+
     currentAIResult?.raw?.note?.airtableId ||
+
     currentAIResult?.raw?.note?.id ||
 
     null
@@ -1112,7 +1366,15 @@ function renderNote(n) {
     noteNorm(n);
 
 
-  $("notePromptPreview").textContent =
+  const preview =
+    $("notePromptPreview");
+
+  if (!preview) {
+    return;
+  }
+
+
+  preview.textContent =
 `📚 AIBINU FLEXIPREP NOTEBANK
 
 STATUS: ${n.status || "AI Draft"}
@@ -1170,18 +1432,24 @@ ${x.diagrams}`;
 
 function loading(id, text) {
 
-  const b = $(id);
+  const b =
+    $(id);
 
-  if (!b) return null;
+  if (!b) {
+    return null;
+  }
 
-  b.disabled = true;
+  b.disabled =
+    true;
 
   if (!b.dataset.old) {
+
     b.dataset.old =
       b.textContent;
   }
 
-  b.textContent = text;
+  b.textContent =
+    text;
 
   return b;
 }
@@ -1189,12 +1457,16 @@ function loading(id, text) {
 
 function restore(b, text) {
 
-  if (!b) return;
+  if (!b) {
+    return;
+  }
 
-  b.disabled = false;
+  b.disabled =
+    false;
 
   b.textContent =
-    b.dataset.old || text;
+    b.dataset.old ||
+    text;
 
   delete b.dataset.old;
 }
@@ -1209,7 +1481,10 @@ async function generateNoteDraft() {
   let p;
 
   try {
-    p = buildNotePrompt();
+
+    p =
+      buildNotePrompt();
+
   } catch (e) {
 
     show(
@@ -1217,7 +1492,9 @@ async function generateNoteDraft() {
       false
     );
 
-    alert(e.message);
+    alert(
+      e.message
+    );
 
     return;
   }
@@ -1236,6 +1513,16 @@ async function generateNoteDraft() {
   const preview =
     $("notePromptPreview");
 
+  if (!box || !preview) {
+
+    alert(
+      "The NoteBank interface could not be found."
+    );
+
+    return;
+  }
+
+
   const status =
     box.querySelector(
       ".ai-status"
@@ -1249,15 +1536,20 @@ async function generateNoteDraft() {
     );
 
 
-  box.classList.add("show");
+  box.classList.add(
+    "show"
+  );
 
 
   preview.textContent =
     "⏳ Generating your NoteBank draft with AI...";
 
 
-  status.innerHTML =
-    "⏳ Generating AI note draft...";
+  if (status) {
+
+    status.innerHTML =
+      "⏳ Generating AI note draft...";
+  }
 
 
   try {
@@ -1284,6 +1576,7 @@ async function generateNoteDraft() {
 
 
     if (!r.ok) {
+
       throw new Error(
         errMsg(
           d,
@@ -1293,7 +1586,10 @@ async function generateNoteDraft() {
     }
 
 
-    if (d.success !== true) {
+    if (
+      d.success !== true
+    ) {
+
       throw new Error(
         errMsg(
           d,
@@ -1304,6 +1600,7 @@ async function generateNoteDraft() {
 
 
     if (!d.note) {
+
       throw new Error(
         "The AI returned no note."
       );
@@ -1311,17 +1608,28 @@ async function generateNoteDraft() {
 
 
     currentAIResult = {
-      type: "Note",
-      note: d.note,
-      raw: d
+
+      type:
+        "Note",
+
+      note:
+        d.note,
+
+      raw:
+        d
     };
 
 
-    renderNote(d.note);
+    renderNote(
+      d.note
+    );
 
 
-    status.innerHTML =
-      "✅ AI note generated successfully. The content is currently a <b>DRAFT</b> and has not been published.";
+    if (status) {
+
+      status.innerHTML =
+        "✅ AI note generated successfully. The content is currently a <b>DRAFT</b> and has not been published.";
+    }
 
 
     show(
@@ -1338,17 +1646,23 @@ async function generateNoteDraft() {
 
     console.error(e);
 
-    status.innerHTML =
-      "❌ Note generation failed. The draft was not created.";
+    if (status) {
+
+      status.innerHTML =
+        "❌ Note generation failed. The draft was not created.";
+    }
+
 
     preview.textContent =
       "❌ NOTE GENERATION FAILED\n\n" +
       e.message;
 
+
     show(
       e.message,
       false
     );
+
 
     alert(
       "Note generation failed:\n\n" +
@@ -1374,6 +1688,7 @@ async function generateQuestionDraft() {
   let p;
 
   try {
+
     p =
       buildQuestionPrompt();
 
@@ -1384,7 +1699,9 @@ async function generateQuestionDraft() {
       false
     );
 
-    alert(e.message);
+    alert(
+      e.message
+    );
 
     return;
   }
@@ -1403,6 +1720,16 @@ async function generateQuestionDraft() {
   const preview =
     $("questionPromptPreview");
 
+  if (!box || !preview) {
+
+    alert(
+      "The Question Generator interface could not be found."
+    );
+
+    return;
+  }
+
+
   const status =
     box.querySelector(
       ".ai-status"
@@ -1416,7 +1743,9 @@ async function generateQuestionDraft() {
     );
 
 
-  box.classList.add("show");
+  box.classList.add(
+    "show"
+  );
 
 
   preview.textContent =
@@ -1447,6 +1776,7 @@ async function generateQuestionDraft() {
 
 
     if (!r.ok) {
+
       throw new Error(
         errMsg(
           d,
@@ -1456,7 +1786,10 @@ async function generateQuestionDraft() {
     }
 
 
-    if (d.success !== true) {
+    if (
+      d.success !== true
+    ) {
+
       throw new Error(
         errMsg(
           d,
@@ -1467,12 +1800,15 @@ async function generateQuestionDraft() {
 
 
     const qs =
-      Array.isArray(d.questions)
+      Array.isArray(
+        d.questions
+      )
         ? d.questions
         : [];
 
 
     if (!qs.length) {
+
       throw new Error(
         "The AI returned no questions."
       );
@@ -1480,15 +1816,22 @@ async function generateQuestionDraft() {
 
 
     currentAIResult = {
-      type: "Question",
-      questions: qs,
-      raw: d
+
+      type:
+        "Question",
+
+      questions:
+        qs,
+
+      raw:
+        d
     };
 
 
     preview.textContent =
-      qs.map(
-        (q, i) =>
+      qs
+        .map(
+          (q, i) =>
 `QUESTION ${i + 1}
 
 ${q.question || ""}
@@ -1509,11 +1852,15 @@ ${q.explanation || ""}
 
 ${"─".repeat(50)}
 `
-      ).join("");
+        )
+        .join("");
 
 
-    status.innerHTML =
-      `✅ ${qs.length} question${qs.length === 1 ? "" : "s"} generated successfully as <b>DRAFT</b>.`;
+    if (status) {
+
+      status.innerHTML =
+        `✅ ${qs.length} question${qs.length === 1 ? "" : "s"} generated successfully as <b>DRAFT</b>.`;
+    }
 
 
     show(
@@ -1530,17 +1877,23 @@ ${"─".repeat(50)}
 
     console.error(e);
 
-    status.innerHTML =
-      "❌ Question generation failed.";
+    if (status) {
+
+      status.innerHTML =
+        "❌ Question generation failed.";
+    }
+
 
     preview.textContent =
       "❌ Generation failed:\n\n" +
       e.message;
 
+
     show(
       e.message,
       false
     );
+
 
     alert(
       "Question generation failed:\n\n" +
@@ -1576,8 +1929,12 @@ function editQuestionDraft() {
   }
 
 
-  $("aiQuestionPrompt")
-    .focus();
+  const prompt =
+    $("aiQuestionPrompt");
+
+  if (prompt) {
+    prompt.focus();
+  }
 
 
   show(
@@ -1624,7 +1981,9 @@ function submitQuestionsForApproval() {
 
 function editNoteDraft() {
 
-  if (!currentAIResult?.note) {
+  if (
+    !currentAIResult?.note
+  ) {
 
     show(
       "Generate a note draft first.",
@@ -1644,6 +2003,10 @@ function editNoteDraft() {
   const box =
     $("noteAIResult");
 
+  if (!box) {
+    return;
+  }
+
 
   let ed =
     $("noteDraftEditor");
@@ -1662,7 +2025,9 @@ function editNoteDraft() {
     ed.style.marginTop =
       "20px";
 
-    box.appendChild(ed);
+    box.appendChild(
+      ed
+    );
   }
 
 
@@ -1676,7 +2041,9 @@ function editNoteDraft() {
       `
       <div class="full">
 
-        <label>${label}</label>
+        <label>
+          ${label}
+        </label>
 
         <textarea
           id="${id}"
@@ -1697,7 +2064,9 @@ function editNoteDraft() {
   "
 >
 
-<h2>✏️ Edit Note Draft</h2>
+<h2>
+  ✏️ Edit Note Draft
+</h2>
 
 <p class="muted">
 Review and correct the AI-generated note before submitting it for approval.
@@ -1706,10 +2075,15 @@ Review and correct the AI-generated note before submitting it for approval.
 <div class="grid">
 
 <div class="full">
-<label>Title</label>
+
+<label>
+  Title
+</label>
+
 <input
   id="editNoteTitle"
   value="${esc(n.title)}">
+
 </div>
 
 ${f(
@@ -1808,21 +2182,27 @@ ${f(
   type="button"
   class="secondary"
   onclick="cancelNoteEdit()">
+
   Cancel
+
 </button>
 
 <button
   type="button"
   class="secondary"
   onclick="saveNoteDraft()">
+
   💾 Save Draft
+
 </button>
 
 <button
   type="button"
   class="primary"
   onclick="saveAndSubmitNote()">
+
   📤 Submit for Approval
+
 </button>
 
 </div>
@@ -1856,7 +2236,8 @@ function collectEditedNote() {
 
   const v =
     id =>
-      $(id)?.value.trim() || "";
+      $(id)?.value.trim() ||
+      "";
 
 
   return {
@@ -1917,9 +2298,11 @@ function saveBody(id, n) {
 
   return {
 
-    noteId: id,
+    noteId:
+      id,
 
-    action: "save",
+    action:
+      "save",
 
     "Title":
       n.title,
@@ -1975,7 +2358,9 @@ function saveBody(id, n) {
 
 async function saveNoteDraft() {
 
-  if (!currentAIResult?.note) {
+  if (
+    !currentAIResult?.note
+  ) {
 
     show(
       "No note draft is currently available.",
@@ -2055,7 +2440,9 @@ async function saveNoteDraft() {
 
 
     currentAIResult.note = {
+
       ...currentAIResult.note,
+
       ...n
     };
 
@@ -2101,7 +2488,9 @@ async function saveNoteDraft() {
 
 async function saveAndSubmitNote() {
 
-  if (!currentAIResult?.note) {
+  if (
+    !currentAIResult?.note
+  ) {
 
     show(
       "Generate a note draft first.",
@@ -2112,15 +2501,8 @@ async function saveAndSubmitNote() {
   }
 
 
-  /*
-   * FIXED:
-   *
-   * Old broken code:
-   *
-   * const id=...
-   *
-   * Correct:
-   */
+  /* FIXED */
+
   const id =
     noteKey(
       currentAIResult.note
@@ -2210,10 +2592,15 @@ async function saveAndSubmitNote() {
 
           body:
             JSON.stringify({
-              noteId: id,
-              action: "submit"
+
+              noteId:
+                id,
+
+              action:
+                "submit"
             })
-        }
+          }
+        )
       );
 
 
@@ -2248,12 +2635,17 @@ async function saveAndSubmitNote() {
     );
 
 
-    $("noteAIResult")
-      .querySelector(
-        ".ai-status"
-      )
-      .innerHTML =
+    const status =
+      $("noteAIResult")
+        ?.querySelector(
+          ".ai-status"
+        );
+
+    if (status) {
+
+      status.innerHTML =
         "📤 Note successfully submitted for approval. Current status: <b>UNDER REVIEW</b>.";
+    }
 
 
     cancelNoteEdit();
@@ -2290,6 +2682,7 @@ async function saveAndSubmitNote() {
 
 
 function submitNoteForApproval() {
+
   saveAndSubmitNote();
 }
 
@@ -2298,220 +2691,377 @@ function submitNoteForApproval() {
    ACADEMIC FORM SUBMISSION
    ========================================================= */
 
-$("academicForm").addEventListener(
-  "submit",
-  async e => {
+async function handleAcademicSubmit(e) {
 
-    e.preventDefault();
+  e.preventDefault();
 
 
-    const type =
-      $("type").value;
+  const type =
+    $("type")?.value || "";
 
 
-    /*
-     * PROGRAMME IS VIRTUAL
-     *
-     * WAEC / NECO / UTME are controlled
-     * programme values, not Airtable CRUD records.
-     */
-    if (type === "Programme") {
+  /*
+   * PROGRAMMES ARE VIRTUAL
+   */
 
-      $("formMsg").className =
+  if (
+    type === "Programme"
+  ) {
+
+    const fm =
+      $("formMsg");
+
+    if (fm) {
+
+      fm.className =
         "msg err";
 
-      $("formMsg").textContent =
+      fm.textContent =
         "Programmes are controlled values (WAEC, NECO and UTME) and cannot be created or edited here.";
-
-      return;
     }
 
+    return;
+  }
 
-    /*
-     * ASSIGNMENT VALIDATION
-     */
-    if (
-      type === "Assignment" &&
-      (
-        !$("className").value ||
-        !$("subject").value ||
-        !$("teacher").value
-      )
-    ) {
 
-      $("formMsg").className =
+  /*
+   * ASSIGNMENT VALIDATION
+   */
+
+  if (
+    type === "Assignment" &&
+    (
+      !$("className")?.value ||
+      !$("subject")?.value ||
+      !$("teacher")?.value
+    )
+  ) {
+
+    const fm =
+      $("formMsg");
+
+    if (fm) {
+
+      fm.className =
         "msg err";
 
-      $("formMsg").textContent =
+      fm.textContent =
         "Select Class, Subject and Teacher.";
-
-      return;
     }
 
-
-    /*
-     * COMMON BODY
-     */
-    const body = {
-
-      type,
-
-      name:
-        $("name").value.trim(),
-
-      code:
-        $("code").value.trim(),
-
-      /*
-       * Programme belongs to Assignment.
-       *
-       * For Classes, the backend preserves
-       * existing Programme metadata.
-       */
-      programme:
-        type === "Assignment"
-          ? $("programme").value
-          : "",
-
-      className:
-        type === "Assignment"
-          ? $("className").value
-          : "",
-
-      subject:
-        type === "Assignment"
-          ? $("subject").value
-          : "",
-
-      teacher:
-        type === "Assignment"
-          ? $("teacher").value
-          : "",
-
-      status:
-        $("status").value,
-
-      notes:
-        $("notes").value.trim()
-    };
+    return;
+  }
 
 
-    /*
-     * EDIT
-     */
-    if (editing) {
+  /*
+   * BODY
+   */
 
-      body.airtableId =
-        editing.airtableId;
-    }
+  const body = {
 
+    type,
 
-    try {
+    name:
+      $("name")?.value.trim() ||
+      "",
 
-      const r =
-        await fetch(
-          "/api/academic",
-          {
-            method:
-              editing
-                ? "PUT"
-                : "POST",
+    code:
+      $("code")?.value.trim() ||
+      "",
 
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
+    programme:
+      type === "Assignment"
+        ? $("programme")?.value || ""
+        : "",
 
-            body:
-              JSON.stringify(body)
-          }
-        );
+    className:
+      type === "Assignment"
+        ? $("className")?.value || ""
+        : "",
 
+    subject:
+      type === "Assignment"
+        ? $("subject")?.value || ""
+        : "",
 
-      const d =
-        await safeJson(r);
+    teacher:
+      type === "Assignment"
+        ? $("teacher")?.value || ""
+        : "",
 
+    status:
+      $("status")?.value ||
+      "Active",
 
-      if (!r.ok) {
-
-        throw new Error(
-          errMsg(
-            d,
-            "Save failed."
-          )
-        );
-      }
-
-
-      closeForm();
+    notes:
+      $("notes")?.value.trim() ||
+      ""
+  };
 
 
-      await loadData();
+  if (editing) {
+
+    body.airtableId =
+      editing.airtableId;
+  }
 
 
-      show(
-        "Academic record saved successfully.",
-        true
+  try {
+
+    const r =
+      await fetch(
+        "/api/academic",
+        {
+          method:
+            editing
+              ? "PUT"
+              : "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(body)
+        }
       );
 
-    } catch (x) {
 
-      console.error(x);
+    const d =
+      await safeJson(r);
 
-      $("formMsg").className =
+
+    if (!r.ok) {
+
+      throw new Error(
+        errMsg(
+          d,
+          "Save failed."
+        )
+      );
+    }
+
+
+    closeForm();
+
+
+    await loadData();
+
+
+    show(
+      "Academic record saved successfully.",
+      true
+    );
+
+  } catch (x) {
+
+    console.error(x);
+
+    const fm =
+      $("formMsg");
+
+    if (fm) {
+
+      fm.className =
         "msg err";
 
-      $("formMsg").textContent =
+      fm.textContent =
         x.message ||
         "Save failed.";
     }
   }
-);
+}
 
 
 /* =========================================================
-   MODAL OUTSIDE CLICK
+   DOM READY
    ========================================================= */
 
-$("modal").addEventListener(
-  "click",
-  e => {
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
 
-    if (
-      e.target === $("modal")
-    ) {
-      closeForm();
+    console.log(
+      "Aibinu Flexiprep Academic Management initialising..."
+    );
+
+
+    /* -------------------------
+       ACADEMIC TABS
+       ------------------------- */
+
+    const tabs =
+      $("tabs");
+
+    if (tabs) {
+
+      tabs.addEventListener(
+        "click",
+        e => {
+
+          const b =
+            e.target.closest(
+              "[data-type]"
+            );
+
+          if (!b) {
+            return;
+          }
+
+
+          currentType =
+            b.dataset.type;
+
+
+          document
+            .querySelectorAll(
+              "#tabs [data-type]"
+            )
+            .forEach(x =>
+              x.classList.remove(
+                "active"
+              )
+            );
+
+
+          b.classList.add(
+            "active"
+          );
+
+
+          const nb =
+            currentType ===
+            "NoteBank";
+
+
+          const academicRecords =
+            $("academicRecords");
+
+          const noteBank =
+            $("noteBank");
+
+
+          if (academicRecords) {
+
+            academicRecords.style.display =
+              nb
+                ? "none"
+                : "block";
+          }
+
+
+          if (noteBank) {
+
+            noteBank.classList.toggle(
+              "active",
+              nb
+            );
+          }
+
+
+          if (nb) {
+
+            loadNoteBankStats();
+
+          } else {
+
+            render();
+          }
+        }
+      );
     }
+
+
+    /* -------------------------
+       ACADEMIC FORM
+       ------------------------- */
+
+    const academicForm =
+      $("academicForm");
+
+    if (academicForm) {
+
+      academicForm.addEventListener(
+        "submit",
+        handleAcademicSubmit
+      );
+    }
+
+
+    /* -------------------------
+       MODAL
+       ------------------------- */
+
+    const modal =
+      $("modal");
+
+    if (modal) {
+
+      modal.addEventListener(
+        "click",
+        e => {
+
+          if (
+            e.target === modal
+          ) {
+
+            closeForm();
+          }
+        }
+      );
+    }
+
+
+    /* -------------------------
+       FORM TYPE
+       ------------------------- */
+
+    const type =
+      $("type");
+
+    if (type) {
+
+      type.addEventListener(
+        "change",
+        toggle
+      );
+    }
+
+
+    /* -------------------------
+       SEARCH
+       ------------------------- */
+
+    const search =
+      $("search");
+
+    if (search) {
+
+      search.addEventListener(
+        "input",
+        render
+      );
+    }
+
+
+    /* -------------------------
+       INITIAL FORM STATE
+       ------------------------- */
+
+    if ($("type")) {
+
+      toggle();
+    }
+
+
+    /* -------------------------
+       LOAD DATA
+       ------------------------- */
+
+    loadData();
+
   }
 );
-
-
-/* =========================================================
-   FORM TYPE CHANGE
-   ========================================================= */
-
-$("type").addEventListener(
-  "change",
-  toggle
-);
-
-
-/* =========================================================
-   SEARCH
-   ========================================================= */
-
-$("search").addEventListener(
-  "input",
-  render
-);
-
-
-/* =========================================================
-   INITIALISE
-   ========================================================= */
-
-toggle();
-
-loadData();
 
 </script>
