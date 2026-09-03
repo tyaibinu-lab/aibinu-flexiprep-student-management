@@ -444,37 +444,7 @@ export default async function handler(req, res) {
         )
       ]);
 
-      const programmeRecords = [
-  {
-    id: "programme-waec",
-    recordId: "programme-waec",
-    type: "Programme",
-    name: "WAEC",
-    code: "WAEC",
-    programme: "WAEC",
-    status: "Active"
-  },
-  {
-    id: "programme-neco",
-    recordId: "programme-neco",
-    type: "Programme",
-    name: "NECO",
-    code: "NECO",
-    programme: "NECO",
-    status: "Active"
-  },
-  {
-    id: "programme-utme",
-    recordId: "programme-utme",
-    type: "Programme",
-    name: "UTME",
-    code: "UTME",
-    programme: "UTME",
-    status: "Active"
-  }
-];
-
-const programmeRecords = [
+     const programmeRecords = [
   {
     id: "programme-waec",
     recordId: "programme-waec",
@@ -527,13 +497,7 @@ const records = [
 return res.status(200).json({
   success: true,
   records
-});
-
-      return res.status(200).json({
-        success: true,
-        records
-      });
-    }
+});    }
 
     /* =====================================================
        CREATE
