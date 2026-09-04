@@ -1529,39 +1529,94 @@ necoFocus
 utmeFocus
 
 
-VISUAL COMPONENTS
+VISUAL COMPONENTS — MANDATORY WHEN REQUESTED:
 
-Add visualComponents where
-pedagogically useful.
+The teacher's prompt is the primary instruction.
 
+If the teacher explicitly requests equations, diagrams, graphs,
+images, interactive diagrams, simulations, tables, comparisons,
+flowcharts or process illustrations, you MUST generate the
+appropriate visualComponents.
 
-EQUATIONS:
+NEVER return an empty visualComponents array when the teacher
+has explicitly requested visual content.
 
-Equations MUST use LaTeX.
+RULES:
 
+1. If important equations or formulae are present, include
+   equation components using LaTeX.
 
-DIAGRAMS:
+2. If a labelled diagram is requested, include at least one
+   diagram component with clear educational labels.
 
-Diagrams must be descriptive
-and label-based.
+3. If a graph is requested, include a graph component with
+   meaningful numeric data where appropriate.
 
+4. If an interactive simulation is requested, include at least
+   one simulation component using ONLY an approved simulation
+   type listed below.
 
-GRAPHS:
+5. If an image would improve understanding, include an image
+   component containing imageQuery and alt metadata only.
 
-Graphs may contain numeric
-[x,y] data.
+6. NEVER invent image URLs.
 
+7. Visual components must be directly relevant to the topic.
 
-IMAGES:
+8. Return visualComponents as a JSON array.
 
-Images may contain imageQuery
-and alt metadata only.
+9. Never put arbitrary HTML, CSS, JavaScript or SVG inside
+   visualComponents.
 
-Never invent image URLs.
+10. Use these structures:
 
-Never provide temporary attachment
-URLs.
+Equation:
+{
+  "type": "equation",
+  "latex": "F = ma",
+  "caption": "Newton's Second Law"
+}
 
+Diagram:
+{
+  "type": "diagram",
+  "title": "Electromagnetic Induction",
+  "description": "A labelled diagram showing a bar magnet moving into a coil connected to a galvanometer.",
+  "labels": [
+    "bar magnet",
+    "coil",
+    "galvanometer",
+    "direction of motion"
+  ]
+}
+
+Graph:
+{
+  "type": "graph",
+  "title": "Velocity-Time Graph",
+  "xLabel": "Time (s)",
+  "yLabel": "Velocity (m/s)",
+  "data": [
+    [0,0],
+    [1,5],
+    [2,10],
+    [3,15]
+  ]
+}
+
+Simulation:
+{
+  "type": "simulation",
+  "simulation": "projectile_motion",
+  "variables": {
+    "velocity": 20,
+    "angle": 45,
+    "gravity": 9.81
+  }
+}
+
+If the teacher does NOT explicitly request a particular visual,
+include visuals only when they genuinely improve understanding.
 
 SIMULATIONS:
 
