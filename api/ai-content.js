@@ -1023,7 +1023,13 @@ const SIMULATIONS =
     "hookes_law",
     "uniform_acceleration",
     "simple_pendulum",
-    "series_parallel_circuit"
+    "series_parallel_circuit",
+    "wave_motion",
+    "lens_formula",
+    "transformer",
+    "density_pressure",
+    "gas_law",
+    "probability"
 
   ]);
 
