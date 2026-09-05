@@ -1797,17 +1797,18 @@ SIMULATIONS:
 Only use these simulation names:
 
 projectile_motion
-
 ohms_law
-
 hookes_law
-
 uniform_acceleration
-
 simple_pendulum
-
 series_parallel_circuit
-
+wave_motion
+lens_formula
+transformer
+density_pressure
+gas_law
+probability
+electromagnetic_induction
 
 Never output:
 
