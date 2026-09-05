@@ -528,6 +528,60 @@
         ${txt(450,220,"organelle")}
       `, "Cell diagram");
     }
+        if (
+      t.includes("magnet") ||
+      t.includes("coil") ||
+      t.includes("solenoid") ||
+      t.includes("induction")
+    ) {
+      return svg(`
+        ${line(70,270,650,270)}
+
+        <rect x="90" y="145" width="70" height="70"
+          fill="currentColor" opacity=".85"/>
+        ${txt(112,190,"N")}
+
+        ${[0,1,2,3,4,5].map(i => `
+          <ellipse
+            cx="${420 + i * 22}"
+            cy="180"
+            rx="20"
+            ry="65"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"/>
+        `).join("")}
+
+        ${line(420,115,420,70)}
+        ${line(420,70,610,70)}
+        ${line(610,70,610,140)}
+
+        ${line(530,245,530,300)}
+        ${line(530,300,610,300)}
+        ${line(610,300,610,220)}
+
+        <circle
+          cx="610"
+          cy="180"
+          r="35"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"/>
+
+        ${txt(600,187,"G")}
+
+        <path
+          d="M170 180 L260 180 M245 168 L262 180 L245 192"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"/>
+
+        ${txt(175,155,"motion")}
+        ${txt(80,230,"bar magnet")}
+        ${txt(460,320,"coil / solenoid")}
+        ${txt(575,235,"galvanometer")}
+      `, "Bar magnet moving into a coil");
+    }
 
     const items = L.slice(0, 12).map((x, i) => `
       <rect
