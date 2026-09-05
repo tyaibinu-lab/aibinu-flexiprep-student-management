@@ -1611,7 +1611,13 @@
       probability: [
         ["Favourable outcomes","favourable",0,100,1],
         ["Total outcomes","total",1,100,1]
-      ]
+      ],
+       
+       electromagnetic_induction: [
+  ["Number of turns (N)", "turns", 1, 200, 1],
+  ["Velocity (v)", "velocity", 0, 10, 0.1],
+  ["Magnetic field (B)", "magneticField", 0, 2, 0.1]
+],
     };
 
 
