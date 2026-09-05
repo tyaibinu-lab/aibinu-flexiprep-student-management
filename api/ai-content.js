@@ -1098,9 +1098,9 @@ function safeVisual(v) {
   }
 
   if (type === "graph") {
-    const graph = clean(v.graph);
-
-    if (!graph) return null;
+    const title = clean(v.title);
+    const xLabel = clean(v.xLabel);
+    const yLabel = clean(v.yLabel);
 
     const data = Array.isArray(v.data)
       ? v.data
@@ -1117,16 +1117,19 @@ function safeVisual(v) {
           ])
       : [];
 
+    if (!title && !xLabel && !yLabel && !data.length) {
+      return null;
+    }
+
     return {
       type: "graph",
-      graph,
-      title: clean(v.title),
-      xLabel: clean(v.xLabel),
-      yLabel: clean(v.yLabel),
+      graph: clean(v.graph) || title,
+      title,
+      xLabel,
+      yLabel,
       data
     };
   }
-
   if (type === "interactive") {
     const parameters = Array.isArray(v.parameters)
       ? v.parameters
