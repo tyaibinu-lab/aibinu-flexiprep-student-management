@@ -1045,32 +1045,203 @@ const SIMULATIONS =
 // ============================================================
 
 function safeVisual(v) {
+  if (!v || typeof v !== "object") return null;
 
-  if (
-    !v ||
-    typeof v !== "object"
-  ) {
+  const type = clean(v.type).toLowerCase();
 
-    return null;
+  if (!VISUAL_TYPES.has(type)) return null;
 
+  if (type === "equation") {
+    const latex = clean(v.latex);
+
+    if (!latex) return null;
+
+    return {
+      type: "equation",
+      latex,
+      caption: clean(v.caption),
+      variables: Array.isArray(v.variables)
+        ? v.variables.slice(0, 20)
+        : []
+    };
   }
 
-  const type =
-    clean(v.type)
-      .toLowerCase();
+  if (type === "diagram") {
+    const diagram = clean(v.diagram);
 
-  if (
-    !VISUAL_TYPES.has(type)
-  ) {
+    if (!diagram) return null;
 
-    return null;
-
+    return {
+      type: "diagram",
+      diagram,
+      title: clean(v.title),
+      labels: Array.isArray(v.labels)
+        ? v.labels.slice(0, 30)
+        : [],
+      description: clean(v.description)
+    };
   }
 
+  if (type === "image") {
+    const imageQuery = clean(v.imageQuery);
+    const alt = clean(v.alt);
 
-  const output = {
-    type
-  };
+    if (!imageQuery && !alt) return null;
+
+    return {
+      type: "image",
+      imageQuery,
+      caption: clean(v.caption),
+      alt,
+      source: clean(v.source),
+      licence: clean(v.licence),
+      attribution: clean(v.attribution),
+      reviewed: Boolean(v.reviewed)
+    };
+  }
+
+  if (type === "graph") {
+    const graph = clean(v.graph);
+
+    if (!graph) return null;
+
+    const data = Array.isArray(v.data)
+      ? v.data
+          .filter(point =>
+            Array.isArray(point) &&
+            point.length >= 2 &&
+            Number.isFinite(Number(point[0])) &&
+            Number.isFinite(Number(point[1]))
+          )
+          .slice(0, 100)
+          .map(point => [
+            Number(point[0]),
+            Number(point[1])
+          ])
+      : [];
+
+    return {
+      type: "graph",
+      graph,
+      title: clean(v.title),
+      xLabel: clean(v.xLabel),
+      yLabel: clean(v.yLabel),
+      data
+    };
+  }
+
+  if (type === "interactive") {
+    const parameters = Array.isArray(v.parameters)
+      ? v.parameters
+          .filter(p =>
+            p &&
+            typeof p === "object" &&
+            clean(p.name)
+          )
+          .slice(0, 20)
+          .map(p => {
+            const min = Number(p.min);
+            const max = Number(p.max);
+            const step = Number(p.step);
+            const value = Number(p.value);
+
+            if (
+              !Number.isFinite(min) ||
+              !Number.isFinite(max) ||
+              min > max
+            ) {
+              return null;
+            }
+
+            return {
+              name: clean(p.name),
+              min,
+              max,
+              step: Number.isFinite(step) && step > 0
+                ? step
+                : 1,
+              value: Number.isFinite(value)
+                ? Math.min(max, Math.max(min, value))
+                : min
+            };
+          })
+          .filter(Boolean)
+      : [];
+
+    return {
+      type: "interactive",
+      title: clean(v.title),
+      instructions: clean(v.instructions),
+      interaction: clean(v.interaction),
+      parameters
+    };
+  }
+
+  if (type === "simulation") {
+    const simulation = clean(v.simulation);
+
+    if (!simulation || !SIMULATIONS.has(simulation)) {
+      return null;
+    }
+
+    const variables =
+      v.variables && typeof v.variables === "object"
+        ? Object.fromEntries(
+            Object.entries(v.variables)
+              .slice(0, 20)
+              .map(([key, value]) => [
+                key,
+                Number.isFinite(Number(value))
+                  ? Number(value)
+                  : value
+              ])
+          )
+        : {};
+
+    return {
+      type: "simulation",
+      simulation,
+      title: clean(v.title),
+      instructions: clean(v.instructions),
+      variables
+    };
+  }
+
+  if (type === "table" || type === "comparison") {
+    const rows = Array.isArray(v.rows)
+      ? v.rows.slice(0, 50)
+      : [];
+
+    if (!rows.length) return null;
+
+    return {
+      type,
+      title: clean(v.title),
+      headers: Array.isArray(v.headers)
+        ? v.headers.slice(0, 20)
+        : [],
+      rows
+    };
+  }
+
+  if (type === "flowchart" || type === "process") {
+    const steps = Array.isArray(v.steps)
+      ? v.steps
+          .filter(step => step !== null && step !== undefined)
+          .slice(0, 30)
+      : [];
+
+    if (!steps.length) return null;
+
+    return {
+      type,
+      title: clean(v.title),
+      steps
+    };
+  }
+
+  return null;
+};
 
 
   // ----------------------------------------------------------
