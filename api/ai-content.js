@@ -1018,10 +1018,8 @@ const VISUAL_TYPES =
 
   ]);
 
-
 const SIMULATIONS =
   new Set([
-
     "projectile_motion",
     "ohms_law",
     "hookes_law",
@@ -1034,12 +1032,8 @@ const SIMULATIONS =
     "density_pressure",
     "gas_law",
     "probability",
-
-    // Electromagnetic Induction
     "electromagnetic_induction"
-
   ]);
-
 // ============================================================
 // VALIDATE ONE VISUAL
 // ============================================================
