@@ -1635,14 +1635,12 @@ if (/image|illustration|picture|photo/.test(requestedVisualText)) {
   requestedVisualTypes.push("image");
 }
 
-if (/interactive/.test(requestedVisualText)) {
+if (/interactive\s+simulation|simulation/.test(requestedVisualText)) {
+  requestedVisualTypes.push("simulation");
+} else if (/interactive/.test(requestedVisualText)) {
   requestedVisualTypes.push("interactive");
 }
-
-if (/simulation/.test(requestedVisualText)) {
-  requestedVisualTypes.push("simulation");
-}
-
+  
 if (/flowchart/.test(requestedVisualText)) {
   requestedVisualTypes.push("flowchart");
 }
