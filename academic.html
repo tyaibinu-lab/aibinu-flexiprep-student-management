@@ -203,6 +203,13 @@ async function generateNoteDraft(){let p;try{p=buildNotePrompt()}catch(e){show(e
 try{const r=await fetch("/api/ai-content",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)}),d=await safeJson(r);if(!r.ok)throw new Error(errMsg(d,`Server error: ${r.status}`));if(d.success!==true)throw new Error(errMsg(d,"AI note generation failed."));if(!d.note)throw new Error("The AI returned no note.");currentAIResult={type:"Note",note:d.note,raw:d};
 renderNote(d.note);
 
+if (
+  window.AINoteVisuals &&
+  typeof window.AINoteVisuals.mount === "function"
+) {
+  window.AINoteVisuals.mount(d);
+}
+
 if(window.AINoteVisuals){
   window.AINoteVisuals.mount(d);
 };status.innerHTML="✅ AI note generated successfully. The content is currently a <b>DRAFT</b> and has not been published.";show("AI note generated successfully as DRAFT. Review it before submitting for approval.",true);alert("AI note generated successfully as DRAFT.")}catch(e){console.error(e);status.innerHTML="❌ Note generation failed. The draft was not created.";preview.textContent="❌ NOTE GENERATION FAILED\n\n"+e.message;show(e.message,false);alert("Note generation failed:\n\n"+e.message)}finally{restore(btn,"✨ Generate Note Draft")}}
