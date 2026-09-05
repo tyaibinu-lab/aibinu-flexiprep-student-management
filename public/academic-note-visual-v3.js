@@ -3,7 +3,7 @@
    Dynamic visual renderer for AI-generated NoteBank content.
 
    INSTALL in academic.html, immediately before </body>:
-       <script src="/academic-note-visuals-v3.js"></script>
+       <script src="/academic-note-visual-v3.js"></script>
 
    DESIGN:
    - Works for every subsequent /api/ai-content note generation.
