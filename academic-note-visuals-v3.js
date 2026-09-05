@@ -344,6 +344,20 @@
     s = s.replace(/\\alpha/g, "α");
     s = s.replace(/\\beta/g, "β");
     s = s.replace(/\\gamma/g, "γ");
+    s = s.replace(/\\varepsilon/g, "ε");
+    s = s.replace(/\\epsilon/g, "ε");
+    s = s.replace(/\\Phi/g, "Φ");
+    s = s.replace(/\\phi/g, "φ");
+    s = s.replace(/\\Omega/g, "Ω");
+    s = s.replace(/\\omega/g, "ω");
+    s = s.replace(/\\Sigma/g, "Σ");
+    s = s.replace(/\\sigma/g, "σ");
+    s = s.replace(/\\mu/g, "μ");
+    s = s.replace(/\\rho/g, "ρ");
+    s = s.replace(/\\nu/g, "ν");
+    s = s.replace(/\\tau/g, "τ");
+    s = s.replace(/\\(cos|sin|tan|log|ln)/g, "$1");
+    s = s.replace(/\\left|\\right/g, "");
 
     s = s.replace(
       /\^(\{([^{}]+)\}|([A-Za-z0-9+\-]+))/g,
