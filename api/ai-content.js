@@ -1886,17 +1886,51 @@ Return exactly:
 const requestedVisualText =
   teacherPrompt.toLowerCase();
 
-const visualRequestDetected =
-  /equation|formula|diagram|graph|image|interactive|simulation|visual|flowchart|illustration|process/.test(
-    requestedVisualText
+const requestedVisualTypes = [];
+
+if (/equation|formula/.test(requestedVisualText)) {
+  requestedVisualTypes.push("equation");
+}
+
+if (/diagram/.test(requestedVisualText)) {
+  requestedVisualTypes.push("diagram");
+}
+
+if (/graph/.test(requestedVisualText)) {
+  requestedVisualTypes.push("graph");
+}
+
+if (/image|illustration|picture|photo/.test(requestedVisualText)) {
+  requestedVisualTypes.push("image");
+}
+
+if (/interactive/.test(requestedVisualText)) {
+  requestedVisualTypes.push("interactive");
+}
+
+if (/simulation/.test(requestedVisualText)) {
+  requestedVisualTypes.push("simulation");
+}
+
+if (/flowchart/.test(requestedVisualText)) {
+  requestedVisualTypes.push("flowchart");
+}
+
+if (/process/.test(requestedVisualText)) {
+  requestedVisualTypes.push("process");
+}
+
+const missingVisualTypes =
+  requestedVisualTypes.filter(
+    type =>
+      !visualComponents.some(
+        visual => visual.type === type
+      )
   );
 
-if (
-  visualRequestDetected &&
-  visualComponents.length === 0
-) {
+if (missingVisualTypes.length > 0) {
   throw new Error(
-    "The AI did not generate the requested visual components. Please generate the note again."
+    `The AI did not generate the requested visual components: ${missingVisualTypes.join(", ")}. Please generate the note again.`
   );
 }
 
