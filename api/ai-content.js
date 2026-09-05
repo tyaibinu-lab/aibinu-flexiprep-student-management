@@ -1060,22 +1060,25 @@ function safeVisual(v) {
     };
   }
 
-  if (type === "diagram") {
-    const diagram = clean(v.diagram);
+ if (type === "diagram") {
+    const title = clean(v.title);
+    const description = clean(v.description);
+    const labels = Array.isArray(v.labels)
+      ? v.labels.slice(0, 30)
+      : [];
 
-    if (!diagram) return null;
+    if (!title && !description && !labels.length) {
+      return null;
+    }
 
     return {
       type: "diagram",
-      diagram,
-      title: clean(v.title),
-      labels: Array.isArray(v.labels)
-        ? v.labels.slice(0, 30)
-        : [],
-      description: clean(v.description)
+      diagram: clean(v.diagram) || description || title,
+      title,
+      labels,
+      description
     };
   }
-
   if (type === "image") {
     const imageQuery = clean(v.imageQuery);
     const alt = clean(v.alt);
