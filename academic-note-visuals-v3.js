@@ -1540,7 +1540,8 @@
       transformer: transformer,
       density_pressure: densityPressure,
       gas_law: gasLaw,
-      probability
+      probability,
+      electromagnetic_induction: electromagneticInduction
     };
 
 
