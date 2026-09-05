@@ -1357,7 +1357,176 @@
       result.textContent =
         `Probability = ${p.toFixed(4)} = ${(p*100).toFixed(2)}%`;
     }
+    function electromagneticInduction() {
+      clear();
 
+      const turns =
+        clamp(
+          num(state.turns, 50),
+          1,
+          500
+        );
+
+      const velocity =
+        clamp(
+          num(state.velocity, 2),
+          0,
+          20
+        );
+
+      const magneticField =
+        clamp(
+          num(state.magneticField, 0.5),
+          0,
+          5
+        );
+
+      /*
+       * Simplified Faraday's law demonstration:
+       *
+       * emf ∝ N × B × v
+       *
+       * The negative sign represents Lenz's law
+       * (opposition to the change in magnetic flux).
+       */
+      const emf =
+        turns *
+        magneticField *
+        velocity *
+        0.1;
+
+      /* Magnetic field lines */
+      ctx.strokeStyle = "#555";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(
+          170,
+          175,
+          35 + i * 12,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+      }
+
+      /* Bar magnet */
+      ctx.fillStyle = "#777";
+
+      ctx.fillRect(
+        115,
+        145,
+        55,
+        60
+      );
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 20px Arial";
+      ctx.textAlign = "center";
+
+      ctx.fillText(
+        "N",
+        142,
+        181
+      );
+
+      /* Coil / solenoid */
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 2;
+
+      for (let i = 0; i < 7; i++) {
+        ctx.beginPath();
+        ctx.ellipse(
+          420 + i * 8,
+          175,
+          18,
+          55,
+          0,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+      }
+
+      /* Connecting wires */
+      ctx.beginPath();
+      ctx.moveTo(420, 120);
+      ctx.lineTo(420, 80);
+      ctx.lineTo(600, 80);
+      ctx.lineTo(600, 140);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(476, 230);
+      ctx.lineTo(476, 280);
+      ctx.lineTo(600, 280);
+      ctx.lineTo(600, 210);
+      ctx.stroke();
+
+      /* Galvanometer */
+      ctx.beginPath();
+      ctx.arc(
+        600,
+        175,
+        35,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
+
+      ctx.font = "bold 16px Arial";
+      ctx.fillText(
+        "G",
+        600,
+        181
+      );
+
+      /* Direction of motion */
+      ctx.beginPath();
+      ctx.moveTo(190, 175);
+      ctx.lineTo(280, 175);
+      ctx.lineTo(265, 165);
+      ctx.moveTo(280, 175);
+      ctx.lineTo(265, 185);
+      ctx.stroke();
+
+      ctx.font = "14px Arial";
+      ctx.fillText(
+        "Motion",
+        235,
+        155
+      );
+
+      /* Labels */
+      ctx.font = "14px Arial";
+      ctx.fillText(
+        "Bar magnet",
+        142,
+        225
+      );
+
+      ctx.fillText(
+        "Coil / solenoid",
+        450,
+        315
+      );
+
+      ctx.fillText(
+        "Galvanometer",
+        600,
+        230
+      );
+
+      /* Faraday's law result */
+      ctx.textAlign = "left";
+
+      result.innerHTML =
+        `Induced e.m.f. ≈ ${emf.toFixed(2)} units<br>` +
+        `N = ${turns} turns, B = ${magneticField.toFixed(2)} T, ` +
+        `v = ${velocity.toFixed(2)} m/s<br>` +
+        `Faraday's Law: ε = −N dΦ/dt`;
+    }
 
     const draw = {
       projectile_motion: projectile,
