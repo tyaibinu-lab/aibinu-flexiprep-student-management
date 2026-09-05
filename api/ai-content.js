@@ -999,7 +999,7 @@ async function logAIJob(
 
 
 // ============================================================
-// SAFE VISUAL COMPONENTS
+// TRUSTED VISUAL REGISTRY
 // ============================================================
 
 const VISUAL_TYPES =
@@ -1010,7 +1010,11 @@ const VISUAL_TYPES =
     "image",
     "graph",
     "interactive",
-    "simulation"
+    "simulation",
+    "table",
+    "comparison",
+    "flowchart",
+    "process"
 
   ]);
 
@@ -1029,10 +1033,12 @@ const SIMULATIONS =
     "transformer",
     "density_pressure",
     "gas_law",
-    "probability"
+    "probability",
+
+    // Electromagnetic Induction
+    "electromagnetic_induction"
 
   ]);
-
 
 // ============================================================
 // VALIDATE ONE VISUAL
