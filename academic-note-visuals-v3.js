@@ -85,8 +85,16 @@
     probability: {
       title: "Probability Explorer",
       defaults: { favourable: 1, total: 6 }
-    }
-  };
+     
+      },
+    electromagnetic_induction: {
+      title: "Electromagnetic Induction",
+    defaults: {
+    turns: 50,
+    velocity: 2,
+    magneticField: 0.5
+  }
+},
 
 
   // ==========================================================
