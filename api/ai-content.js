@@ -1049,11 +1049,9 @@ function safeVisual(v) {
 
   }
 
-
   const type =
     clean(v.type)
       .toLowerCase();
-
 
   if (
     !VISUAL_TYPES.has(type)
@@ -1480,7 +1478,6 @@ JSON
 SUBJECT:
 ${subject}
 
-
 CLASS:
 ${className}
 
@@ -1705,17 +1702,33 @@ Return exactly:
   // ----------------------------------------------------------
 
   const visualComponents =
-    normalizeVisuals(
-      raw.visualComponents
-    );
+  normalizeVisuals(
+    raw.visualComponents
+  );
 
+const requestedVisualText =
+  teacherPrompt.toLowerCase();
 
-  const diagramVisuals =
-    visualComponents.filter(
-      visual =>
-        visual.type === "diagram" ||
-        visual.type === "graph"
-    );
+const visualRequestDetected =
+  /equation|formula|diagram|graph|image|interactive|simulation|visual|flowchart|illustration|process/.test(
+    requestedVisualText
+  );
+
+if (
+  visualRequestDetected &&
+  visualComponents.length === 0
+) {
+  throw new Error(
+    "The AI did not generate the requested visual components. Please generate the note again."
+  );
+}
+
+const diagramVisuals =
+  visualComponents.filter(
+    visual =>
+      visual.type === "diagram" ||
+      visual.type === "graph"
+  );
 
 
   const diagrams =
@@ -1787,6 +1800,7 @@ Return exactly:
 
     "Diagrams":
       diagrams,
+    
 
     "Summary":
       clean(
