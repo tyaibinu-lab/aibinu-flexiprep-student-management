@@ -358,6 +358,56 @@
     s = s.replace(/\\tau/g, "τ");
     s = s.replace(/\\(cos|sin|tan|log|ln)/g, "$1");
     s = s.replace(/\\left|\\right/g, "");
+   // Additional Greek symbols
+s = s
+   .replace(/\\Gamma/g, "Γ")
+  .replace(/\\Lambda/g, "Λ")
+  .replace(/\\Theta/g, "Θ")
+  .replace(/\\Pi/g, "Π")
+  .replace(/\\Psi/g, "Ψ")
+  .replace(/\\Xi/g, "Ξ")
+  .replace(/\\Upsilon/g, "Υ")
+  .replace(/\\Chi/g, "Χ")
+  .replace(/\\psi/g, "ψ")
+  .replace(/\\chi/g, "χ")
+  .replace(/\\eta/g, "η")
+  .replace(/\\zeta/g, "ζ")
+  .replace(/\\xi/g, "ξ")
+  .replace(/\\iota/g, "ι")
+  .replace(/\\kappa/g, "κ")
+  .replace(/\\upsilon/g, "υ");
+
+// Arrows and mathematical symbols
+s = s
+  .replace(/\\rightleftharpoons/g, "⇌")
+  .replace(/\\longrightarrow/g, "→")
+  .replace(/\\rightarrow/g, "→")
+  .replace(/\\to/g, "→")
+  .replace(/\\Rightarrow/g, "⇒")
+  .replace(/\\leftarrow/g, "←")
+  .replace(/\\leftrightarrow/g, "↔")
+  .replace(/\\approx/g, "≈")
+  .replace(/\\neq/g, "≠")
+  .replace(/\\geq/g, "≥")
+  .replace(/\\leq/g, "≤")
+  .replace(/\\propto/g, "∝")
+  .replace(/\\infty/g, "∞")
+  .replace(/\\perp/g, "⊥")
+  .replace(/\\parallel/g, "∥")
+  .replace(/\\angle/g, "∠")
+  .replace(/\\therefore/g, "∴")
+  .replace(/\\because/g, "∵")
+  .replace(/\\circ/g, "°")
+  .replace(/\\degree/g, "°")
+  .replace(/\\%/g, "%");
+
+// Text/math wrappers
+s = s
+  .replace(/\\text\{([^{}]*)\}/g, "$1")
+  .replace(/\\mathrm\{([^{}]*)\}/g, "$1")
+  .replace(/\\mathbf\{([^{}]*)\}/g, "$1")
+  .replace(/\\mathit\{([^{}]*)\}/g, "$1")
+  .replace(/\\[,;:!]/g, " ");
 
     s = s.replace(
       /\^(\{([^{}]+)\}|([A-Za-z0-9+\-]+))/g,
@@ -365,7 +415,7 @@
     );
 
     s = s.replace(
-      /_(\{([^{}]+)\}|([A-Za-z0-9+\-]+))/g,
+      /_(\{([^{}]+)\}|([0-9]+))/g,
       (_, all, a, b) => `<sub>${a || b}</sub>`
     );
 
