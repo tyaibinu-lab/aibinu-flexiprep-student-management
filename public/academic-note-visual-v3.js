@@ -382,6 +382,9 @@
   function formatEquation(latex) {
     let s = esc(latex || "");
 
+     // Remove LaTeX escaped spaces so they don't appear as literal "\ "
+    s = s.replace(/\\ /g, " ");
+
     // --------------------------------------------------------
     // Remove common math delimiters
     // --------------------------------------------------------
