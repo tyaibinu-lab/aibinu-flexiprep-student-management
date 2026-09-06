@@ -383,6 +383,28 @@
     let s = esc(latex || "");
 
     // --------------------------------------------------------
+    // Remove common math delimiters
+    // --------------------------------------------------------
+
+    s = s.replace(/\$\$/g, "");
+    s = s.replace(/\$/g, "");
+    s = s.replace(/\\\[/g, "");
+    s = s.replace(/\\\]/g, "");
+    s = s.replace(/\\\(/g, "");
+    s = s.replace(/\\\)/g, "");
+
+    // --------------------------------------------------------
+    // LaTeX spacing commands
+    // --------------------------------------------------------
+
+    s = s.replace(/\\qquad/g, "  ");
+    s = s.replace(/\\quad/g, " ");
+    s = s.replace(/\\,/g, " ");
+    s = s.replace(/\\;/g, " ");
+    s = s.replace(/\\:/g, " ");
+    s = s.replace(/\\!/g, "");
+
+    // --------------------------------------------------------
     // Fractions
     // --------------------------------------------------------
 
@@ -407,6 +429,7 @@
     s = s.replace(/\\times/g, " × ");
     s = s.replace(/\\cdot/g, " · ");
     s = s.replace(/\\pm/g, " ± ");
+    s = s.replace(/\\mp/g, " ∓ ");
 
     // --------------------------------------------------------
     // Greek symbols
@@ -489,6 +512,14 @@
       .replace(/\\%/g, "%");
 
     // --------------------------------------------------------
+    // Raw chemistry arrows
+    // --------------------------------------------------------
+
+    s = s.replace(/<->/g, "↔");
+    s = s.replace(/->/g, "→");
+    s = s.replace(/<-/g, "←");
+
+    // --------------------------------------------------------
     // Remove LaTeX sizing commands
     // --------------------------------------------------------
 
@@ -496,14 +527,34 @@
     s = s.replace(/\\right/g, "");
 
     // --------------------------------------------------------
-    // Text/math wrappers
+    // Text / math wrappers
+    //
+    // Supports:
+    //
+    // \mathrm{Cu}
+    //
+    // and:
+    //
+    // \mathrm{Cu^{2+}+2e^- \arrow Cu}
+    //
+    // which contains nested braces.
     // --------------------------------------------------------
 
-    s = s
-      .replace(/\\text\{/g, "")
-      .replace(/\\mathrm\{/g, "")
-      .replace(/\\mathbf\{/g, "")
-      .replace(/\\mathit\{/g, "");
+    s = s.replace(
+      /\\(text|mathrm|mathbf|mathit)\{((?:[^{}]|\{[^{}]*\})*)\}/g,
+      "$2"
+    );
+
+    // Additional simple wrappers
+    s = s.replace(
+      /\\textbf\{([^{}]*)\}/g,
+      "$1"
+    );
+
+    s = s.replace(
+      /\\textit\{([^{}]*)\}/g,
+      "$1"
+    );
 
     // --------------------------------------------------------
     // Superscripts
@@ -516,10 +567,12 @@
     );
 
     // --------------------------------------------------------
-    // Safer subscripts
+    // Subscripts
     //
-    // Single/multiple digits may be unbraced.
-    // Multi-character symbolic subscripts should use braces.
+    // Supports:
+    //   H_2
+    //   C_6
+    //   C_6H_{12}O_6
     // --------------------------------------------------------
 
     s = s.replace(
@@ -528,14 +581,34 @@
         `<sub>${a || b}</sub>`
     );
 
+    // Single-letter symbolic subscript
+    s = s.replace(
+      /_([A-Za-z])/g,
+      "<sub>$1</sub>"
+    );
+
     // --------------------------------------------------------
-    // Remove structural braces left by simple LaTeX wrappers.
+    // Remove structural braces
     // --------------------------------------------------------
 
     s = s.replace(/[{}]/g, "");
 
-    // Remove remaining escaped backslashes.
-    return s.replace(/\\\\/g, "");
+    // --------------------------------------------------------
+    // Remove remaining harmless LaTeX commands
+    // --------------------------------------------------------
+
+    s = s.replace(
+      /\\([A-Za-z]+)\b/g,
+      "$1"
+    );
+
+    // --------------------------------------------------------
+    // Final whitespace cleanup
+    // --------------------------------------------------------
+
+    s = s.replace(/\s{3,}/g, " ");
+
+    return s.trim();
   }
 
 
@@ -631,14 +704,47 @@
   }
 
 
-  function drawDiagram(type, labels) {
-    const t =
+  function drawDiagram(type, labels, context = "") {
+    let t =
       String(type || "").toLowerCase();
 
     const L =
       Array.isArray(labels)
         ? labels
         : [];
+
+    // --------------------------------------------------------
+    // Strengthened electrolysis detection.
+    //
+    // The AI may sometimes return "circuit" even when the
+    // description clearly says electrolytic cell.
+    //
+    // We therefore inspect the complete visual context before
+    // allowing the generic circuit renderer to run.
+    // --------------------------------------------------------
+
+    const visualContext =
+      [
+        type,
+        context,
+        ...L
+      ]
+        .join(" ")
+        .toLowerCase();
+
+    const isElectrolysis =
+      visualContext.includes("electroly") ||
+      visualContext.includes("electrode") ||
+      visualContext.includes("anode") ||
+      visualContext.includes("cathode") ||
+      visualContext.includes("cuso4") ||
+      visualContext.includes("cu2+") ||
+      visualContext.includes("copper(ii) sulfate") ||
+      visualContext.includes("copper sulfate");
+
+    if (isElectrolysis) {
+      t = "electrolytic_cell";
+    }
 
 
     // --------------------------------------------------------
@@ -730,81 +836,10 @@
 
 
     // --------------------------------------------------------
-    // Circuit
-    // --------------------------------------------------------
-
-    if (t.includes("circuit")) {
-      return svg(`
-        ${line(120,90,600,90)}
-        ${line(120,270,600,270)}
-        ${line(120,90,120,155)}
-        ${line(120,205,120,270)}
-        ${line(600,90,600,270)}
-
-        <rect
-          x="105"
-          y="155"
-          width="30"
-          height="50"
-          fill="white"
-          stroke="currentColor"
-          stroke-width="3"/>
-
-        ${line(95,165,135,165)}
-        ${line(100,195,130,195)}
-
-        <rect
-          x="330"
-          y="245"
-          width="100"
-          height="50"
-          fill="white"
-          stroke="currentColor"
-          stroke-width="3"/>
-
-        ${txt(348,277,"resistor")}
-        ${txt(78,145,"cell")}
-
-      `, "Simple circuit diagram");
-    }
-
-
-    // --------------------------------------------------------
-    // Free-body / force
-    // --------------------------------------------------------
-
-    if (
-      t.includes("free_body") ||
-      t.includes("force")
-    ) {
-      return svg(`
-        <rect
-          x="280"
-          y="145"
-          width="160"
-          height="100"
-          fill="white"
-          stroke="currentColor"
-          stroke-width="3"/>
-
-        ${line(360,145,360,65)}
-        ${line(440,195,590,195)}
-        ${line(280,195,130,195)}
-        ${line(360,245,360,325)}
-
-        ${txt(330,200,"object")}
-        ${txt(370,70,"weight")}
-        ${txt(470,180,"force")}
-
-      `, "Free body diagram");
-    }
-
-
-    // --------------------------------------------------------
     // ELECTROLYTIC CELL
     //
     // IMPORTANT:
-    // This MUST come before generic "cell".
+    // This check is deliberately before generic "circuit".
     // --------------------------------------------------------
 
     if (
@@ -926,6 +961,77 @@
         ${txt(205,340,"Negative ions move toward the anode")}
 
       `, "Labelled electrolytic cell showing anode, cathode, electrolyte and ion movement");
+    }
+
+
+    // --------------------------------------------------------
+    // Circuit
+    // --------------------------------------------------------
+
+    if (t.includes("circuit")) {
+      return svg(`
+        ${line(120,90,600,90)}
+        ${line(120,270,600,270)}
+        ${line(120,90,120,155)}
+        ${line(120,205,120,270)}
+        ${line(600,90,600,270)}
+
+        <rect
+          x="105"
+          y="155"
+          width="30"
+          height="50"
+          fill="white"
+          stroke="currentColor"
+          stroke-width="3"/>
+
+        ${line(95,165,135,165)}
+        ${line(100,195,130,195)}
+
+        <rect
+          x="330"
+          y="245"
+          width="100"
+          height="50"
+          fill="white"
+          stroke="currentColor"
+          stroke-width="3"/>
+
+        ${txt(348,277,"resistor")}
+        ${txt(78,145,"cell")}
+
+      `, "Simple circuit diagram");
+    }
+
+
+    // --------------------------------------------------------
+    // Free-body / force
+    // --------------------------------------------------------
+
+    if (
+      t.includes("free_body") ||
+      t.includes("force")
+    ) {
+      return svg(`
+        <rect
+          x="280"
+          y="145"
+          width="160"
+          height="100"
+          fill="white"
+          stroke="currentColor"
+          stroke-width="3"/>
+
+        ${line(360,145,360,65)}
+        ${line(440,195,590,195)}
+        ${line(280,195,130,195)}
+        ${line(360,245,360,325)}
+
+        ${txt(330,200,"object")}
+        ${txt(370,70,"weight")}
+        ${txt(470,180,"force")}
+
+      `, "Free body diagram");
     }
 
 
@@ -1094,6 +1200,16 @@
     el.className =
       "nbv3-card";
 
+    const context =
+      [
+        v.title || "",
+        v.description || "",
+        v.caption || "",
+        Array.isArray(v.labels)
+          ? v.labels.join(" ")
+          : ""
+      ].join(" ");
+
     el.innerHTML = `
       <div class="nbv3-title">
         🔬 ${esc(
@@ -1105,7 +1221,8 @@
       <div class="nbv3-svg-wrap">
         ${drawDiagram(
           v.diagram,
-          v.labels
+          v.labels,
+          context
         )}
       </div>
 
