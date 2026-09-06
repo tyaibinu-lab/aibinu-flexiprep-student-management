@@ -69,34 +69,64 @@
 
     transformer: {
       title: "Transformer",
-      defaults: { primaryVoltage: 240, primaryTurns: 1000, secondaryTurns: 100 }
+      defaults: {
+        primaryVoltage: 240,
+        primaryTurns: 1000,
+        secondaryTurns: 100
+      }
     },
 
     density_pressure: {
       title: "Density and Pressure",
-      defaults: { density: 1000, depth: 2, gravity: 9.81 }
+      defaults: {
+        density: 1000,
+        depth: 2,
+        gravity: 9.81
+      }
     },
 
     gas_law: {
       title: "Gas Law Explorer",
-      defaults: { pressure: 100, volume: 1, temperature: 300 }
+      defaults: {
+        pressure: 100,
+        volume: 1,
+        temperature: 300
+      }
     },
 
     probability: {
       title: "Probability Explorer",
-      defaults: { favourable: 1, total: 6 }
-     
-      },
+      defaults: {
+        favourable: 1,
+        total: 6
+      }
+    },
+
     electromagnetic_induction: {
       title: "Electromagnetic Induction",
-    defaults: {
-    turns: 50,
-    velocity: 2,
-    magneticField: 0.5
-  }
- }
-};
-     
+      defaults: {
+        turns: 50,
+        velocity: 2,
+        magneticField: 0.5
+      }
+    },
+
+    /* --------------------------------------------------------
+       NEW — ELECTROLYSIS
+    -------------------------------------------------------- */
+
+    electrolysis: {
+      title: "Electrolysis",
+      defaults: {
+        current: 2,
+        time: 600,
+        molarMass: 63.5,
+        valency: 2
+      }
+    }
+  };
+
+
   // ==========================================================
   // SAFETY HELPERS
   // ==========================================================
@@ -326,51 +356,231 @@
   // ==========================================================
 
   function formatEquation(latex) {
+
     let s = esc(latex || "");
+
+
+    // --------------------------------------------------------
+    // FRACTIONS
+    // --------------------------------------------------------
 
     s = s.replace(
       /\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,
       '<span class="nbv3-frac"><span>$1</span><span>$2</span></span>'
     );
 
-    s = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, "√($1)");
+
+    // --------------------------------------------------------
+    // ROOTS
+    // --------------------------------------------------------
+
+    s = s.replace(
+      /\\sqrt\s*\{([^{}]*)\}/g,
+      "√($1)"
+    );
+
+
+    // --------------------------------------------------------
+    // BASIC MATH SYMBOLS
+    // --------------------------------------------------------
+
     s = s.replace(/\\times/g, " × ");
     s = s.replace(/\\cdot/g, " · ");
     s = s.replace(/\\pm/g, " ± ");
-    s = s.replace(/\\pi/g, "π");
-    s = s.replace(/\\theta/g, "θ");
-    s = s.replace(/\\Delta/g, "Δ");
-    s = s.replace(/\\lambda/g, "λ");
+    s = s.replace(/\\mp/g, " ∓ ");
+    s = s.replace(/\\div/g, " ÷ ");
+    s = s.replace(/\\leq/g, " ≤ ");
+    s = s.replace(/\\geq/g, " ≥ ");
+    s = s.replace(/\\neq/g, " ≠ ");
+    s = s.replace(/\\approx/g, " ≈ ");
+    s = s.replace(/\\propto/g, " ∝ ");
+    s = s.replace(/\\infty/g, " ∞ ");
+    s = s.replace(/\\degree/g, " ° ");
+
+
+    // --------------------------------------------------------
+    // TEXT / MATH WRAPPERS
+    //
+    // Handles nested superscript/subscript braces such as:
+    // \mathrm{Cu^{2+}}
+    // --------------------------------------------------------
+
+    s = s.replace(
+      /\\(?:mathrm|text)\{((?:[^{}]|\{[^{}]*\})*)\}/g,
+      "$1"
+    );
+
+
+    // --------------------------------------------------------
+    // ARROWS
+    // --------------------------------------------------------
+
+    s = s.replace(
+      /\\longrightarrow/g,
+      "→"
+    );
+
+    s = s.replace(
+      /\\rightarrow/g,
+      "→"
+    );
+
+    s = s.replace(
+      /\\to/g,
+      "→"
+    );
+
+    s = s.replace(
+      /\\arrow/g,
+      "→"
+    );
+
+    s = s.replace(
+      /\\longleftarrow/g,
+      "←"
+    );
+
+    s = s.replace(
+      /\\leftarrow/g,
+      "←"
+    );
+
+    s = s.replace(
+      /\\leftrightarrow/g,
+      "↔"
+    );
+
+    s = s.replace(
+      /\\rightleftharpoons/g,
+      "⇌"
+    );
+
+    s = s.replace(
+      /\\rightleftarrows/g,
+      "⇄"
+    );
+
+
+    // --------------------------------------------------------
+    // GREEK LETTERS
+    // --------------------------------------------------------
+
     s = s.replace(/\\alpha/g, "α");
     s = s.replace(/\\beta/g, "β");
     s = s.replace(/\\gamma/g, "γ");
-    s = s.replace(/\\varepsilon/g, "ε");
+    s = s.replace(/\\delta/g, "δ");
     s = s.replace(/\\epsilon/g, "ε");
-    s = s.replace(/\\Phi/g, "Φ");
-    s = s.replace(/\\phi/g, "φ");
-    s = s.replace(/\\Omega/g, "Ω");
-    s = s.replace(/\\omega/g, "ω");
-    s = s.replace(/\\Sigma/g, "Σ");
-    s = s.replace(/\\sigma/g, "σ");
+    s = s.replace(/\\varepsilon/g, "ϵ");
+    s = s.replace(/\\zeta/g, "ζ");
+    s = s.replace(/\\eta/g, "η");
+    s = s.replace(/\\theta/g, "θ");
+    s = s.replace(/\\vartheta/g, "ϑ");
+    s = s.replace(/\\iota/g, "ι");
+    s = s.replace(/\\kappa/g, "κ");
+    s = s.replace(/\\lambda/g, "λ");
     s = s.replace(/\\mu/g, "μ");
-    s = s.replace(/\\rho/g, "ρ");
     s = s.replace(/\\nu/g, "ν");
+    s = s.replace(/\\xi/g, "ξ");
+    s = s.replace(/\\pi/g, "π");
+    s = s.replace(/\\varpi/g, "ϖ");
+    s = s.replace(/\\rho/g, "ρ");
+    s = s.replace(/\\sigma/g, "σ");
     s = s.replace(/\\tau/g, "τ");
-    s = s.replace(/\\(cos|sin|tan|log|ln)/g, "$1");
-    s = s.replace(/\\left|\\right/g, "");
+    s = s.replace(/\\upsilon/g, "υ");
+    s = s.replace(/\\phi/g, "φ");
+    s = s.replace(/\\varphi/g, "ϕ");
+    s = s.replace(/\\chi/g, "χ");
+    s = s.replace(/\\psi/g, "ψ");
+    s = s.replace(/\\omega/g, "ω");
+
+    s = s.replace(/\\Gamma/g, "Γ");
+    s = s.replace(/\\Delta/g, "Δ");
+    s = s.replace(/\\Theta/g, "Θ");
+    s = s.replace(/\\Lambda/g, "Λ");
+    s = s.replace(/\\Xi/g, "Ξ");
+    s = s.replace(/\\Pi/g, "Π");
+    s = s.replace(/\\Sigma/g, "Σ");
+    s = s.replace(/\\Phi/g, "Φ");
+    s = s.replace(/\\Psi/g, "Ψ");
+    s = s.replace(/\\Omega/g, "Ω");
+
+
+    // --------------------------------------------------------
+    // OTHER COMMON SYMBOLS
+    // --------------------------------------------------------
+
+    s = s.replace(/\\nabla/g, "∇");
+    s = s.replace(/\\partial/g, "∂");
+    s = s.replace(/\\sum/g, "Σ");
+    s = s.replace(/\\prod/g, "Π");
+    s = s.replace(/\\int/g, "∫");
+    s = s.replace(/\\therefore/g, "∴");
+    s = s.replace(/\\because/g, "∵");
+
+
+    // --------------------------------------------------------
+    // TRIGONOMETRIC FUNCTIONS
+    // --------------------------------------------------------
 
     s = s.replace(
-      /\^(\{([^{}]+)\}|([A-Za-z0-9+\-]+))/g,
-      (_, all, a, b) => `<sup>${a || b}</sup>`
+      /\\(cos|sin|tan|log|ln)/g,
+      "$1"
     );
+
+
+    // --------------------------------------------------------
+    // REMOVE \left AND \right
+    // --------------------------------------------------------
 
     s = s.replace(
-      /_(\{([^{}]+)\}|([A-Za-z0-9+\-]+))/g,
-      (_, all, a, b) => `<sub>${a || b}</sub>`
+      /\\left|\\right/g,
+      ""
     );
 
-    return s.replace(/\\\\/g, "");
+
+    // --------------------------------------------------------
+    // SUPERSCRIPTS
+    //
+    // Supports:
+    // x^2
+    // x^{2}
+    // Cu^{2+}
+    // e^-
+    // --------------------------------------------------------
+
+    s = s.replace(
+      /\^\{([^{}]+)\}|\^([A-Za-z0-9+\-]+)/g,
+      (_, a, b) =>
+        `<sup>${a || b}</sup>`
+    );
+
+
+    // --------------------------------------------------------
+    // SUBSCRIPTS
+    //
+    // Supports:
+    // H_2
+    // CO_2
+    // C_6H_{12}O_6
+    // --------------------------------------------------------
+
+    s = s.replace(
+      /_\{([^{}]+)\}|_([0-9]+)/g,
+      (_, a, b) =>
+        `<sub>${a || b}</sub>`
+    );
+
+
+    // --------------------------------------------------------
+    // REMOVE REMAINING LATEX BACKSLASHES
+    // --------------------------------------------------------
+
+    return s.replace(
+      /\\/g,
+      ""
+    );
   }
+
 
   function renderEquation(v) {
     const el = document.createElement("article");
@@ -514,9 +724,75 @@
       `, "Free body diagram");
     }
 
+    /* --------------------------------------------------------
+       ELECTROLYTIC CELL
+       Must appear BEFORE the generic cell detector.
+    -------------------------------------------------------- */
+
     if (
-      t.includes("cell")
+      t.includes("electroly") ||
+      t.includes("electrode") ||
+      t.includes("anode") ||
+      t.includes("cathode")
     ) {
+      return svg(`
+        <rect
+          x="235"
+          y="85"
+          width="250"
+          height="190"
+          rx="12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"/>
+
+        <rect
+          x="245"
+          y="145"
+          width="230"
+          height="120"
+          fill="currentColor"
+          opacity=".08"/>
+
+        <rect
+          x="285"
+          y="125"
+          width="30"
+          height="120"
+          rx="3"
+          fill="currentColor"
+          opacity=".75"/>
+
+        <rect
+          x="405"
+          y="125"
+          width="30"
+          height="120"
+          rx="3"
+          fill="currentColor"
+          opacity=".75"/>
+
+        ${txt(270,105,"ANODE (+)")}
+        ${txt(390,105,"CATHODE (−)")}
+
+        ${txt(330,170,"Electrolyte")}
+
+        ${line(330,190,390,190)}
+        ${txt(355,184,"→")}
+
+        ${line(390,220,330,220)}
+        ${txt(350,214,"←")}
+
+        ${txt(335,188,"Cations →")}
+        ${txt(325,245,"← Anions")}
+
+        ${txt(275,295,"Positive ions move toward the cathode")}
+        ${txt(275,320,"Negative ions move toward the anode")}
+      `, "Labelled electrolytic cell diagram");
+    }
+
+
+    if (t.includes("cell")) {
       return svg(`
         <ellipse cx="360" cy="180" rx="170" ry="110"
           fill="none" stroke="currentColor" stroke-width="3"/>
@@ -528,7 +804,9 @@
         ${txt(450,220,"organelle")}
       `, "Cell diagram");
     }
-        if (
+
+
+    if (
       t.includes("magnet") ||
       t.includes("coil") ||
       t.includes("solenoid") ||
@@ -628,13 +906,21 @@
     const el = document.createElement("article");
     el.className = "nbv3-card";
 
-    const headers = Array.isArray(v.headers) ? v.headers.slice(0, 12) : [];
-    const rows = Array.isArray(v.rows) ? v.rows.slice(0, 40) : [];
+    const headers = Array.isArray(v.headers)
+      ? v.headers.slice(0, 12)
+      : [];
+
+    const rows = Array.isArray(v.rows)
+      ? v.rows.slice(0, 40)
+      : [];
 
     el.innerHTML = `
       <div class="nbv3-title">
         ${comparison ? "⚖️" : "📋"}
-        ${esc(v.title || (comparison ? "Comparison" : "Study Table"))}
+        ${esc(
+          v.title ||
+          (comparison ? "Comparison" : "Study Table")
+        )}
       </div>
 
       <div class="nbv3-table-wrap">
@@ -644,12 +930,21 @@
               ${headers.map(h => `<th>${esc(h)}</th>`).join("")}
             </tr>
           </thead>
+
           <tbody>
             ${rows.map(row => `
               <tr>
                 ${Array.isArray(row)
-                  ? row.slice(0, headers.length || 12)
-                      .map(cell => `<td>${esc(cell)}</td>`).join("")
+                  ? row
+                      .slice(
+                        0,
+                        headers.length || 12
+                      )
+                      .map(
+                        cell =>
+                          `<td>${esc(cell)}</td>`
+                      )
+                      .join("")
                   : ""}
               </tr>
             `).join("")}
@@ -657,7 +952,11 @@
         </table>
       </div>
 
-      ${v.caption ? `<div class="nbv3-caption">${esc(v.caption)}</div>` : ""}
+      ${
+        v.caption
+          ? `<div class="nbv3-caption">${esc(v.caption)}</div>`
+          : ""
+      }
     `;
 
     return el;
@@ -683,19 +982,28 @@
     el.innerHTML = `
       <div class="nbv3-title">
         ${process ? "🔄" : "➡️"}
-        ${esc(v.title || (process ? "Process" : "Flowchart"))}
+        ${esc(
+          v.title ||
+          (process ? "Process" : "Flowchart")
+        )}
       </div>
 
       <div class="nbv3-flow">
         ${steps.map((step, i) => `
-          ${i ? `<span class="nbv3-arrow">→</span>` : ""}
+          ${
+            i
+              ? `<span class="nbv3-arrow">→</span>`
+              : ""
+          }
           <div class="nbv3-step">${esc(step)}</div>
         `).join("")}
       </div>
 
-      ${v.description
-        ? `<p>${esc(v.description)}</p>`
-        : ""}
+      ${
+        v.description
+          ? `<p>${esc(v.description)}</p>`
+          : ""
+      }
     `;
 
     return el;
@@ -728,22 +1036,43 @@
     const xs = points.map(p => p[0]);
     const ys = points.map(p => p[1]);
 
-    const xmin = xs.length ? Math.min(...xs) : 0;
-    const xmax = xs.length ? Math.max(...xs) : 1;
-    const ymin = ys.length ? Math.min(...ys) : 0;
-    const ymax = ys.length ? Math.max(...ys) : 1;
+    const xmin = xs.length
+      ? Math.min(...xs)
+      : 0;
+
+    const xmax = xs.length
+      ? Math.max(...xs)
+      : 1;
+
+    const ymin = ys.length
+      ? Math.min(...ys)
+      : 0;
+
+    const ymax = ys.length
+      ? Math.max(...ys)
+      : 1;
 
     const dx = xmax - xmin || 1;
     const dy = ymax - ymin || 1;
 
     const plotted = points.map(p => {
-      const x = 70 + ((p[0] - xmin) / dx) * 590;
-      const y = 295 - ((p[1] - ymin) / dy) * 245;
+      const x =
+        70 +
+        ((p[0] - xmin) / dx) *
+        590;
+
+      const y =
+        295 -
+        ((p[1] - ymin) / dy) *
+        245;
+
       return `${x},${y}`;
     }).join(" ");
 
     el.innerHTML = `
-      <div class="nbv3-title">📈 ${esc(v.title || "Graph")}</div>
+      <div class="nbv3-title">
+        📈 ${esc(v.title || "Graph")}
+      </div>
 
       <div class="nbv3-svg-wrap">
         ${svg(`
@@ -760,8 +1089,15 @@
                   stroke-width="4"/>
 
                 ${points.map(p => {
-                  const x = 70 + ((p[0] - xmin) / dx) * 590;
-                  const y = 295 - ((p[1] - ymin) / dy) * 245;
+                  const x =
+                    70 +
+                    ((p[0] - xmin) / dx) *
+                    590;
+
+                  const y =
+                    295 -
+                    ((p[1] - ymin) / dy) *
+                    245;
 
                   return `
                     <circle
@@ -772,11 +1108,24 @@
                   `;
                 }).join("")}
               `
-              : txt(250,185,"No numerical data supplied")
+              : txt(
+                  250,
+                  185,
+                  "No numerical data supplied"
+                )
           }
 
-          ${txt(320,335,v.xLabel || "x")}
-          ${txt(18,70,v.yLabel || "y")}
+          ${txt(
+            320,
+            335,
+            v.xLabel || "x"
+          )}
+
+          ${txt(
+            18,
+            70,
+            v.yLabel || "y"
+          )}
         `, v.title || "Graph")}
       </div>
 
@@ -800,17 +1149,33 @@
     el.className = "nbv3-card";
 
     el.innerHTML = `
-      <div class="nbv3-title">🎛️ ${esc(v.title || "Interactive Exploration")}</div>
-      <p>${esc(v.instructions || "Adjust the variables and observe the values.")}</p>
+      <div class="nbv3-title">
+        🎛️ ${esc(v.title || "Interactive Exploration")}
+      </div>
+
+      <p>
+        ${esc(
+          v.instructions ||
+          "Adjust the variables and observe the values."
+        )}
+      </p>
+
       <div class="nbv3-interactive-controls"></div>
-      <div class="nbv3-result">Adjust a parameter to explore.</div>
+
+      <div class="nbv3-result">
+        Adjust a parameter to explore.
+      </div>
     `;
 
     const controls =
-      el.querySelector(".nbv3-interactive-controls");
+      el.querySelector(
+        ".nbv3-interactive-controls"
+      );
 
     const result =
-      el.querySelector(".nbv3-result");
+      el.querySelector(
+        ".nbv3-result"
+      );
 
     const params =
       Array.isArray(v.parameters)
@@ -820,24 +1185,38 @@
     function update() {
       const values = {};
 
-      controls.querySelectorAll("input[data-name]")
+      controls
+        .querySelectorAll(
+          "input[data-name]"
+        )
         .forEach(input => {
+
           values[input.dataset.name] =
             Number(input.value);
+
         });
 
       result.textContent =
         Object.entries(values)
-          .map(([k, val]) => `${k} = ${val}`)
+          .map(
+            ([k, val]) =>
+              `${k} = ${val}`
+          )
           .join("  |  ") ||
         "Adjust a parameter to explore.";
     }
 
     params.forEach(p => {
-      let min = num(p?.min, 0);
-      let max = num(p?.max, 100);
 
-      if (max <= min) max = min + 100;
+      let min =
+        num(p?.min, 0);
+
+      let max =
+        num(p?.max, 100);
+
+      if (max <= min) {
+        max = min + 100;
+      }
 
       const step =
         num(p?.step, 1) > 0
@@ -858,10 +1237,18 @@
         "nbv3-slider";
 
       row.innerHTML = `
-        <span>${esc(p?.name || "Parameter")}</span>
+        <span>
+          ${esc(
+            p?.name ||
+            "Parameter"
+          )}
+        </span>
 
         <input
-          data-name="${esc(p?.name || "Parameter")}"
+          data-name="${esc(
+            p?.name ||
+            "Parameter"
+          )}"
           type="range"
           min="${min}"
           max="${max}"
@@ -877,12 +1264,20 @@
       const output =
         row.querySelector("output");
 
-      input.addEventListener("input", () => {
-        output.value = input.value;
-        update();
-      });
+      input.addEventListener(
+        "input",
+        () => {
+
+          output.value =
+            input.value;
+
+          update();
+
+        }
+      );
 
       controls.appendChild(row);
+
     });
 
     update();
@@ -895,36 +1290,65 @@
   // SIMULATION COMMON UI
   // ==========================================================
 
-  function slider(container, label, value, min, max, step, onChange) {
-    const row = document.createElement("label");
-    row.className = "nbv3-slider";
+  function slider(
+    container,
+    label,
+    value,
+    min,
+    max,
+    step,
+    onChange
+  ) {
+
+    const row =
+      document.createElement("label");
+
+    row.className =
+      "nbv3-slider";
 
     row.innerHTML = `
       <span>${esc(label)}</span>
+
       <input
         type="range"
         min="${min}"
         max="${max}"
         step="${step}"
         value="${value}">
+
       <output>${value}</output>
     `;
 
-    const input = row.querySelector("input");
-    const output = row.querySelector("output");
+    const input =
+      row.querySelector("input");
 
-    input.addEventListener("input", () => {
-      output.value = input.value;
-      onChange(Number(input.value));
-    });
+    const output =
+      row.querySelector("output");
+
+    input.addEventListener(
+      "input",
+      () => {
+
+        output.value =
+          input.value;
+
+        onChange(
+          Number(input.value)
+        );
+
+      }
+    );
 
     container.appendChild(row);
   }
 
 
   function renderSimulation(v) {
+
     const type =
-      String(v.simulation || "").toLowerCase();
+      String(
+        v.simulation || ""
+      ).toLowerCase();
 
     if (!SIMS[type]) return null;
 
@@ -941,7 +1365,10 @@
 
     el.innerHTML = `
       <div class="nbv3-title">
-        🧪 ${esc(v.title || SIMS[type].title)}
+        🧪 ${esc(
+          v.title ||
+          SIMS[type].title
+        )}
       </div>
 
       <p>
@@ -963,7 +1390,9 @@
     `;
 
     const controls =
-      el.querySelector(".nbv3-sim-controls");
+      el.querySelector(
+        ".nbv3-sim-controls"
+      );
 
     const canvas =
       el.querySelector("canvas");
@@ -980,157 +1409,304 @@
     // --------------------------------------------------------
 
     function clear() {
+
       ctx.clearRect(
         0,
         0,
         canvas.width,
         canvas.height
       );
+
     }
 
+
     function projectile() {
+
       clear();
 
       const u =
-        clamp(num(state.velocity,20),1,100);
+        clamp(
+          num(state.velocity,20),
+          1,
+          100
+        );
 
       const angle =
-        clamp(num(state.angle,45),5,85)
-        * Math.PI / 180;
+        clamp(
+          num(state.angle,45),
+          5,
+          85
+        ) *
+        Math.PI /
+        180;
 
       const g =
-        clamp(num(state.gravity,9.81),.1,30);
+        clamp(
+          num(state.gravity,9.81),
+          .1,
+          30
+        );
 
       const T =
-        2*u*Math.sin(angle)/g;
+        2 *
+        u *
+        Math.sin(angle) /
+        g;
 
       const R =
-        u*u*Math.sin(2*angle)/g;
+        u *
+        u *
+        Math.sin(2 * angle) /
+        g;
 
       const H =
-        u*u*Math.sin(angle)**2/(2*g);
+        u *
+        u *
+        Math.sin(angle) ** 2 /
+        (2 * g);
 
       ctx.beginPath();
 
-      for (let i=0;i<=100;i++) {
-        const t = T*i/100;
-        const x = u*Math.cos(angle)*t;
-        const y = u*Math.sin(angle)*t-.5*g*t*t;
+      for (
+        let i = 0;
+        i <= 100;
+        i++
+      ) {
+
+        const t =
+          T * i / 100;
+
+        const x =
+          u *
+          Math.cos(angle) *
+          t;
+
+        const y =
+          u *
+          Math.sin(angle) *
+          t -
+          .5 *
+          g *
+          t *
+          t;
 
         const px =
-          45+(x/Math.max(R,1))*650;
+          45 +
+          (x / Math.max(R,1)) *
+          650;
 
         const py =
-          300-(y/Math.max(H,1))*240;
+          300 -
+          (y / Math.max(H,1)) *
+          240;
 
-        i ? ctx.lineTo(px,py) : ctx.moveTo(px,py);
+        i
+          ? ctx.lineTo(px,py)
+          : ctx.moveTo(px,py);
+
       }
 
       ctx.stroke();
 
       ctx.beginPath();
+
       ctx.moveTo(40,300);
       ctx.lineTo(710,300);
+
       ctx.stroke();
 
       result.textContent =
         `Range = ${R.toFixed(2)} m | ` +
         `Maximum height = ${H.toFixed(2)} m | ` +
         `Time = ${T.toFixed(2)} s`;
+
     }
 
 
     function ohm() {
+
       clear();
 
       const V =
-        clamp(num(state.voltage,12),0,50);
+        clamp(
+          num(state.voltage,12),
+          0,
+          50
+        );
 
       const R =
-        clamp(num(state.resistance,6),.1,100);
+        clamp(
+          num(state.resistance,6),
+          .1,
+          100
+        );
 
-      const I = V/R;
+      const I =
+        V / R;
 
       ctx.beginPath();
+
       ctx.moveTo(90,180);
       ctx.lineTo(670,180);
+
       ctx.stroke();
 
-      ctx.strokeRect(320,145,120,70);
-      ctx.fillText("R",375,185);
+      ctx.strokeRect(
+        320,
+        145,
+        120,
+        70
+      );
+
+      ctx.fillText(
+        "R",
+        375,
+        185
+      );
 
       ctx.beginPath();
-      ctx.arc(90,180,30,0,Math.PI*2);
+
+      ctx.arc(
+        90,
+        180,
+        30,
+        0,
+        Math.PI * 2
+      );
+
       ctx.stroke();
 
       result.textContent =
         `Current I = ${I.toFixed(3)} A`;
+
     }
 
 
     function hooke() {
+
       clear();
 
       const F =
-        clamp(num(state.force,5),0,50);
+        clamp(
+          num(state.force,5),
+          0,
+          50
+        );
 
       const k =
-        clamp(num(state.springConstant,50),1,200);
+        clamp(
+          num(state.springConstant,50),
+          1,
+          200
+        );
 
-      const x = F/k;
+      const x =
+        F / k;
 
       const start = 100;
       const y = 180;
-      const end = start+180+x*500;
+      const end =
+        start +
+        180 +
+        x * 500;
 
       ctx.beginPath();
-      ctx.moveTo(start,y);
 
-      for(let i=0;i<12;i++) {
+      ctx.moveTo(
+        start,
+        y
+      );
+
+      for (
+        let i = 0;
+        i < 12;
+        i++
+      ) {
+
         ctx.lineTo(
-          start+i*15,
-          y+(i%2 ? 18 : -18)
+          start + i * 15,
+          y +
+          (
+            i % 2
+              ? 18
+              : -18
+          )
         );
+
       }
 
-      ctx.lineTo(end,y);
+      ctx.lineTo(
+        end,
+        y
+      );
+
       ctx.stroke();
 
       ctx.fillRect(
         end,
-        y-25,
+        y - 25,
         65,
         50
       );
 
       result.textContent =
         `Extension x = ${x.toFixed(3)} m`;
+
     }
 
 
     function uniformAcceleration() {
+
       clear();
 
-      const u = num(state.u,5);
-      const a = num(state.acceleration,2);
-      const t = clamp(num(state.time,5),0,20);
+      const u =
+        num(state.u,5);
+
+      const a =
+        num(state.acceleration,2);
+
+      const t =
+        clamp(
+          num(state.time,5),
+          0,
+          20
+        );
 
       const s =
-        u*t+.5*a*t*t;
+        u * t +
+        .5 *
+        a *
+        t *
+        t;
 
       const v =
-        u+a*t;
+        u +
+        a *
+        t;
 
       const distance =
-        clamp(s,0,620);
+        clamp(
+          s,
+          0,
+          620
+        );
 
       ctx.beginPath();
-      ctx.moveTo(50,230);
-      ctx.lineTo(50+distance,230);
+
+      ctx.moveTo(
+        50,
+        230
+      );
+
+      ctx.lineTo(
+        50 + distance,
+        230
+      );
+
       ctx.stroke();
 
       ctx.fillRect(
-        45+distance,
+        45 + distance,
         215,
         25,
         25
@@ -1139,207 +1715,391 @@
       result.textContent =
         `Displacement = ${s.toFixed(2)} m | ` +
         `Final velocity = ${v.toFixed(2)} m/s`;
+
     }
 
 
     function pendulum() {
+
       clear();
 
       const L =
-        clamp(num(state.length,1),.2,5);
+        clamp(
+          num(state.length,1),
+          .2,
+          5
+        );
 
       const g =
-        clamp(num(state.gravity,9.81),.1,30);
+        clamp(
+          num(state.gravity,9.81),
+          .1,
+          30
+        );
 
       const T =
-        2*Math.PI*Math.sqrt(L/g);
+        2 *
+        Math.PI *
+        Math.sqrt(
+          L / g
+        );
 
-      const pivotX=380;
-      const pivotY=55;
-      const scale=Math.min(230/L,70);
+      const pivotX = 380;
+      const pivotY = 55;
+
+      const scale =
+        Math.min(
+          230 / L,
+          70
+        );
 
       const bobX =
-        pivotX+
-        Math.sin(.65)*L*scale;
+        pivotX +
+        Math.sin(.65) *
+        L *
+        scale;
 
       const bobY =
-        pivotY+
-        Math.cos(.65)*L*scale;
+        pivotY +
+        Math.cos(.65) *
+        L *
+        scale;
 
       ctx.beginPath();
-      ctx.moveTo(pivotX,pivotY);
-      ctx.lineTo(bobX,bobY);
+
+      ctx.moveTo(
+        pivotX,
+        pivotY
+      );
+
+      ctx.lineTo(
+        bobX,
+        bobY
+      );
+
       ctx.stroke();
 
       ctx.beginPath();
+
       ctx.arc(
         bobX,
         bobY,
         22,
         0,
-        Math.PI*2
+        Math.PI * 2
       );
+
       ctx.fill();
 
       result.textContent =
         `Period T = ${T.toFixed(3)} s`;
+
     }
 
 
     function circuit() {
+
       clear();
 
       const R1 =
-        clamp(num(state.resistance1,4),.1,100);
+        clamp(
+          num(state.resistance1,4),
+          .1,
+          100
+        );
 
       const R2 =
-        clamp(num(state.resistance2,6),.1,100);
+        clamp(
+          num(state.resistance2,6),
+          .1,
+          100
+        );
 
       const V =
-        clamp(num(state.voltage,12),0,100);
+        clamp(
+          num(state.voltage,12),
+          0,
+          100
+        );
 
-      const series = R1+R2;
+      const series =
+        R1 + R2;
 
       const parallel =
-        1/(1/R1+1/R2);
+        1 /
+        (
+          1 / R1 +
+          1 / R2
+        );
 
       ctx.beginPath();
+
       ctx.moveTo(90,90);
       ctx.lineTo(670,90);
       ctx.lineTo(670,270);
       ctx.lineTo(90,270);
       ctx.closePath();
+
       ctx.stroke();
 
-      ctx.strokeRect(250,65,90,50);
-      ctx.strokeRect(420,65,90,50);
+      ctx.strokeRect(
+        250,
+        65,
+        90,
+        50
+      );
 
-      ctx.fillText("R1",280,95);
-      ctx.fillText("R2",450,95);
+      ctx.strokeRect(
+        420,
+        65,
+        90,
+        50
+      );
+
+      ctx.fillText(
+        "R1",
+        280,
+        95
+      );
+
+      ctx.fillText(
+        "R2",
+        450,
+        95
+      );
 
       result.textContent =
         `Series Req = ${series.toFixed(2)} Ω | ` +
         `Parallel Req = ${parallel.toFixed(2)} Ω | ` +
         `Series current = ${(V/series).toFixed(3)} A`;
+
     }
 
 
     function wave() {
+
       clear();
 
       const A =
-        clamp(num(state.amplitude,1),.1,5);
+        clamp(
+          num(state.amplitude,1),
+          .1,
+          5
+        );
 
       const f =
-        clamp(num(state.frequency,2),.1,10);
+        clamp(
+          num(state.frequency,2),
+          .1,
+          10
+        );
 
       const wavelength =
-        clamp(num(state.wavelength,2),.1,10);
+        clamp(
+          num(state.wavelength,2),
+          .1,
+          10
+        );
 
       ctx.beginPath();
 
-      for(let x=0;x<=700;x++) {
+      for (
+        let x = 0;
+        x <= 700;
+        x++
+      ) {
+
         const y =
-          180-
-          A*55*
+          180 -
+          A *
+          55 *
           Math.sin(
-            2*Math.PI*x/
-            (wavelength*70)
+            2 *
+            Math.PI *
+            x /
+            (
+              wavelength *
+              70
+            )
           );
 
-        x ? ctx.lineTo(40+x,y)
-          : ctx.moveTo(40+x,y);
+        x
+          ? ctx.lineTo(
+              40 + x,
+              y
+            )
+          : ctx.moveTo(
+              40 + x,
+              y
+            );
+
       }
 
       ctx.stroke();
 
       const speed =
-        f*wavelength;
+        f *
+        wavelength;
 
       result.textContent =
         `Wave speed v = fλ = ${speed.toFixed(2)} units/s`;
+
     }
 
 
     function lens() {
+
       clear();
 
       const f =
-        clamp(num(state.focalLength,10),1,100);
+        clamp(
+          num(state.focalLength,10),
+          1,
+          100
+        );
 
       const u =
-        clamp(num(state.objectDistance,20),1,200);
+        clamp(
+          num(state.objectDistance,20),
+          1,
+          200
+        );
 
       const denominator =
-        f-u;
+        f - u;
 
       const v =
         denominator === 0
           ? Infinity
-          : (f*u)/denominator;
+          : (f * u) /
+            denominator;
 
       ctx.beginPath();
-      ctx.moveTo(380,50);
-      ctx.lineTo(380,310);
+
+      ctx.moveTo(
+        380,
+        50
+      );
+
+      ctx.lineTo(
+        380,
+        310
+      );
+
       ctx.stroke();
 
       ctx.beginPath();
+
       ctx.arc(
         380,
         180,
         55,
-        -Math.PI/2,
-        Math.PI/2
+        -Math.PI / 2,
+        Math.PI / 2
       );
+
       ctx.stroke();
 
       result.textContent =
         Number.isFinite(v)
           ? `Image distance v = ${v.toFixed(2)} cm (using 1/f = 1/u + 1/v)`
           : "Image distance is undefined at u = f.";
+
     }
 
 
     function transformer() {
+
       clear();
 
       const Vp =
-        clamp(num(state.primaryVoltage,240),1,1000);
+        clamp(
+          num(state.primaryVoltage,240),
+          1,
+          1000
+        );
 
       const Np =
-        clamp(num(state.primaryTurns,1000),1,10000);
+        clamp(
+          num(state.primaryTurns,1000),
+          1,
+          10000
+        );
 
       const Ns =
-        clamp(num(state.secondaryTurns,100),1,10000);
+        clamp(
+          num(state.secondaryTurns,100),
+          1,
+          10000
+        );
 
       const Vs =
-        Vp*(Ns/Np);
+        Vp *
+        (
+          Ns / Np
+        );
 
-      ctx.strokeRect(260,90,90,180);
-      ctx.strokeRect(410,90,90,180);
+      ctx.strokeRect(
+        260,
+        90,
+        90,
+        180
+      );
 
-      ctx.fillText("Primary",270,310);
-      ctx.fillText("Secondary",405,310);
+      ctx.strokeRect(
+        410,
+        90,
+        90,
+        180
+      );
+
+      ctx.fillText(
+        "Primary",
+        270,
+        310
+      );
+
+      ctx.fillText(
+        "Secondary",
+        405,
+        310
+      );
 
       result.textContent =
         `Secondary voltage Vs = ${Vs.toFixed(2)} V`;
+
     }
 
 
     function densityPressure() {
+
       clear();
 
       const rho =
-        clamp(num(state.density,1000),.1,20000);
+        clamp(
+          num(state.density,1000),
+          .1,
+          20000
+        );
 
       const h =
-        clamp(num(state.depth,2),0,100);
+        clamp(
+          num(state.depth,2),
+          0,
+          100
+        );
 
       const g =
-        clamp(num(state.gravity,9.81),.1,30);
+        clamp(
+          num(state.gravity,9.81),
+          .1,
+          30
+        );
 
       const p =
-        rho*g*h;
+        rho *
+        g *
+        h;
 
       ctx.strokeRect(
         260,
@@ -1356,36 +2116,65 @@
 
       result.textContent =
         `Pressure p = ρgh = ${p.toFixed(2)} Pa`;
+
     }
 
 
     function gasLaw() {
+
       clear();
 
       const P =
-        clamp(num(state.pressure,100),1,1000);
+        clamp(
+          num(state.pressure,100),
+          1,
+          1000
+        );
 
       const V =
-        clamp(num(state.volume,1),.1,20);
+        clamp(
+          num(state.volume,1),
+          .1,
+          20
+        );
 
       const T =
-        clamp(num(state.temperature,300),1,2000);
+        clamp(
+          num(state.temperature,300),
+          1,
+          2000
+        );
 
       const PV_T =
-        (P*V)/T;
+        (P * V) / T;
 
       ctx.beginPath();
-      ctx.moveTo(70,295);
-      ctx.lineTo(660,295);
-      ctx.lineTo(660,50);
+
+      ctx.moveTo(
+        70,
+        295
+      );
+
+      ctx.lineTo(
+        660,
+        295
+      );
+
+      ctx.lineTo(
+        660,
+        50
+      );
+
       ctx.stroke();
 
       result.textContent =
         `PV/T = ${PV_T.toFixed(4)} (relative constant)`;
+
     }
 
 
     function probability() {
+
       clear();
 
       const favourable =
@@ -1404,7 +2193,7 @@
 
       const p =
         Math.min(
-          favourable/total,
+          favourable / total,
           1
         );
 
@@ -1418,33 +2207,37 @@
       ctx.fillRect(
         120,
         120,
-        500*p,
+        500 * p,
         80
       );
 
       result.textContent =
-        `Probability = ${p.toFixed(4)} = ${(p*100).toFixed(2)}%`;
+        `Probability = ${p.toFixed(4)} = ${(p * 100).toFixed(2)}%`;
+
     }
+
+
     function electromagneticInduction() {
+
       clear();
 
       const turns =
         clamp(
-          num(state.turns, 50),
+          num(state.turns,50),
           1,
           500
         );
 
       const velocity =
         clamp(
-          num(state.velocity, 2),
+          num(state.velocity,2),
           0,
           20
         );
 
       const magneticField =
         clamp(
-          num(state.magneticField, 0.5),
+          num(state.magneticField,.5),
           0,
           5
         );
@@ -1457,18 +2250,27 @@
        * The negative sign represents Lenz's law
        * (opposition to the change in magnetic flux).
        */
+
       const emf =
         turns *
         magneticField *
         velocity *
-        0.1;
+        .1;
+
 
       /* Magnetic field lines */
+
       ctx.strokeStyle = "#555";
       ctx.lineWidth = 1;
 
-      for (let i = 0; i < 5; i++) {
+      for (
+        let i = 0;
+        i < 5;
+        i++
+      ) {
+
         ctx.beginPath();
+
         ctx.arc(
           170,
           175,
@@ -1476,10 +2278,14 @@
           0,
           Math.PI * 2
         );
+
         ctx.stroke();
+
       }
 
+
       /* Bar magnet */
+
       ctx.fillStyle = "#777";
 
       ctx.fillRect(
@@ -1490,8 +2296,12 @@
       );
 
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 20px Arial";
-      ctx.textAlign = "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.textAlign =
+        "center";
 
       ctx.fillText(
         "N",
@@ -1499,12 +2309,23 @@
         181
       );
 
-      /* Coil / solenoid */
-      ctx.strokeStyle = "#222";
-      ctx.lineWidth = 2;
 
-      for (let i = 0; i < 7; i++) {
+      /* Coil / solenoid */
+
+      ctx.strokeStyle =
+        "#222";
+
+      ctx.lineWidth =
+        2;
+
+      for (
+        let i = 0;
+        i < 7;
+        i++
+      ) {
+
         ctx.beginPath();
+
         ctx.ellipse(
           420 + i * 8,
           175,
@@ -1514,26 +2335,68 @@
           0,
           Math.PI * 2
         );
+
         ctx.stroke();
+
       }
 
+
       /* Connecting wires */
-      ctx.beginPath();
-      ctx.moveTo(420, 120);
-      ctx.lineTo(420, 80);
-      ctx.lineTo(600, 80);
-      ctx.lineTo(600, 140);
-      ctx.stroke();
 
       ctx.beginPath();
-      ctx.moveTo(476, 230);
-      ctx.lineTo(476, 280);
-      ctx.lineTo(600, 280);
-      ctx.lineTo(600, 210);
+
+      ctx.moveTo(
+        420,
+        120
+      );
+
+      ctx.lineTo(
+        420,
+        80
+      );
+
+      ctx.lineTo(
+        600,
+        80
+      );
+
+      ctx.lineTo(
+        600,
+        140
+      );
+
       ctx.stroke();
+
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        476,
+        230
+      );
+
+      ctx.lineTo(
+        476,
+        280
+      );
+
+      ctx.lineTo(
+        600,
+        280
+      );
+
+      ctx.lineTo(
+        600,
+        210
+      );
+
+      ctx.stroke();
+
 
       /* Galvanometer */
+
       ctx.beginPath();
+
       ctx.arc(
         600,
         175,
@@ -1541,33 +2404,65 @@
         0,
         Math.PI * 2
       );
+
       ctx.stroke();
 
-      ctx.font = "bold 16px Arial";
+      ctx.font =
+        "bold 16px Arial";
+
       ctx.fillText(
         "G",
         600,
         181
       );
 
+
       /* Direction of motion */
+
       ctx.beginPath();
-      ctx.moveTo(190, 175);
-      ctx.lineTo(280, 175);
-      ctx.lineTo(265, 165);
-      ctx.moveTo(280, 175);
-      ctx.lineTo(265, 185);
+
+      ctx.moveTo(
+        190,
+        175
+      );
+
+      ctx.lineTo(
+        280,
+        175
+      );
+
+      ctx.lineTo(
+        265,
+        165
+      );
+
+      ctx.moveTo(
+        280,
+        175
+      );
+
+      ctx.lineTo(
+        265,
+        185
+      );
+
       ctx.stroke();
 
-      ctx.font = "14px Arial";
+      ctx.font =
+        "14px Arial";
+
       ctx.fillText(
         "Motion",
         235,
         155
       );
 
+
       /* Labels */
-      ctx.font = "14px Arial";
+
+      ctx.font =
+        "14px Arial";
+
       ctx.fillText(
         "Bar magnet",
         142,
@@ -1586,108 +2481,627 @@
         230
       );
 
+
       /* Faraday's law result */
-      ctx.textAlign = "left";
+
+      ctx.textAlign =
+        "left";
 
       result.innerHTML =
         `Induced e.m.f. ≈ ${emf.toFixed(2)} units<br>` +
         `N = ${turns} turns, B = ${magneticField.toFixed(2)} T, ` +
         `v = ${velocity.toFixed(2)} m/s<br>` +
         `Faraday's Law: ε = −N dΦ/dt`;
+
     }
 
+
+    // ========================================================
+    // ELECTROLYSIS SIMULATION
+    // ========================================================
+
+    function electrolysis() {
+
+      clear();
+
+      const current =
+        clamp(
+          num(state.current,2),
+          0,
+          20
+        );
+
+      const time =
+        clamp(
+          num(state.time,600),
+          1,
+          7200
+        );
+
+      const molarMass =
+        clamp(
+          num(state.molarMass,63.5),
+          1,
+          300
+        );
+
+      const valency =
+        clamp(
+          num(state.valency,2),
+          1,
+          6
+        );
+
+      const F =
+        96485;
+
+      const charge =
+        current *
+        time;
+
+      const moles =
+        charge /
+        (valency * F);
+
+      const mass =
+        moles *
+        molarMass;
+
+
+      // ------------------------------------------------------
+      // Simple electrolytic-cell illustration
+      // ------------------------------------------------------
+
+      ctx.strokeStyle =
+        "currentColor";
+
+      ctx.lineWidth =
+        2;
+
+      /* Electrolyte container */
+
+      ctx.strokeRect(
+        230,
+        90,
+        300,
+        190
+      );
+
+      /* Electrolyte level */
+
+      ctx.fillStyle =
+        "rgba(100,160,160,.12)";
+
+      ctx.fillRect(
+        240,
+        145,
+        280,
+        125
+      );
+
+
+      /* Anode */
+
+      ctx.fillStyle =
+        "#666";
+
+      ctx.fillRect(
+        290,
+        115,
+        35,
+        135
+      );
+
+
+      /* Cathode */
+
+      ctx.fillRect(
+        435,
+        115,
+        35,
+        135
+      );
+
+
+      ctx.fillStyle =
+        "currentColor";
+
+      ctx.font =
+        "bold 16px Arial";
+
+      ctx.textAlign =
+        "center";
+
+      ctx.fillText(
+        "ANODE (+)",
+        307,
+        100
+      );
+
+      ctx.fillText(
+        "CATHODE (−)",
+        452,
+        100
+      );
+
+
+      // ------------------------------------------------------
+      // Ion movement
+      // ------------------------------------------------------
+
+      ctx.font =
+        "14px Arial";
+
+      ctx.fillText(
+        "Cations →",
+        370,
+        175
+      );
+
+      ctx.fillText(
+        "← Anions",
+        370,
+        210
+      );
+
+
+      // ------------------------------------------------------
+      // Deposit representation
+      // ------------------------------------------------------
+
+      const depositHeight =
+        clamp(
+          mass * 120,
+          0,
+          90
+        );
+
+      ctx.fillRect(
+        432,
+        250 - depositHeight,
+        41,
+        depositHeight
+      );
+
+
+      ctx.font =
+        "13px Arial";
+
+      ctx.fillText(
+        "Deposit",
+        452,
+        265
+      );
+
+
+      // ------------------------------------------------------
+      // Faraday's law result
+      // ------------------------------------------------------
+
+      ctx.textAlign =
+        "left";
+
+      result.innerHTML =
+        `Mass deposited m = ${mass.toFixed(4)} g<br>` +
+        `Charge Q = It = ${charge.toFixed(0)} C<br>` +
+        `Moles deposited = ${moles.toFixed(6)} mol<br>` +
+        `Faraday's Law: m = MIt / nF<br>` +
+        `F = 96,485 C/mol`;
+
+    }
+
+
+    // ========================================================
+    // DRAW DISPATCH
+    // ========================================================
+
     const draw = {
-      projectile_motion: projectile,
-      ohms_law: ohm,
-      hookes_law: hooke,
-      uniform_acceleration: uniformAcceleration,
-      simple_pendulum: pendulum,
-      series_parallel_circuit: circuit,
-      wave_motion: wave,
-      lens_formula: lens,
-      transformer: transformer,
-      density_pressure: densityPressure,
-      gas_law: gasLaw,
+
+      projectile_motion:
+        projectile,
+
+      ohms_law:
+        ohm,
+
+      hookes_law:
+        hooke,
+
+      uniform_acceleration:
+        uniformAcceleration,
+
+      simple_pendulum:
+        pendulum,
+
+      series_parallel_circuit:
+        circuit,
+
+      wave_motion:
+        wave,
+
+      lens_formula:
+        lens,
+
+      transformer:
+        transformer,
+
+      density_pressure:
+        densityPressure,
+
+      gas_law:
+        gasLaw,
+
       probability,
-      electromagnetic_induction: electromagneticInduction
+
+      electromagnetic_induction:
+        electromagneticInduction,
+
+      electrolysis:
+        electrolysis
+
     };
 
+
+    // ========================================================
+    // SIMULATION RANGES
+    // ========================================================
 
     const ranges = {
+
       projectile_motion: [
-        ["Initial velocity u (m/s)","velocity",1,100,.5],
-        ["Angle θ (°)","angle",5,85,1],
-        ["Gravity g (m/s²)","gravity",.1,30,.1]
+        [
+          "Initial velocity u (m/s)",
+          "velocity",
+          1,
+          100,
+          .5
+        ],
+
+        [
+          "Angle θ (°)",
+          "angle",
+          5,
+          85,
+          1
+        ],
+
+        [
+          "Gravity g (m/s²)",
+          "gravity",
+          .1,
+          30,
+          .1
+        ]
       ],
+
 
       ohms_law: [
-        ["Voltage V (V)","voltage",0,50,.5],
-        ["Resistance R (Ω)","resistance",.1,100,.1]
+        [
+          "Voltage V (V)",
+          "voltage",
+          0,
+          50,
+          .5
+        ],
+
+        [
+          "Resistance R (Ω)",
+          "resistance",
+          .1,
+          100,
+          .1
+        ]
       ],
+
 
       hookes_law: [
-        ["Force F (N)","force",0,50,.5],
-        ["Spring constant k (N/m)","springConstant",1,200,1]
+        [
+          "Force F (N)",
+          "force",
+          0,
+          50,
+          .5
+        ],
+
+        [
+          "Spring constant k (N/m)",
+          "springConstant",
+          1,
+          200,
+          1
+        ]
       ],
+
 
       uniform_acceleration: [
-        ["Initial velocity u (m/s)","u",-20,50,.5],
-        ["Acceleration a (m/s²)","acceleration",-10,20,.1],
-        ["Time t (s)","time",0,20,.1]
+        [
+          "Initial velocity u (m/s)",
+          "u",
+          -20,
+          50,
+          .5
+        ],
+
+        [
+          "Acceleration a (m/s²)",
+          "acceleration",
+          -10,
+          20,
+          .1
+        ],
+
+        [
+          "Time t (s)",
+          "time",
+          0,
+          20,
+          .1
+        ]
       ],
+
 
       simple_pendulum: [
-        ["Length L (m)","length",.2,5,.1],
-        ["Gravity g (m/s²)","gravity",.1,30,.1]
+        [
+          "Length L (m)",
+          "length",
+          .2,
+          5,
+          .1
+        ],
+
+        [
+          "Gravity g (m/s²)",
+          "gravity",
+          .1,
+          30,
+          .1
+        ]
       ],
+
 
       series_parallel_circuit: [
-        ["Resistance R1 (Ω)","resistance1",.1,100,.1],
-        ["Resistance R2 (Ω)","resistance2",.1,100,.1],
-        ["Voltage V (V)","voltage",0,100,.5]
+        [
+          "Resistance R1 (Ω)",
+          "resistance1",
+          .1,
+          100,
+          .1
+        ],
+
+        [
+          "Resistance R2 (Ω)",
+          "resistance2",
+          .1,
+          100,
+          .1
+        ],
+
+        [
+          "Voltage V (V)",
+          "voltage",
+          0,
+          100,
+          .5
+        ]
       ],
+
 
       wave_motion: [
-        ["Amplitude","amplitude",.1,5,.1],
-        ["Frequency","frequency",.1,10,.1],
-        ["Wavelength","wavelength",.1,10,.1]
+        [
+          "Amplitude",
+          "amplitude",
+          .1,
+          5,
+          .1
+        ],
+
+        [
+          "Frequency",
+          "frequency",
+          .1,
+          10,
+          .1
+        ],
+
+        [
+          "Wavelength",
+          "wavelength",
+          .1,
+          10,
+          .1
+        ]
       ],
+
 
       lens_formula: [
-        ["Focal length f (cm)","focalLength",1,100,1],
-        ["Object distance u (cm)","objectDistance",1,200,1]
+        [
+          "Focal length f (cm)",
+          "focalLength",
+          1,
+          100,
+          1
+        ],
+
+        [
+          "Object distance u (cm)",
+          "objectDistance",
+          1,
+          200,
+          1
+        ]
       ],
+
 
       transformer: [
-        ["Primary voltage Vp (V)","primaryVoltage",1,1000,1],
-        ["Primary turns Np","primaryTurns",1,10000,10],
-        ["Secondary turns Ns","secondaryTurns",1,10000,10]
+        [
+          "Primary voltage Vp (V)",
+          "primaryVoltage",
+          1,
+          1000,
+          1
+        ],
+
+        [
+          "Primary turns Np",
+          "primaryTurns",
+          1,
+          10000,
+          10
+        ],
+
+        [
+          "Secondary turns Ns",
+          "secondaryTurns",
+          1,
+          10000,
+          10
+        ]
       ],
+
 
       density_pressure: [
-        ["Density ρ (kg/m³)","density",.1,20000,10],
-        ["Depth h (m)","depth",0,100,.1],
-        ["Gravity g (m/s²)","gravity",.1,30,.1]
+        [
+          "Density ρ (kg/m³)",
+          "density",
+          .1,
+          20000,
+          10
+        ],
+
+        [
+          "Depth h (m)",
+          "depth",
+          0,
+          100,
+          .1
+        ],
+
+        [
+          "Gravity g (m/s²)",
+          "gravity",
+          .1,
+          30,
+          .1
+        ]
       ],
+
 
       gas_law: [
-        ["Pressure P","pressure",1,1000,1],
-        ["Volume V","volume",.1,20,.1],
-        ["Temperature T","temperature",1,2000,1]
+        [
+          "Pressure P",
+          "pressure",
+          1,
+          1000,
+          1
+        ],
+
+        [
+          "Volume V",
+          "volume",
+          .1,
+          20,
+          .1
+        ],
+
+        [
+          "Temperature T",
+          "temperature",
+          1,
+          2000,
+          1
+        ]
       ],
+
 
       probability: [
-        ["Favourable outcomes","favourable",0,100,1],
-        ["Total outcomes","total",1,100,1]
+        [
+          "Favourable outcomes",
+          "favourable",
+          0,
+          100,
+          1
+        ],
+
+        [
+          "Total outcomes",
+          "total",
+          1,
+          100,
+          1
+        ]
       ],
-       
-       electromagnetic_induction: [
-  ["Number of turns (N)", "turns", 1, 200, 1],
-  ["Velocity (v)", "velocity", 0, 10, 0.1],
-  ["Magnetic field (B)", "magneticField", 0, 2, 0.1]
-],
+
+
+      electromagnetic_induction: [
+        [
+          "Number of turns (N)",
+          "turns",
+          1,
+          200,
+          1
+        ],
+
+        [
+          "Velocity (v)",
+          "velocity",
+          0,
+          10,
+          .1
+        ],
+
+        [
+          "Magnetic field (B)",
+          "magneticField",
+          0,
+          2,
+          .1
+        ]
+      ],
+
+
+      // ------------------------------------------------------
+      // NEW — ELECTROLYSIS RANGES
+      // ------------------------------------------------------
+
+      electrolysis: [
+        [
+          "Current I (A)",
+          "current",
+          0,
+          20,
+          .1
+        ],
+
+        [
+          "Time t (s)",
+          "time",
+          1,
+          7200,
+          10
+        ],
+
+        [
+          "Molar mass M (g/mol)",
+          "molarMass",
+          1,
+          300,
+          .5
+        ],
+
+        [
+          "Valency n",
+          "valency",
+          1,
+          6,
+          1
+        ]
+      ]
+
     };
 
+
+    // ========================================================
+    // BUILD CONTROLS
+    // ========================================================
 
     (ranges[type] || []).forEach(
       ([label,key,min,max,step]) => {
@@ -1702,7 +3116,8 @@
             max
           );
 
-        state[key] = value;
+        state[key] =
+          value;
 
         slider(
           controls,
@@ -1712,10 +3127,15 @@
           max,
           step,
           newValue => {
-            state[key] = newValue;
+
+            state[key] =
+              newValue;
+
             draw[type]();
+
           }
         );
+
       }
     );
 
@@ -1731,6 +3151,7 @@
   // ==========================================================
 
   function renderImage(v) {
+
     const el =
       document.createElement("article");
 
@@ -1739,11 +3160,17 @@
 
     el.innerHTML = `
       <div class="nbv3-title">
-        🖼️ ${esc(v.caption || "Educational Illustration")}
+        🖼️ ${esc(
+          v.caption ||
+          "Educational Illustration"
+        )}
       </div>
 
       <div class="nbv3-image-spec">
-        <strong>Illustration specification</strong>
+
+        <strong>
+          Illustration specification
+        </strong>
 
         <p>
           ${esc(
@@ -1782,7 +3209,9 @@
     }
 
     switch (
-      String(v.type || "").toLowerCase()
+      String(
+        v.type || ""
+      ).toLowerCase()
     ) {
 
       case "equation":
@@ -1798,13 +3227,19 @@
         return renderTable(v);
 
       case "comparison":
-        return renderTable(v, true);
+        return renderTable(
+          v,
+          true
+        );
 
       case "flowchart":
         return renderFlow(v);
 
       case "process":
-        return renderFlow(v, true);
+        return renderFlow(
+          v,
+          true
+        );
 
       case "interactive":
         return renderInteractive(v);
@@ -1834,7 +3269,10 @@
         data.note.visualComponents
       )
         ? data.note.visualComponents
-            .slice(0, MAX_VISUALS)
+            .slice(
+              0,
+              MAX_VISUALS
+            )
         : [];
 
     if (!visuals.length) return;
@@ -1845,9 +3283,11 @@
       );
 
     if (!host) {
+
       console.warn(
         "NoteBank visual host not found."
       );
+
       return;
     }
 
@@ -1858,10 +3298,14 @@
         "nbv3-visuals"
       );
 
-    if (old) old.remove();
+    if (old) {
+      old.remove();
+    }
 
     const wrap =
-      document.createElement("section");
+      document.createElement(
+        "section"
+      );
 
     wrap.id =
       "nbv3-visuals";
@@ -1870,12 +3314,16 @@
       "nbv3-visuals";
 
     const heading =
-      document.createElement("h3");
+      document.createElement(
+        "h3"
+      );
 
     heading.textContent =
       "📚 Visual Learning Components";
 
-    wrap.appendChild(heading);
+    wrap.appendChild(
+      heading
+    );
 
     let rendered = 0;
 
@@ -1887,8 +3335,13 @@
           renderVisual(v);
 
         if (component) {
-          wrap.appendChild(component);
+
+          wrap.appendChild(
+            component
+          );
+
           rendered++;
+
         }
 
       } catch (error) {
@@ -1916,13 +3369,17 @@
   // ==========================================================
 
   const originalFetch =
-    window.fetch.bind(window);
+    window.fetch.bind(
+      window
+    );
 
   window.fetch =
     async function (...args) {
 
       const response =
-        await originalFetch(...args);
+        await originalFetch(
+          ...args
+        );
 
       try {
 
@@ -1953,7 +3410,9 @@
                 data.note
               ) {
 
-                mountVisuals(data);
+                mountVisuals(
+                  data
+                );
 
               }
 
@@ -1975,11 +3434,21 @@
     };
 
 
-  // Expose a small safe API for future academic.html integrations.
+  // ==========================================================
+  // SAFE PUBLIC API
+  // ==========================================================
+
   window.AINoteVisuals = {
-    version: "3.0",
-    mount: mountVisuals,
-    simulations: Object.keys(SIMS)
+
+    version:
+      "3.0",
+
+    mount:
+      mountVisuals,
+
+    simulations:
+      Object.keys(SIMS)
+
   };
 
 
