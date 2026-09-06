@@ -448,32 +448,35 @@
       .replace(/\\Phi/g, "Φ")
       .replace(/\\Psi/g, "Ψ")
       .replace(/\\Omega/g, "Ω")
-      .replace(/\\Xi/g, "Ξ")
-      .replace(/\\Upsilon/g, "Υ")
-      .replace(/\\Chi/g, "Χ")
-      .replace(/\\pi/g, "π")
-      .replace(/\\theta/g, "θ")
-      .replace(/\\lambda/g, "λ")
       .replace(/\\alpha/g, "α")
       .replace(/\\beta/g, "β")
       .replace(/\\gamma/g, "γ")
-      .replace(/\\varepsilon/g, "ε")
+      .replace(/\\delta/g, "δ")
       .replace(/\\epsilon/g, "ε")
-      .replace(/\\phi/g, "φ")
-      .replace(/\\psi/g, "ψ")
-      .replace(/\\omega/g, "ω")
-      .replace(/\\sigma/g, "σ")
-      .replace(/\\mu/g, "μ")
-      .replace(/\\rho/g, "ρ")
-      .replace(/\\nu/g, "ν")
-      .replace(/\\tau/g, "τ")
-      .replace(/\\chi/g, "χ")
-      .replace(/\\eta/g, "η")
+      .replace(/\\varepsilon/g, "ε")
       .replace(/\\zeta/g, "ζ")
-      .replace(/\\xi/g, "ξ")
+      .replace(/\\eta/g, "η")
+      .replace(/\\theta/g, "θ")
+      .replace(/\\vartheta/g, "ϑ")
       .replace(/\\iota/g, "ι")
       .replace(/\\kappa/g, "κ")
-      .replace(/\\upsilon/g, "υ");
+      .replace(/\\lambda/g, "λ")
+      .replace(/\\mu/g, "μ")
+      .replace(/\\nu/g, "ν")
+      .replace(/\\xi/g, "ξ")
+      .replace(/\\pi/g, "π")
+      .replace(/\\varpi/g, "ϖ")
+      .replace(/\\rho/g, "ρ")
+      .replace(/\\varrho/g, "ϱ")
+      .replace(/\\sigma/g, "σ")
+      .replace(/\\varsigma/g, "ς")
+      .replace(/\\tau/g, "τ")
+      .replace(/\\upsilon/g, "υ")
+      .replace(/\\phi/g, "φ")
+      .replace(/\\varphi/g, "ϕ")
+      .replace(/\\chi/g, "χ")
+      .replace(/\\psi/g, "ψ")
+      .replace(/\\omega/g, "ω");
 
     // --------------------------------------------------------
     // Trigonometric / mathematical functions
@@ -549,6 +552,7 @@
     );
 
     // Additional simple wrappers
+
     s = s.replace(
       /\\textbf\{([^{}]*)\}/g,
       "$1"
@@ -585,6 +589,7 @@
     );
 
     // Single-letter symbolic subscript
+
     s = s.replace(
       /_([A-Za-z])/g,
       "<sub>$1</sub>"
@@ -899,6 +904,183 @@
         <!-- Power supply -->
 
         <rect
+          x="290"
+          y="20"
+          width="140"
+          height="55"
+          rx="10"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"/>
+
+        ${txt(
+          360,
+          52,
+          "DC POWER SUPPLY",
+          'text-anchor="middle" font-size="16" font-weight="700"'
+        )}
+
+        <!-- Positive wire -->
+
+        ${line(320,75,264,125)}
+
+        <!-- Negative wire -->
+
+        ${line(400,75,456,125)}
+
+        <!-- Labels -->
+
+        ${txt(
+          215,
+          115,
+          "Anode (+)",
+          'font-weight="700"'
+        )}
+
+        ${txt(
+          455,
+          115,
+          "Cathode (−)",
+          'font-weight="700"'
+        )}
+
+        ${txt(
+          360,
+          165,
+          "Electrolyte",
+          'text-anchor="middle" font-weight="700"'
+        )}
+
+        <!-- Cations -->
+
+        ${line(
+          300,
+          205,
+          425,
+          205,
+          'stroke="#c0392b" stroke-width="4"'
+        )}
+
+        ${txt(
+          360,
+          190,
+          "Cations →",
+          'text-anchor="middle" fill="#c0392b" font-weight="700"'
+        )}
+
+        <!-- Anions -->
+
+        ${line(
+          425,
+          240,
+          300,
+          240,
+          'stroke="#2471a3" stroke-width="4"'
+        )}
+
+        ${txt(
+          360,
+          262,
+          "← Anions",
+          'text-anchor="middle" fill="#2471a3" font-weight="700"'
+        )}
+
+        <!-- Deposit -->
+
+        <rect
+          x="435"
+          y="235"
+          width="7"
+          height="35"
+          fill="#d7a62a"/>
+
+        ${txt(
+          490,
+          275,
+          "Metal deposit",
+          'font-size="15"'
+        )}
+
+        <!-- Reaction labels -->
+
+        ${txt(
+          205,
+          315,
+          "Oxidation",
+          'fill="#c0392b" font-weight="700"'
+        )}
+
+        ${txt(
+          430,
+          315,
+          "Reduction",
+          'fill="#2471a3" font-weight="700"'
+        )}
+
+      `, "Labelled electrolytic cell");
+    }
+
+       // --------------------------------------------------------
+    // ELECTROLYTIC CELL
+    //
+    // IMPORTANT:
+    // This check is deliberately before generic "circuit".
+    // --------------------------------------------------------
+
+    if (
+      t.includes("electroly") ||
+      t.includes("electrode") ||
+      t.includes("anode") ||
+      t.includes("cathode")
+    ) {
+      return svg(`
+        <!-- Electrolyte container -->
+
+        <rect
+          x="190"
+          y="95"
+          width="340"
+          height="190"
+          rx="10"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"/>
+
+        <!-- Electrolyte -->
+
+        <rect
+          x="195"
+          y="145"
+          width="330"
+          height="135"
+          fill="currentColor"
+          opacity=".08"/>
+
+        <!-- Anode -->
+
+        <rect
+          x="250"
+          y="125"
+          width="28"
+          height="130"
+          rx="4"
+          fill="currentColor"
+          opacity=".75"/>
+
+        <!-- Cathode -->
+
+        <rect
+          x="442"
+          y="125"
+          width="28"
+          height="130"
+          rx="4"
+          fill="currentColor"
+          opacity=".75"/>
+
+        <!-- Power supply -->
+
+        <rect
           x="285"
           y="25"
           width="150"
@@ -908,22 +1090,69 @@
           stroke="currentColor"
           stroke-width="3"/>
 
-        ${txt(315,59,"DC POWER SUPPLY")}
+        ${txt(
+          315,
+          59,
+          "DC POWER SUPPLY"
+        )}
 
         <!-- Wires -->
 
-        ${line(264,125,264,80)}
-        ${line(264,80,330,80)}
-        ${line(330,80,330,25)}
+        ${line(
+          264,
+          125,
+          264,
+          80
+        )}
 
-        ${line(456,125,456,80)}
-        ${line(456,80,390,80)}
-        ${line(390,80,390,25)}
+        ${line(
+          264,
+          80,
+          330,
+          80
+        )}
+
+        ${line(
+          330,
+          80,
+          330,
+          25
+        )}
+
+        ${line(
+          456,
+          125,
+          456,
+          80
+        )}
+
+        ${line(
+          456,
+          80,
+          390,
+          80
+        )}
+
+        ${line(
+          390,
+          80,
+          390,
+          25
+        )}
 
         <!-- Polarity -->
 
-        ${txt(235,118,"+")}
-        ${txt(458,118,"−")}
+        ${txt(
+          235,
+          118,
+          "+"
+        )}
+
+        ${txt(
+          458,
+          118,
+          "−"
+        )}
 
         <!-- Ion movement -->
 
@@ -953,15 +1182,47 @@
 
         <!-- Labels -->
 
-        ${txt(215,115,"Anode (+)")}
-        ${txt(475,115,"Cathode (−)")}
-        ${txt(300,165,"Electrolyte")}
+        ${txt(
+          215,
+          115,
+          "Anode (+)"
+        )}
 
-        ${txt(325,185,"Cations →")}
-        ${txt(325,250,"← Anions")}
+        ${txt(
+          475,
+          115,
+          "Cathode (−)"
+        )}
 
-        ${txt(205,315,"Positive ions move toward the cathode")}
-        ${txt(205,340,"Negative ions move toward the anode")}
+        ${txt(
+          300,
+          165,
+          "Electrolyte"
+        )}
+
+        ${txt(
+          325,
+          185,
+          "Cations →"
+        )}
+
+        ${txt(
+          325,
+          250,
+          "← Anions"
+        )}
+
+        ${txt(
+          205,
+          315,
+          "Positive ions move toward the cathode"
+        )}
+
+        ${txt(
+          205,
+          340,
+          "Negative ions move toward the anode"
+        )}
 
       `, "Labelled electrolytic cell showing anode, cathode, electrolyte and ion movement");
     }
@@ -973,11 +1234,40 @@
 
     if (t.includes("circuit")) {
       return svg(`
-        ${line(120,90,600,90)}
-        ${line(120,270,600,270)}
-        ${line(120,90,120,155)}
-        ${line(120,205,120,270)}
-        ${line(600,90,600,270)}
+        ${line(
+          120,
+          90,
+          600,
+          90
+        )}
+
+        ${line(
+          120,
+          270,
+          600,
+          270
+        )}
+
+        ${line(
+          120,
+          90,
+          120,
+          155
+        )}
+
+        ${line(
+          120,
+          205,
+          120,
+          270
+        )}
+
+        ${line(
+          600,
+          90,
+          600,
+          270
+        )}
 
         <rect
           x="105"
@@ -988,8 +1278,19 @@
           stroke="currentColor"
           stroke-width="3"/>
 
-        ${line(95,165,135,165)}
-        ${line(100,195,130,195)}
+        ${line(
+          95,
+          165,
+          135,
+          165
+        )}
+
+        ${line(
+          100,
+          195,
+          130,
+          195
+        )}
 
         <rect
           x="330"
@@ -1000,8 +1301,17 @@
           stroke="currentColor"
           stroke-width="3"/>
 
-        ${txt(348,277,"resistor")}
-        ${txt(78,145,"cell")}
+        ${txt(
+          348,
+          277,
+          "resistor"
+        )}
+
+        ${txt(
+          78,
+          145,
+          "cell"
+        )}
 
       `, "Simple circuit diagram");
     }
@@ -1025,14 +1335,51 @@
           stroke="currentColor"
           stroke-width="3"/>
 
-        ${line(360,145,360,65)}
-        ${line(440,195,590,195)}
-        ${line(280,195,130,195)}
-        ${line(360,245,360,325)}
+        ${line(
+          360,
+          145,
+          360,
+          65
+        )}
 
-        ${txt(330,200,"object")}
-        ${txt(370,70,"weight")}
-        ${txt(470,180,"force")}
+        ${line(
+          440,
+          195,
+          590,
+          195
+        )}
+
+        ${line(
+          280,
+          195,
+          130,
+          195
+        )}
+
+        ${line(
+          360,
+          245,
+          360,
+          325
+        )}
+
+        ${txt(
+          330,
+          200,
+          "object"
+        )}
+
+        ${txt(
+          370,
+          70,
+          "weight"
+        )}
+
+        ${txt(
+          470,
+          180,
+          "force"
+        )}
 
       `, "Free body diagram");
     }
@@ -1069,8 +1416,17 @@
           stroke="currentColor"
           stroke-width="3"/>
 
-        ${txt(265,145,"nucleus")}
-        ${txt(450,220,"organelle")}
+        ${txt(
+          265,
+          145,
+          "nucleus"
+        )}
+
+        ${txt(
+          450,
+          220,
+          "organelle"
+        )}
 
       `, "Cell diagram");
     }
@@ -1087,7 +1443,12 @@
       t.includes("induction")
     ) {
       return svg(`
-        ${line(70,270,650,270)}
+        ${line(
+          70,
+          270,
+          650,
+          270
+        )}
 
         <rect
           x="90"
@@ -1097,9 +1458,20 @@
           fill="currentColor"
           opacity=".85"/>
 
-        ${txt(112,190,"N")}
+        ${txt(
+          112,
+          190,
+          "N"
+        )}
 
-        ${[0,1,2,3,4,5].map(i => `
+        ${[
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ].map(i => `
           <ellipse
             cx="${420 + i * 22}"
             cy="180"
@@ -1110,13 +1482,47 @@
             stroke-width="2"/>
         `).join("")}
 
-        ${line(420,115,420,70)}
-        ${line(420,70,610,70)}
-        ${line(610,70,610,140)}
+        ${line(
+          420,
+          115,
+          420,
+          70
+        )}
 
-        ${line(530,245,530,300)}
-        ${line(530,300,610,300)}
-        ${line(610,300,610,220)}
+        ${line(
+          420,
+          70,
+          610,
+          70
+        )}
+
+        ${line(
+          610,
+          70,
+          610,
+          140
+        )}
+
+        ${line(
+          530,
+          245,
+          530,
+          300
+        )}
+
+        ${line(
+          530,
+          300,
+          610,
+          300
+        )}
+
+        ${line(
+          610,
+          300,
+          610,
+          220
+        )}
 
         <circle
           cx="610"
@@ -1126,22 +1532,47 @@
           stroke="currentColor"
           stroke-width="2"/>
 
-        ${txt(600,187,"G")}
+        ${txt(
+          600,
+          187,
+          "G"
+        )}
 
         <path
-          d="M170 180
-             L260 180
-             M245 168
-             L262 180
-             L245 192"
+          d="
+            M170 180
+            L260 180
+            M245 168
+            L262 180
+            L245 192
+          "
           fill="none"
           stroke="currentColor"
           stroke-width="2"/>
 
-        ${txt(175,155,"motion")}
-        ${txt(80,230,"bar magnet")}
-        ${txt(460,320,"coil / solenoid")}
-        ${txt(575,235,"galvanometer")}
+        ${txt(
+          175,
+          155,
+          "motion"
+        )}
+
+        ${txt(
+          80,
+          230,
+          "bar magnet"
+        )}
+
+        ${txt(
+          460,
+          320,
+          "coil / solenoid"
+        )}
+
+        ${txt(
+          575,
+          235,
+          "galvanometer"
+        )}
 
       `, "Bar magnet moving into a coil");
     }
@@ -1347,24 +1778,20 @@
       "nbv3-card";
 
     const steps =
-      (
-        Array.isArray(v.steps)
-          ? v.steps
-          : Array.isArray(v.stages)
-            ? v.stages
-            : []
-      ).slice(0, 20);
+      Array.isArray(v.steps)
+        ? v.steps.slice(0, 20)
+        : [];
 
     el.innerHTML = `
       <div class="nbv3-title">
-        ${process ? "🔄" : "➡️"}
+        ${process ? "⚙️" : "➡️"}
 
         ${esc(
           v.title ||
           (
             process
               ? "Process"
-              : "Flowchart"
+              : "Flow"
           )
         )}
       </div>
@@ -1375,8 +1802,12 @@
           .map(
             (step, i) => `
               ${
-                i
-                  ? `<span class="nbv3-arrow">→</span>`
+                i > 0
+                  ? `<div
+                       class="nbv3-arrow"
+                       aria-hidden="true">
+                       →
+                     </div>`
                   : ""
               }
 
@@ -1390,8 +1821,10 @@
       </div>
 
       ${
-        v.description
-          ? `<p>${esc(v.description)}</p>`
+        v.caption
+          ? `<div class="nbv3-caption">
+              ${esc(v.caption)}
+             </div>`
           : ""
       }
     `;
@@ -1399,8 +1832,7 @@
     return el;
   }
 
-
-  // ==========================================================
+   // ==========================================================
   // GRAPH
   // ==========================================================
 
@@ -1479,14 +1911,28 @@
 
     el.innerHTML = `
       <div class="nbv3-title">
-        📈 ${esc(v.title || "Graph")}
+        📈 ${esc(
+          v.title ||
+          "Graph"
+        )}
       </div>
 
       <div class="nbv3-svg-wrap">
 
         ${svg(`
-          ${line(70,295,660,295)}
-          ${line(70,295,70,50)}
+          ${line(
+            70,
+            295,
+            660,
+            295
+          )}
+
+          ${line(
+            70,
+            295,
+            70,
+            50
+          )}
 
           ${
             plotted
@@ -1529,23 +1975,37 @@
           ${txt(
             320,
             335,
-            v.xLabel || "x"
+            v.xLabel ||
+              "x"
           )}
 
           ${txt(
             18,
             70,
-            v.yLabel || "y"
+            v.yLabel ||
+              "y"
           )}
 
-        `, v.title || "Graph")}
+        `,
+        v.title ||
+          "Graph")}
 
       </div>
 
       <div class="nbv3-meta">
-        X: ${esc(v.xLabel || "x")}
+        X:
+        ${esc(
+          v.xLabel ||
+          "x"
+        )}
+
         &nbsp;&nbsp;|&nbsp;&nbsp;
-        Y: ${esc(v.yLabel || "y")}
+
+        Y:
+        ${esc(
+          v.yLabel ||
+          "y"
+        )}
       </div>
     `;
 
@@ -1579,9 +2039,13 @@
         )}
       </p>
 
-      <div class="nbv3-interactive-controls"></div>
+      <div
+        class="nbv3-interactive-controls">
+      </div>
 
-      <div class="nbv3-result">
+      <div
+        class="nbv3-result"
+        aria-live="polite">
         Adjust a parameter to explore.
       </div>
     `;
@@ -1597,8 +2061,13 @@
       );
 
     const params =
-      Array.isArray(v.parameters)
-        ? v.parameters.slice(0, 12)
+      Array.isArray(
+        v.parameters
+      )
+        ? v.parameters.slice(
+            0,
+            12
+          )
         : [];
 
     function update() {
@@ -1608,10 +2077,16 @@
         .querySelectorAll(
           "input[data-name]"
         )
-        .forEach(input => {
-          values[input.dataset.name] =
-            Number(input.value);
-        });
+        .forEach(
+          input => {
+            values[
+              input.dataset.name
+            ] =
+              Number(
+                input.value
+              );
+          }
+        );
 
       result.textContent =
         Object.entries(values)
@@ -1619,81 +2094,113 @@
             ([k, val]) =>
               `${k} = ${val}`
           )
-          .join("  |  ") ||
+          .join(
+            "  |  "
+          ) ||
         "Adjust a parameter to explore.";
     }
 
-    params.forEach(p => {
-      let min =
-        num(p?.min, 0);
+    params.forEach(
+      p => {
 
-      let max =
-        num(p?.max, 100);
+        let min =
+          num(
+            p?.min,
+            0
+          );
 
-      if (max <= min) {
-        max = min + 100;
-      }
+        let max =
+          num(
+            p?.max,
+            100
+          );
 
-      const step =
-        num(p?.step, 1) > 0
-          ? num(p.step, 1)
-          : 1;
+        if (
+          max <= min
+        ) {
+          max =
+            min + 100;
+        }
 
-      const value =
-        clamp(
-          num(p?.value, min),
-          min,
-          max
+        const step =
+          num(
+            p?.step,
+            1
+          ) > 0
+            ? num(
+                p.step,
+                1
+              )
+            : 1;
+
+        const value =
+          clamp(
+            num(
+              p?.value,
+              min
+            ),
+            min,
+            max
+          );
+
+        const row =
+          document.createElement(
+            "label"
+          );
+
+        row.className =
+          "nbv3-slider";
+
+        row.innerHTML = `
+          <span>
+            ${esc(
+              p?.name ||
+              "Parameter"
+            )}
+          </span>
+
+          <input
+            data-name="${esc(
+              p?.name ||
+              "Parameter"
+            )}"
+            type="range"
+            min="${min}"
+            max="${max}"
+            step="${step}"
+            value="${value}">
+
+          <output>
+            ${value}
+          </output>
+        `;
+
+        const input =
+          row.querySelector(
+            "input"
+          );
+
+        const output =
+          row.querySelector(
+            "output"
+          );
+
+        input.addEventListener(
+          "input",
+          () => {
+
+            output.value =
+              input.value;
+
+            update();
+          }
         );
 
-      const row =
-        document.createElement("label");
-
-      row.className =
-        "nbv3-slider";
-
-      row.innerHTML = `
-        <span>
-          ${esc(
-            p?.name ||
-            "Parameter"
-          )}
-        </span>
-
-        <input
-          data-name="${esc(
-            p?.name ||
-            "Parameter"
-          )}"
-          type="range"
-          min="${min}"
-          max="${max}"
-          step="${step}"
-          value="${value}">
-
-        <output>
-          ${value}
-        </output>
-      `;
-
-      const input =
-        row.querySelector("input");
-
-      const output =
-        row.querySelector("output");
-
-      input.addEventListener(
-        "input",
-        () => {
-          output.value =
-            input.value;
-
-          update();
-        }
-      );
-
-      controls.appendChild(row);
-    });
+        controls.appendChild(
+          row
+        );
+      }
+    );
 
     update();
 
@@ -1714,14 +2221,19 @@
     step,
     onChange
   ) {
+
     const row =
-      document.createElement("label");
+      document.createElement(
+        "label"
+      );
 
     row.className =
       "nbv3-slider";
 
     row.innerHTML = `
-      <span>${esc(label)}</span>
+      <span>
+        ${esc(label)}
+      </span>
 
       <input
         type="range"
@@ -1736,34 +2248,51 @@
     `;
 
     const input =
-      row.querySelector("input");
+      row.querySelector(
+        "input"
+      );
 
     const output =
-      row.querySelector("output");
+      row.querySelector(
+        "output"
+      );
 
     input.addEventListener(
       "input",
       () => {
+
         output.value =
           input.value;
 
         onChange(
-          Number(input.value)
+          Number(
+            input.value
+          )
         );
       }
     );
 
-    container.appendChild(row);
+    container.appendChild(
+      row
+    );
   }
 
 
+  // ==========================================================
+  // SIMULATION RENDERER
+  // ==========================================================
+
   function renderSimulation(v) {
+
     const type =
       String(
-        v.simulation || ""
+        v.simulation ||
+        ""
       ).toLowerCase();
 
-    if (!SIMS[type]) {
+    if (
+      !SIMS[type]
+    ) {
       return null;
     }
 
@@ -1773,7 +2302,9 @@
     };
 
     const el =
-      document.createElement("article");
+      document.createElement(
+        "article"
+      );
 
     el.className =
       "nbv3-card";
@@ -1793,15 +2324,25 @@
         )}
       </p>
 
-      <div class="nbv3-sim-controls"></div>
+      <div
+        class="nbv3-sim-controls">
+      </div>
 
       <canvas
         class="nbv3-canvas"
         width="760"
-        height="360">
+        height="360"
+        role="img"
+        aria-label="${esc(
+          v.title ||
+          SIMS[type].title
+        )}">
       </canvas>
 
-      <div class="nbv3-result"></div>
+      <div
+        class="nbv3-result"
+        aria-live="polite">
+      </div>
     `;
 
     const controls =
@@ -1810,10 +2351,14 @@
       );
 
     const canvas =
-      el.querySelector("canvas");
+      el.querySelector(
+        "canvas"
+      );
 
     const ctx =
-      canvas.getContext("2d");
+      canvas.getContext(
+        "2d"
+      );
 
     const result =
       el.querySelector(
@@ -1826,6 +2371,7 @@
     // ========================================================
 
     function clear() {
+
       ctx.clearRect(
         0,
         0,
@@ -1833,11 +2379,20 @@
         canvas.height
       );
 
-      ctx.fillStyle = "#222";
-      ctx.strokeStyle = "#222";
-      ctx.lineWidth = 2;
-      ctx.font = "16px Arial";
-      ctx.textAlign = "left";
+      ctx.fillStyle =
+        "#222";
+
+      ctx.strokeStyle =
+        "#222";
+
+      ctx.lineWidth =
+        2;
+
+      ctx.font =
+        "16px Arial";
+
+      ctx.textAlign =
+        "left";
     }
 
 
@@ -1846,6 +2401,7 @@
     // ========================================================
 
     function projectile() {
+
       clear();
 
       const u =
@@ -1883,7 +2439,9 @@
       const T =
         2 *
         u *
-        Math.sin(angle) /
+        Math.sin(
+          angle
+        ) /
         g;
 
       const R =
@@ -1897,8 +2455,12 @@
       const H =
         u *
         u *
-        Math.sin(angle) ** 2 /
-        (2 * g);
+        Math.sin(
+          angle
+        ) ** 2 /
+        (
+          2 * g
+        );
 
       ctx.beginPath();
 
@@ -1907,17 +2469,24 @@
         i <= 100;
         i++
       ) {
+
         const t =
-          T * i / 100;
+          T *
+          i /
+          100;
 
         const x =
           u *
-          Math.cos(angle) *
+          Math.cos(
+            angle
+          ) *
           t;
 
         const y =
           u *
-          Math.sin(angle) *
+          Math.sin(
+            angle
+          ) *
           t -
           .5 *
           g *
@@ -1926,26 +2495,51 @@
 
         const px =
           45 +
-          (x /
-            Math.max(R, 1)) *
-            650;
+          (
+            x /
+            Math.max(
+              R,
+              1
+            )
+          ) *
+          650;
 
         const py =
           300 -
-          (y /
-            Math.max(H, 1)) *
-            240;
+          (
+            y /
+            Math.max(
+              H,
+              1
+            )
+          ) *
+          240;
 
         i
-          ? ctx.lineTo(px, py)
-          : ctx.moveTo(px, py);
+          ? ctx.lineTo(
+              px,
+              py
+            )
+          : ctx.moveTo(
+              px,
+              py
+            );
       }
 
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.moveTo(40,300);
-      ctx.lineTo(710,300);
+
+      ctx.moveTo(
+        40,
+        300
+      );
+
+      ctx.lineTo(
+        710,
+        300
+      );
+
       ctx.stroke();
 
       result.textContent =
@@ -1954,12 +2548,12 @@
         `Time = ${T.toFixed(2)} s`;
     }
 
-
-    // ========================================================
+       // ========================================================
     // OHM'S LAW
     // ========================================================
 
     function ohm() {
+
       clear();
 
       const V =
@@ -1985,38 +2579,202 @@
       const I =
         V / R;
 
+      // ------------------------------------------------------
+      // Circuit representation
+      // ------------------------------------------------------
+
+      ctx.strokeStyle =
+        "#333";
+
+      ctx.lineWidth =
+        3;
+
       ctx.beginPath();
-      ctx.moveTo(90,180);
-      ctx.lineTo(670,180);
+
+      ctx.moveTo(
+        90,
+        80
+      );
+
+      ctx.lineTo(
+        670,
+        80
+      );
+
+      ctx.lineTo(
+        670,
+        280
+      );
+
+      ctx.lineTo(
+        90,
+        280
+      );
+
+      ctx.lineTo(
+        90,
+        80
+      );
+
       ctx.stroke();
 
-      ctx.strokeRect(
-        320,
-        145,
-        120,
-        70
+      // ------------------------------------------------------
+      // Battery
+      // ------------------------------------------------------
+
+      ctx.lineWidth =
+        4;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        135,
+        130
+      );
+
+      ctx.lineTo(
+        135,
+        230
+      );
+
+      ctx.moveTo(
+        160,
+        145
+      );
+
+      ctx.lineTo(
+        160,
+        215
+      );
+
+      ctx.stroke();
+
+      ctx.font =
+        "bold 18px Arial";
+
+      ctx.fillText(
+        "+",
+        126,
+        120
       );
 
       ctx.fillText(
-        "R",
-        375,
-        185
+        "−",
+        151,
+        245
       );
+
+      // ------------------------------------------------------
+      // Resistor
+      // ------------------------------------------------------
 
       ctx.beginPath();
 
-      ctx.arc(
-        90,
-        180,
-        30,
-        0,
-        Math.PI * 2
+      ctx.moveTo(
+        300,
+        80
+      );
+
+      ctx.lineTo(
+        320,
+        80
+      );
+
+      ctx.lineTo(
+        335,
+        60
+      );
+
+      ctx.lineTo(
+        365,
+        100
+      );
+
+      ctx.lineTo(
+        395,
+        60
+      );
+
+      ctx.lineTo(
+        425,
+        100
+      );
+
+      ctx.lineTo(
+        440,
+        80
+      );
+
+      ctx.lineTo(
+        470,
+        80
       );
 
       ctx.stroke();
 
-      result.textContent =
-        `Current I = ${I.toFixed(3)} A`;
+      ctx.font =
+        "16px Arial";
+
+      ctx.fillText(
+        `R = ${R.toFixed(1)} Ω`,
+        330,
+        135
+      );
+
+      // ------------------------------------------------------
+      // Current arrow
+      // ------------------------------------------------------
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        500,
+        80
+      );
+
+      ctx.lineTo(
+        590,
+        80
+      );
+
+      ctx.lineTo(
+        575,
+        70
+      );
+
+      ctx.moveTo(
+        590,
+        80
+      );
+
+      ctx.lineTo(
+        575,
+        90
+      );
+
+      ctx.stroke();
+
+      ctx.fillText(
+        `I = ${I.toFixed(2)} A`,
+        500,
+        55
+      );
+
+      // ------------------------------------------------------
+      // Voltage
+      // ------------------------------------------------------
+
+      ctx.fillText(
+        `V = ${V.toFixed(1)} V`,
+        95,
+        320
+      );
+
+      result.innerHTML =
+        `Ohm's Law: V = IR<br>` +
+        `Current I = ${I.toFixed(3)} A<br>` +
+        `Voltage V = ${V.toFixed(2)} V<br>` +
+        `Resistance R = ${R.toFixed(2)} Ω`;
     }
 
 
@@ -2025,6 +2783,7 @@
     // ========================================================
 
     function hooke() {
+
       clear();
 
       const F =
@@ -2050,54 +2809,148 @@
       const x =
         F / k;
 
-      const start =
-        100;
+      // ------------------------------------------------------
+      // Support
+      // ------------------------------------------------------
 
-      const y =
-        180;
+      ctx.fillStyle =
+        "#555";
 
-      const end =
-        start +
-        180 +
-        x * 500;
+      ctx.fillRect(
+        100,
+        45,
+        40,
+        270
+      );
+
+      ctx.fillStyle =
+        "#222";
+
+      // ------------------------------------------------------
+      // Spring
+      // ------------------------------------------------------
+
+      const startX =
+        140;
+
+      const endX =
+        430 +
+        Math.min(
+          x * 450,
+          170
+        );
+
+      const coils =
+        12;
+
+      const width =
+        endX -
+        startX;
+
+      ctx.strokeStyle =
+        "#333";
+
+      ctx.lineWidth =
+        3;
 
       ctx.beginPath();
 
       ctx.moveTo(
-        start,
-        y
+        startX,
+        150
       );
 
       for (
         let i = 0;
-        i < 12;
+        i < coils;
         i++
       ) {
+
+        const px =
+          startX +
+          (
+            width *
+            i /
+            coils
+          );
+
+        const next =
+          startX +
+          (
+            width *
+            (i + .5) /
+            coils
+          );
+
+        const final =
+          startX +
+          (
+            width *
+            (i + 1) /
+            coils
+          );
+
         ctx.lineTo(
-          start + i * 15,
-          y +
-            (i % 2
-              ? 18
-              : -18)
+          next,
+          i % 2 === 0
+            ? 125
+            : 175
+        );
+
+        ctx.lineTo(
+          final,
+          150
         );
       }
 
-      ctx.lineTo(
-        end,
-        y
-      );
-
       ctx.stroke();
 
+      // ------------------------------------------------------
+      // Mass / force block
+      // ------------------------------------------------------
+
+      ctx.fillStyle =
+        "#777";
+
       ctx.fillRect(
-        end,
-        y - 25,
+        endX,
+        125,
         65,
         50
       );
 
-      result.textContent =
-        `Extension x = ${x.toFixed(3)} m`;
+      ctx.fillStyle =
+        "#222";
+
+      ctx.font =
+        "bold 16px Arial";
+
+      ctx.fillText(
+        `F = ${F.toFixed(1)} N`,
+        endX - 5,
+        205
+      );
+
+      ctx.fillText(
+        `x = ${x.toFixed(3)} m`,
+        endX - 5,
+        230
+      );
+
+      ctx.font =
+        "16px Arial";
+
+      ctx.fillText(
+        `k = ${k.toFixed(1)} N/m`,
+        250,
+        300
+      );
+
+      result.innerHTML =
+        `Hooke's Law: F = kx<br>` +
+        `Extension x = ${x.toFixed(4)} m<br>` +
+        `Force F = ${F.toFixed(2)} N<br>` +
+        `Spring constant k = ${k.toFixed(2)} N/m`;
     }
 
 
@@ -2106,6 +2959,7 @@
     // ========================================================
 
     function uniformAcceleration() {
+
       clear();
 
       const u =
@@ -2120,7 +2974,7 @@
           2
         );
 
-      const t =
+      const time =
         clamp(
           num(
             state.time,
@@ -2130,44 +2984,163 @@
           20
         );
 
-      const s =
-        u * t +
-        .5 * a * t * t;
-
       const v =
-        u + a * t;
+        u +
+        a * time;
 
-      const distance =
-        clamp(
-          s,
-          0,
-          620
-        );
+      const s =
+        u * time +
+        .5 *
+        a *
+        time *
+        time;
+
+      // ------------------------------------------------------
+      // Ground
+      // ------------------------------------------------------
+
+      ctx.strokeStyle =
+        "#333";
+
+      ctx.lineWidth =
+        2;
 
       ctx.beginPath();
 
       ctx.moveTo(
-        50,
-        230
+        55,
+        270
       );
 
       ctx.lineTo(
-        50 + distance,
-        230
+        700,
+        270
       );
 
       ctx.stroke();
 
-      ctx.fillRect(
-        45 + distance,
-        215,
-        25,
-        25
+      // ------------------------------------------------------
+      // Motion object
+      // ------------------------------------------------------
+
+      const position =
+        90 +
+        (
+          Math.abs(s) %
+          540
+        );
+
+      ctx.fillStyle =
+        "#555";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        position,
+        240,
+        18,
+        0,
+        Math.PI * 2
       );
 
-      result.textContent =
-        `Displacement = ${s.toFixed(2)} m | ` +
-        `Final velocity = ${v.toFixed(2)} m/s`;
+      ctx.fill();
+
+      // ------------------------------------------------------
+      // Velocity vector
+      // ------------------------------------------------------
+
+      const direction =
+        v >= 0
+          ? 1
+          : -1;
+
+      const arrowLength =
+        clamp(
+          Math.abs(v) * 5,
+          25,
+          170
+        );
+
+      ctx.strokeStyle =
+        "#333";
+
+      ctx.lineWidth =
+        3;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        position,
+        200
+      );
+
+      ctx.lineTo(
+        position +
+          direction *
+          arrowLength,
+        200
+      );
+
+      ctx.lineTo(
+        position +
+          direction *
+          (
+            arrowLength -
+            15
+          ),
+        190
+      );
+
+      ctx.moveTo(
+        position +
+          direction *
+          arrowLength,
+        200
+      );
+
+      ctx.lineTo(
+        position +
+          direction *
+          (
+            arrowLength -
+            15
+          ),
+        210
+      );
+
+      ctx.stroke();
+
+      ctx.font =
+        "16px Arial";
+
+      ctx.fillText(
+        `v = ${v.toFixed(2)} m/s`,
+        70,
+        70
+      );
+
+      ctx.fillText(
+        `u = ${u.toFixed(2)} m/s`,
+        70,
+        95
+      );
+
+      ctx.fillText(
+        `a = ${a.toFixed(2)} m/s²`,
+        70,
+        120
+      );
+
+      ctx.fillText(
+        `t = ${time.toFixed(2)} s`,
+        70,
+        145
+      );
+
+      result.innerHTML =
+        `Final velocity v = ${v.toFixed(3)} m/s<br>` +
+        `Displacement s = ${s.toFixed(3)} m<br>` +
+        `Using v = u + at and s = ut + ½at²`;
     }
 
 
@@ -2176,6 +3149,7 @@
     // ========================================================
 
     function pendulum() {
+
       clear();
 
       const L =
@@ -2184,7 +3158,7 @@
             state.length,
             1
           ),
-          .2,
+          .1,
           5
         );
 
@@ -2205,29 +3179,64 @@
           L / g
         );
 
+      const f =
+        1 / T;
+
+      // ------------------------------------------------------
+      // Ceiling
+      // ------------------------------------------------------
+
+      ctx.fillStyle =
+        "#555";
+
+      ctx.fillRect(
+        130,
+        45,
+        500,
+        18
+      );
+
+      // ------------------------------------------------------
+      // Pendulum geometry
+      // ------------------------------------------------------
+
       const pivotX =
         380;
 
       const pivotY =
-        55;
+        63;
 
-      const scale =
-        Math.min(
-          230 / L,
-          70
+      const lengthPx =
+        clamp(
+          L * 70,
+          60,
+          270
         );
+
+      const angle =
+        28 *
+        Math.PI /
+        180;
 
       const bobX =
         pivotX +
-        Math.sin(.65) *
-          L *
-          scale;
+        Math.sin(
+          angle
+        ) *
+        lengthPx;
 
       const bobY =
         pivotY +
-        Math.cos(.65) *
-          L *
-          scale;
+        Math.cos(
+          angle
+        ) *
+        lengthPx;
+
+      ctx.strokeStyle =
+        "#333";
+
+      ctx.lineWidth =
+        3;
 
       ctx.beginPath();
 
@@ -2243,29 +3252,91 @@
 
       ctx.stroke();
 
+      // ------------------------------------------------------
+      // Pivot
+      // ------------------------------------------------------
+
+      ctx.fillStyle =
+        "#333";
+
       ctx.beginPath();
 
       ctx.arc(
-        bobX,
-        bobY,
-        22,
+        pivotX,
+        pivotY,
+        6,
         0,
         Math.PI * 2
       );
 
       ctx.fill();
 
-      result.textContent =
-        `Period T = ${T.toFixed(3)} s`;
+      // ------------------------------------------------------
+      // Bob
+      // ------------------------------------------------------
+
+      ctx.fillStyle =
+        "#777";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        bobX,
+        bobY,
+        24,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+
+      ctx.fillStyle =
+        "#222";
+
+      ctx.font =
+        "16px Arial";
+
+      ctx.fillText(
+        `L = ${L.toFixed(2)} m`,
+        420,
+        170
+      );
+
+      ctx.fillText(
+        `g = ${g.toFixed(2)} m/s²`,
+        420,
+        195
+      );
+
+      ctx.fillText(
+        `T = ${T.toFixed(3)} s`,
+        420,
+        220
+      );
+
+      result.innerHTML =
+        `Period T = ${T.toFixed(3)} s<br>` +
+        `Frequency f = ${f.toFixed(3)} Hz<br>` +
+        `Using T = 2π√(L/g)`;
     }
 
-
-    // ========================================================
-    // SERIES / PARALLEL CIRCUIT
-    // ========================================================
+       // ==========================================================
+    // SERIES & PARALLEL CIRCUIT
+    // ==========================================================
 
     function circuit() {
+
       clear();
+
+      const V =
+        clamp(
+          num(
+            state.voltage,
+            12
+          ),
+          1,
+          50
+        );
 
       const R1 =
         clamp(
@@ -2273,7 +3344,7 @@
             state.resistance1,
             4
           ),
-          .1,
+          1,
           100
         );
 
@@ -2283,78 +3354,360 @@
             state.resistance2,
             6
           ),
-          .1,
+          1,
           100
         );
 
-      const V =
-        clamp(
-          num(
-            state.voltage,
-            12
-          ),
-          0,
-          100
-        );
-
-      const series =
+      const seriesR =
         R1 + R2;
 
-      const parallel =
+      const parallelR =
         1 /
         (
-          1 / R1 +
-          1 / R2
+          (1 / R1) +
+          (1 / R2)
         );
+
+      const seriesI =
+        V / seriesR;
+
+      const parallelI =
+        V / parallelR;
+
+      const W =
+        canvas.width;
+
+      const H =
+        canvas.height;
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.textAlign =
+        "center";
+
+      ctx.fillText(
+        "Series and Parallel Circuit",
+        W / 2,
+        30
+      );
+
+      ctx.font =
+        "15px Arial";
+
+      // --------------------------------------------------------
+      // SERIES CIRCUIT
+      // --------------------------------------------------------
+
+      ctx.strokeStyle =
+        "#222";
+
+      ctx.lineWidth =
+        3;
 
       ctx.beginPath();
 
-      ctx.moveTo(90,90);
-      ctx.lineTo(670,90);
-      ctx.lineTo(670,270);
-      ctx.lineTo(90,270);
+      ctx.moveTo(
+        70,
+        90
+      );
+
+      ctx.lineTo(
+        160,
+        90
+      );
+
+      ctx.lineTo(
+        160,
+        60
+      );
+
+      ctx.lineTo(
+        220,
+        60
+      );
+
+      ctx.lineTo(
+        220,
+        90
+      );
+
+      ctx.lineTo(
+        330,
+        90
+      );
+
+      ctx.lineTo(
+        330,
+        120
+      );
+
+      ctx.lineTo(
+        220,
+        120
+      );
+
+      ctx.lineTo(
+        220,
+        150
+      );
+
+      ctx.lineTo(
+        160,
+        150
+      );
+
+      ctx.lineTo(
+        160,
+        120
+      );
+
+      ctx.lineTo(
+        70,
+        120
+      );
+
       ctx.closePath();
 
       ctx.stroke();
 
-      ctx.strokeRect(
-        250,
-        65,
-        90,
-        50
+      // Battery
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        110,
+        80
       );
 
-      ctx.strokeRect(
-        420,
-        65,
-        90,
-        50
+      ctx.lineTo(
+        110,
+        130
+      );
+
+      ctx.moveTo(
+        125,
+        90
+      );
+
+      ctx.lineTo(
+        125,
+        120
+      );
+
+      ctx.stroke();
+
+      ctx.fillText(
+        `${V.toFixed(1)} V`,
+        118,
+        155
+      );
+
+      // Resistors
+
+      function drawResistor(
+        x,
+        y,
+        label
+      ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          x - 35,
+          y
+        );
+
+        for (
+          let i = 0;
+          i < 6;
+          i++
+        ) {
+
+          ctx.lineTo(
+            x - 35 +
+            i * 14,
+            y +
+            (
+              i % 2 === 0
+                ? -10
+                : 10
+            )
+          );
+        }
+
+        ctx.lineTo(
+          x + 35,
+          y
+        );
+
+        ctx.stroke();
+
+        ctx.fillText(
+          label,
+          x,
+          y - 18
+        );
+      }
+
+      drawResistor(
+        200,
+        60,
+        `R₁ = ${R1.toFixed(1)} Ω`
+      );
+
+      drawResistor(
+        275,
+        120,
+        `R₂ = ${R2.toFixed(1)} Ω`
       );
 
       ctx.fillText(
-        "R1",
-        280,
-        95
+        `Series R = ${seriesR.toFixed(2)} Ω`,
+        W / 2,
+        190
       );
 
       ctx.fillText(
-        "R2",
-        450,
-        95
+        `Series I = ${seriesI.toFixed(3)} A`,
+        W / 2,
+        212
       );
 
-      result.textContent =
-        `Series Req = ${series.toFixed(2)} Ω | ` +
-        `Parallel Req = ${parallel.toFixed(2)} Ω | ` +
-        `Series current = ${(V / series).toFixed(3)} A`;
+      // --------------------------------------------------------
+      // PARALLEL CIRCUIT
+      // --------------------------------------------------------
+
+      const top =
+        270;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        80,
+        top
+      );
+
+      ctx.lineTo(
+        180,
+        top
+      );
+
+      ctx.lineTo(
+        180,
+        top - 40
+      );
+
+      ctx.lineTo(
+        350,
+        top - 40
+      );
+
+      ctx.lineTo(
+        350,
+        top
+      );
+
+      ctx.lineTo(
+        430,
+        top
+      );
+
+      ctx.moveTo(
+        180,
+        top
+      );
+
+      ctx.lineTo(
+        180,
+        top + 100
+      );
+
+      ctx.lineTo(
+        350,
+        top + 100
+      );
+
+      ctx.lineTo(
+        350,
+        top
+      );
+
+      ctx.stroke();
+
+      // Battery
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        115,
+        top - 25
+      );
+
+      ctx.lineTo(
+        115,
+        top + 25
+      );
+
+      ctx.moveTo(
+        130,
+        top - 15
+      );
+
+      ctx.lineTo(
+        130,
+        top + 15
+      );
+
+      ctx.stroke();
+
+      ctx.fillText(
+        `${V.toFixed(1)} V`,
+        123,
+        top + 55
+      );
+
+      drawResistor(
+        265,
+        top - 40,
+        `R₁ = ${R1.toFixed(1)} Ω`
+      );
+
+      drawResistor(
+        265,
+        top + 100,
+        `R₂ = ${R2.toFixed(1)} Ω`
+      );
+
+      ctx.fillText(
+        `Parallel R = ${parallelR.toFixed(2)} Ω`,
+        W / 2,
+        410
+      );
+
+      ctx.fillText(
+        `Total parallel I = ${parallelI.toFixed(3)} A`,
+        W / 2,
+        432
+      );
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillText(
+        "Key idea: series resistances add; parallel resistance decreases.",
+        25,
+        H - 20
+      );
     }
 
 
-    // ========================================================
-    // WAVE
-    // ========================================================
+    // ==========================================================
+    // WAVE MOTION
+    // ==========================================================
 
     function wave() {
+
       clear();
 
       const A =
@@ -2363,8 +3716,8 @@
             state.amplitude,
             1
           ),
-          .1,
-          5
+          0.1,
+          10
         );
 
       const f =
@@ -2373,7 +3726,7 @@
             state.frequency,
             2
           ),
-          .1,
+          0.1,
           10
         );
 
@@ -2383,62 +3736,177 @@
             state.wavelength,
             2
           ),
-          .1,
+          0.1,
           10
+        );
+
+      const W =
+        canvas.width;
+
+      const H =
+        canvas.height;
+
+      ctx.textAlign =
+        "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillText(
+        "Wave Motion",
+        W / 2,
+        30
+      );
+
+      ctx.font =
+        "14px Arial";
+
+      const mid =
+        H / 2;
+
+      const scale =
+        Math.min(
+          22,
+          70 / wavelength
         );
 
       ctx.beginPath();
 
       for (
-        let x = 0;
-        x <= 700;
+        let x = 20;
+        x <= W - 20;
         x++
       ) {
+
         const y =
-          180 -
+          mid -
           A *
-          55 *
+          scale *
           Math.sin(
-            2 *
-            Math.PI *
-            x /
-            (wavelength * 70)
+            (
+              2 *
+              Math.PI *
+              x /
+              (wavelength * 80)
+            )
           );
 
-        x
-          ? ctx.lineTo(
-              40 + x,
-              y
-            )
-          : ctx.moveTo(
-              40 + x,
-              y
-            );
+        if (
+          x === 20
+        ) {
+          ctx.moveTo(
+            x,
+            y
+          );
+        } else {
+          ctx.lineTo(
+            x,
+            y
+          );
+        }
       }
 
       ctx.stroke();
 
-      const speed =
-        f *
-        wavelength;
+      // Equilibrium line
 
-      result.textContent =
-        `Wave speed v = fλ = ${speed.toFixed(2)} units/s`;
+      ctx.setLineDash(
+        [6, 5]
+      );
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        20,
+        mid
+      );
+
+      ctx.lineTo(
+        W - 20,
+        mid
+      );
+
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+      // Amplitude marker
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        60,
+        mid
+      );
+
+      ctx.lineTo(
+        60,
+        mid - A * scale
+      );
+
+      ctx.stroke();
+
+      ctx.fillText(
+        `Amplitude A = ${A.toFixed(2)}`,
+        110,
+        mid - A * scale / 2
+      );
+
+      // Wavelength marker
+
+      const lambdaY =
+        H - 55;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        80,
+        lambdaY
+      );
+
+      ctx.lineTo(
+        160,
+        lambdaY
+      );
+
+      ctx.stroke();
+
+      ctx.fillText(
+        `λ = ${wavelength.toFixed(2)}`,
+        120,
+        lambdaY - 8
+      );
+
+      ctx.fillText(
+        `Frequency f = ${f.toFixed(2)} Hz`,
+        W / 2,
+        H - 25
+      );
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillText(
+        "Wave relation: v = fλ",
+        20,
+        55
+      );
     }
 
 
-    // ========================================================
+    // ==========================================================
     // LENS FORMULA
-    // ========================================================
+    // ==========================================================
 
     function lens() {
+
       clear();
 
       const f =
         clamp(
           num(
             state.focalLength,
-            10
+            20
           ),
           1,
           100
@@ -2448,59 +3916,282 @@
         clamp(
           num(
             state.objectDistance,
-            20
+            50
           ),
           1,
           200
         );
 
+      const W =
+        canvas.width;
+
+      const H =
+        canvas.height;
+
       const denominator =
-        f - u;
+        (
+          1 / f
+        ) -
+        (
+          1 / u
+        );
 
       const v =
-        denominator === 0
-          ? Infinity
-          : (f * u) /
-            denominator;
+        Math.abs(
+          denominator
+        ) > 1e-9
+          ? 1 / denominator
+          : Infinity;
+
+      const magnification =
+        Number.isFinite(v)
+          ? v / u
+          : Infinity;
+
+      ctx.textAlign =
+        "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillText(
+        "Thin Lens Explorer",
+        W / 2,
+        30
+      );
+
+      // Principal axis
+
+      const axisY =
+        H / 2;
 
       ctx.beginPath();
 
       ctx.moveTo(
-        380,
-        50
+        20,
+        axisY
       );
 
       ctx.lineTo(
-        380,
-        310
+        W - 20,
+        axisY
       );
 
       ctx.stroke();
+
+      // Lens
+
+      const lensX =
+        W / 2;
+
+      ctx.beginPath();
+
+      ctx.ellipse(
+        lensX,
+        axisY,
+        12,
+        110,
+        0,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.stroke();
+
+      ctx.fillText(
+        "Convex lens",
+        lensX,
+        axisY - 125
+      );
+
+      // Focal points
+
+      const focalScale =
+        2.2;
+
+      const F =
+        Math.min(
+          150,
+          f * focalScale
+        );
 
       ctx.beginPath();
 
       ctx.arc(
-        380,
-        180,
-        55,
-        -Math.PI / 2,
-        Math.PI / 2
+        lensX - F,
+        axisY,
+        4,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.arc(
+        lensX + F,
+        axisY,
+        4,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+
+      ctx.fillText(
+        "F",
+        lensX - F,
+        axisY + 20
+      );
+
+      ctx.fillText(
+        "F",
+        lensX + F,
+        axisY + 20
+      );
+
+      // Object
+
+      const objectX =
+        Math.max(
+          35,
+          lensX -
+          Math.min(
+            260,
+            u * 2.2
+          )
+        );
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        objectX,
+        axisY
+      );
+
+      ctx.lineTo(
+        objectX,
+        axisY - 70
+      );
+
+      ctx.moveTo(
+        objectX,
+        axisY - 70
+      );
+
+      ctx.lineTo(
+        objectX - 8,
+        axisY - 55
+      );
+
+      ctx.moveTo(
+        objectX,
+        axisY - 70
+      );
+
+      ctx.lineTo(
+        objectX + 8,
+        axisY - 55
       );
 
       ctx.stroke();
 
-      result.textContent =
+      ctx.fillText(
+        "Object",
+        objectX,
+        axisY + 25
+      );
+
+      // Image
+
+      if (
         Number.isFinite(v)
-          ? `Image distance v = ${v.toFixed(2)} cm (using 1/f = 1/u + 1/v)`
-          : "Image distance is undefined at u = f.";
+      ) {
+
+        const imageX =
+          Math.min(
+            W - 40,
+            lensX +
+            Math.min(
+              260,
+              Math.abs(v) * 2.2
+            )
+          );
+
+        const imageHeight =
+          Math.min(
+            120,
+            70 *
+            Math.abs(
+              magnification
+            )
+          );
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          imageX,
+          axisY
+        );
+
+        ctx.lineTo(
+          imageX,
+          axisY -
+          imageHeight
+        );
+
+        ctx.stroke();
+
+        ctx.fillText(
+          v > 0
+            ? "Real image"
+            : "Virtual image",
+          imageX,
+          axisY + 25
+        );
+      }
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillText(
+        `f = ${f.toFixed(2)} cm`,
+        20,
+        H - 70
+      );
+
+      ctx.fillText(
+        `u = ${u.toFixed(2)} cm`,
+        20,
+        H - 48
+      );
+
+      ctx.fillText(
+        Number.isFinite(v)
+          ? `v = ${v.toFixed(2)} cm`
+          : "v = ∞",
+        20,
+        H - 26
+      );
+
+      ctx.textAlign =
+        "center";
+
+      ctx.fillText(
+        Number.isFinite(
+          magnification
+        )
+          ? `Magnification = ${magnification.toFixed(3)}`
+          : "Magnification = undefined",
+        W - 150,
+        H - 30
+      );
     }
 
 
-    // ========================================================
+    // ==========================================================
     // TRANSFORMER
-    // ========================================================
+    // ==========================================================
 
     function transformer() {
+
       clear();
 
       const Vp =
@@ -2517,7 +4208,7 @@
         clamp(
           num(
             state.primaryTurns,
-            1000
+            500
           ),
           1,
           10000
@@ -2527,7 +4218,7 @@
         clamp(
           num(
             state.secondaryTurns,
-            100
+            1000
           ),
           1,
           10000
@@ -2535,44 +4226,199 @@
 
       const Vs =
         Vp *
-        (Ns / Np);
+        (
+          Ns / Np
+        );
 
-      ctx.strokeRect(
-        260,
-        90,
-        90,
-        180
+      const ratio =
+        Ns / Np;
+
+      const W =
+        canvas.width;
+
+      const H =
+        canvas.height;
+
+      ctx.textAlign =
+        "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillText(
+        "Transformer Explorer",
+        W / 2,
+        30
       );
 
+      // --------------------------------------------------------
+      // IRON CORE
+      // --------------------------------------------------------
+
+      ctx.lineWidth =
+        8;
+
       ctx.strokeRect(
-        410,
-        90,
-        90,
-        180
+        W / 2 - 150,
+        80,
+        300,
+        230
+      );
+
+      ctx.lineWidth =
+        3;
+
+      // --------------------------------------------------------
+      // PRIMARY COIL
+      // --------------------------------------------------------
+
+      const primaryX =
+        W / 2 - 80;
+
+      const secondaryX =
+        W / 2 + 80;
+
+      ctx.beginPath();
+
+      for (
+        let i = 0;
+        i < 8;
+        i++
+      ) {
+
+        ctx.ellipse(
+          primaryX,
+          110 + i * 25,
+          45,
+          12,
+          0,
+          0,
+          Math.PI * 2
+        );
+      }
+
+      ctx.stroke();
+
+      // --------------------------------------------------------
+      // SECONDARY COIL
+      // --------------------------------------------------------
+
+      ctx.beginPath();
+
+      for (
+        let i = 0;
+        i < 8;
+        i++
+      ) {
+
+        ctx.ellipse(
+          secondaryX,
+          110 + i * 25,
+          45,
+          12,
+          0,
+          0,
+          Math.PI * 2
+        );
+      }
+
+      ctx.stroke();
+
+      ctx.font =
+        "15px Arial";
+
+      ctx.fillText(
+        "Primary coil",
+        primaryX,
+        330
       );
 
       ctx.fillText(
-        "Primary",
-        270,
-        310
+        "Secondary coil",
+        secondaryX,
+        330
+      );
+
+      // --------------------------------------------------------
+      // INPUT / OUTPUT
+      // --------------------------------------------------------
+
+      ctx.fillText(
+        `Vp = ${Vp.toFixed(1)} V`,
+        primaryX,
+        355
       );
 
       ctx.fillText(
-        "Secondary",
-        405,
-        310
+        `Vs = ${Vs.toFixed(1)} V`,
+        secondaryX,
+        355
       );
 
-      result.textContent =
-        `Secondary voltage Vs = ${Vs.toFixed(2)} V`;
+      ctx.fillText(
+        `Np = ${Np}`,
+        primaryX,
+        378
+      );
+
+      ctx.fillText(
+        `Ns = ${Ns}`,
+        secondaryX,
+        378
+      );
+
+      // --------------------------------------------------------
+      // TRANSFORMER TYPE
+      // --------------------------------------------------------
+
+      let transformerType;
+
+      if (
+        ratio > 1
+      ) {
+        transformerType =
+          "Step-up transformer";
+      } else if (
+        ratio < 1
+      ) {
+        transformerType =
+          "Step-down transformer";
+      } else {
+        transformerType =
+          "Isolation transformer";
+      }
+
+      ctx.font =
+        "bold 16px Arial";
+
+      ctx.fillText(
+        transformerType,
+        W / 2,
+        420
+      );
+
+      ctx.font =
+        "14px Arial";
+
+      ctx.fillText(
+        `Turns ratio Ns/Np = ${ratio.toFixed(3)}`,
+        W / 2,
+        445
+      );
+
+      ctx.fillText(
+        "Relationship: Vs/Vp = Ns/Np",
+        W / 2,
+        468
+      );
     }
 
-
-    // ========================================================
+       // ==========================================================
     // DENSITY / PRESSURE
-    // ========================================================
+    // ==========================================================
 
     function densityPressure() {
+
       clear();
 
       const rho =
@@ -2581,7 +4427,7 @@
             state.density,
             1000
           ),
-          .1,
+          0.1,
           20000
         );
 
@@ -2601,7 +4447,7 @@
             state.gravity,
             9.81
           ),
-          .1,
+          0.1,
           30
         );
 
@@ -2610,29 +4456,197 @@
         g *
         h;
 
+      const W =
+        canvas.width;
+
+      const H =
+        canvas.height;
+
+      ctx.textAlign =
+        "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillText(
+        "Fluid Pressure Explorer",
+        W / 2,
+        30
+      );
+
+      // --------------------------------------------------------
+      // CONTAINER
+      // --------------------------------------------------------
+
+      const tankX =
+        250;
+
+      const tankY =
+        60;
+
+      const tankW =
+        220;
+
+      const tankH =
+        260;
+
       ctx.strokeRect(
-        260,
-        60,
-        200,
-        240
+        tankX,
+        tankY,
+        tankW,
+        tankH
+      );
+
+      // --------------------------------------------------------
+      // FLUID
+      // --------------------------------------------------------
+
+      const fluidHeight =
+        Math.min(
+          tankH - 10,
+          Math.max(
+            20,
+            h * 2.3
+          )
+        );
+
+      ctx.fillRect(
+        tankX + 5,
+        tankY +
+          tankH -
+          fluidHeight -
+          5,
+        tankW - 10,
+        fluidHeight
+      );
+
+      ctx.font =
+        "15px Arial";
+
+      ctx.fillText(
+        "Liquid",
+        tankX +
+          tankW / 2,
+        tankY +
+          tankH / 2
+      );
+
+      // --------------------------------------------------------
+      // DEPTH MARKER
+      // --------------------------------------------------------
+
+      const bottomY =
+        tankY +
+        tankH -
+        10;
+
+      const topY =
+        bottomY -
+        fluidHeight;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        tankX - 35,
+        topY
+      );
+
+      ctx.lineTo(
+        tankX - 35,
+        bottomY
+      );
+
+      ctx.moveTo(
+        tankX - 42,
+        topY
+      );
+
+      ctx.lineTo(
+        tankX - 28,
+        topY
+      );
+
+      ctx.moveTo(
+        tankX - 42,
+        bottomY
+      );
+
+      ctx.lineTo(
+        tankX - 28,
+        bottomY
+      );
+
+      ctx.stroke();
+
+      ctx.fillText(
+        `h = ${h.toFixed(2)} m`,
+        tankX - 85,
+        (
+          topY +
+          bottomY
+        ) / 2
+      );
+
+      // --------------------------------------------------------
+      // PRESSURE AT DEPTH
+      // --------------------------------------------------------
+
+      ctx.beginPath();
+
+      ctx.arc(
+        tankX +
+          tankW / 2,
+        bottomY - 5,
+        7,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+
+      ctx.fillText(
+        "Pressure point",
+        tankX +
+          tankW / 2,
+        bottomY + 28
+      );
+
+      // --------------------------------------------------------
+      // RESULTS
+      // --------------------------------------------------------
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillText(
+        `Density ρ = ${rho.toFixed(2)} kg/m³`,
+        25,
+        H - 72
       );
 
       ctx.fillText(
-        "Fluid",
-        330,
-        180
+        `Gravity g = ${g.toFixed(2)} m/s²`,
+        25,
+        H - 48
       );
 
-      result.textContent =
-        `Pressure p = ρgh = ${p.toFixed(2)} Pa`;
+      ctx.fillText(
+        `Pressure p = ρgh = ${p.toFixed(2)} Pa`,
+        25,
+        H - 24
+      );
+
+      ctx.textAlign =
+        "center";
     }
 
 
-    // ========================================================
+    // ==========================================================
     // GAS LAW
-    // ========================================================
+    // ==========================================================
 
     function gasLaw() {
+
       clear();
 
       const P =
@@ -2651,7 +4665,7 @@
             state.volume,
             1
           ),
-          .1,
+          0.1,
           20
         );
 
@@ -2665,39 +4679,200 @@
           2000
         );
 
-      const PV_T =
-        (P * V) /
-        T;
+      const constant =
+        (
+          P * V
+        ) / T;
 
-      ctx.beginPath();
+      const W =
+        canvas.width;
 
-      ctx.moveTo(
-        70,
-        295
+      const H =
+        canvas.height;
+
+      ctx.textAlign =
+        "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillText(
+        "Gas Law Explorer",
+        W / 2,
+        30
       );
 
-      ctx.lineTo(
-        660,
-        295
+      // --------------------------------------------------------
+      // GAS CHAMBER
+      // --------------------------------------------------------
+
+      const chamberX =
+        180;
+
+      const chamberY =
+        65;
+
+      const chamberW =
+        360;
+
+      const chamberH =
+        250;
+
+      ctx.strokeRect(
+        chamberX,
+        chamberY,
+        chamberW,
+        chamberH
       );
 
-      ctx.lineTo(
-        660,
-        50
+      // --------------------------------------------------------
+      // PISTON
+      // --------------------------------------------------------
+
+      const pistonHeight =
+        18;
+
+      const pistonY =
+        chamberY +
+        chamberH -
+        Math.min(
+          chamberH - 40,
+          Math.max(
+            25,
+            V * 10
+          )
+        );
+
+      ctx.fillRect(
+        chamberX + 10,
+        pistonY,
+        chamberW - 20,
+        pistonHeight
       );
 
-      ctx.stroke();
+      ctx.fillText(
+        "Movable piston",
+        W / 2,
+        pistonY - 12
+      );
 
-      result.textContent =
-        `PV/T = ${PV_T.toFixed(4)} (relative constant)`;
+      // --------------------------------------------------------
+      // GAS PARTICLES
+      // --------------------------------------------------------
+
+      const particleCount =
+        Math.min(
+          35,
+          Math.max(
+            8,
+            Math.round(
+              P / 30
+            )
+          )
+        );
+
+      for (
+        let i = 0;
+        i < particleCount;
+        i++
+      ) {
+
+        const px =
+          chamberX +
+          25 +
+          (
+            i * 47
+          ) %
+          (
+            chamberW - 50
+          );
+
+        const py =
+          chamberY +
+          30 +
+          (
+            i * 71
+          ) %
+          Math.max(
+            30,
+            pistonY -
+            chamberY -
+            45
+          );
+
+        ctx.beginPath();
+
+        ctx.arc(
+          px,
+          py,
+          4,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+      }
+
+      // --------------------------------------------------------
+      // RESULTS
+      // --------------------------------------------------------
+
+      ctx.font =
+        "15px Arial";
+
+      ctx.fillText(
+        `Pressure P = ${P.toFixed(2)}`,
+        W / 2,
+        355
+      );
+
+      ctx.fillText(
+        `Volume V = ${V.toFixed(2)}`,
+        W / 2,
+        378
+      );
+
+      ctx.fillText(
+        `Temperature T = ${T.toFixed(2)} K`,
+        W / 2,
+        401
+      );
+
+      ctx.font =
+        "bold 16px Arial";
+
+      ctx.fillText(
+        `PV/T = ${constant.toFixed(4)}`,
+        W / 2,
+        430
+      );
+
+      ctx.font =
+        "14px Arial";
+
+      ctx.fillText(
+        "Ideal-gas relationship: PV/T = constant",
+        W / 2,
+        455
+      );
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillText(
+        "Explore how pressure, volume and temperature are related.",
+        20,
+        H - 20
+      );
     }
 
 
-    // ========================================================
+    // ==========================================================
     // PROBABILITY
-    // ========================================================
+    // ==========================================================
 
     function probability() {
+
       clear();
 
       const favourable =
@@ -2720,36 +4895,168 @@
           100
         );
 
-      const p =
+      const probabilityValue =
         Math.min(
           favourable / total,
           1
         );
 
+      const W =
+        canvas.width;
+
+      const H =
+        canvas.height;
+
+      ctx.textAlign =
+        "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillText(
+        "Probability Explorer",
+        W / 2,
+        30
+      );
+
+      // --------------------------------------------------------
+      // PROBABILITY BAR
+      // --------------------------------------------------------
+
+      const barX =
+        100;
+
+      const barY =
+        120;
+
+      const barW =
+        500;
+
+      const barH =
+        70;
+
       ctx.strokeRect(
-        120,
-        120,
-        500,
-        80
+        barX,
+        barY,
+        barW,
+        barH
       );
 
       ctx.fillRect(
-        120,
-        120,
-        500 * p,
-        80
+        barX,
+        barY,
+        barW *
+          probabilityValue,
+        barH
       );
 
-      result.textContent =
-        `Probability = ${p.toFixed(4)} = ${(p * 100).toFixed(2)}%`;
+      // --------------------------------------------------------
+      // SCALE
+      // --------------------------------------------------------
+
+      ctx.font =
+        "13px Arial";
+
+      for (
+        let i = 0;
+        i <= 10;
+        i++
+      ) {
+
+        const x =
+          barX +
+          (
+            barW *
+            i /
+            10
+          );
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          x,
+          barY +
+          barH
+        );
+
+        ctx.lineTo(
+          x,
+          barY +
+          barH +
+          8
+        );
+
+        ctx.stroke();
+
+        ctx.fillText(
+          `${i / 10}`,
+          x,
+          barY +
+          barH +
+          25
+        );
+      }
+
+      // --------------------------------------------------------
+      // FORMULA
+      // --------------------------------------------------------
+
+      ctx.font =
+        "16px Arial";
+
+      ctx.fillText(
+        `Favourable outcomes = ${favourable.toFixed(0)}`,
+        W / 2,
+        210
+      );
+
+      ctx.fillText(
+        `Total outcomes = ${total.toFixed(0)}`,
+        W / 2,
+        235
+      );
+
+      ctx.font =
+        "bold 18px Arial";
+
+      ctx.fillText(
+        `P(E) = favourable / total`,
+        W / 2,
+        275
+      );
+
+      ctx.fillText(
+        `P(E) = ${probabilityValue.toFixed(4)}`,
+        W / 2,
+        305
+      );
+
+      ctx.fillText(
+        `${(
+          probabilityValue *
+          100
+        ).toFixed(2)}%`,
+        W / 2,
+        335
+      );
+
+      ctx.font =
+        "14px Arial";
+
+      ctx.fillText(
+        "Probability ranges from 0 (impossible) to 1 (certain).",
+        W / 2,
+        H - 25
+      );
     }
 
 
-    // ========================================================
+    // ==========================================================
     // ELECTROMAGNETIC INDUCTION
-    // ========================================================
+    // ==========================================================
 
     function electromagneticInduction() {
+
       clear();
 
       const turns =
@@ -2785,7 +5092,7 @@
       /*
        * Simplified Faraday's law demonstration:
        *
-       * emf ∝ N × B × v
+       * ε ∝ N × B × v
        *
        * The negative sign represents Lenz's law.
        */
@@ -2796,7 +5103,27 @@
         velocity *
         0.1;
 
-      /* Magnetic field lines */
+      const W =
+        canvas.width;
+
+      const H =
+        canvas.height;
+
+      ctx.textAlign =
+        "center";
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillText(
+        "Electromagnetic Induction",
+        W / 2,
+        30
+      );
+
+      // --------------------------------------------------------
+      // MAGNETIC FIELD LINES
+      // --------------------------------------------------------
 
       ctx.strokeStyle =
         "#555";
@@ -2809,12 +5136,14 @@
         i < 5;
         i++
       ) {
+
         ctx.beginPath();
 
         ctx.arc(
           170,
           175,
-          35 + i * 12,
+          35 +
+          i * 12,
           0,
           Math.PI * 2
         );
@@ -2822,7 +5151,9 @@
         ctx.stroke();
       }
 
-      /* Bar magnet */
+      // --------------------------------------------------------
+      // BAR MAGNET
+      // --------------------------------------------------------
 
       ctx.fillStyle =
         "#777";
@@ -2840,16 +5171,15 @@
       ctx.font =
         "bold 20px Arial";
 
-      ctx.textAlign =
-        "center";
-
       ctx.fillText(
         "N",
         142,
         181
       );
 
-      /* Coil */
+      // --------------------------------------------------------
+      // COIL
+      // --------------------------------------------------------
 
       ctx.strokeStyle =
         "#222";
@@ -2862,10 +5192,12 @@
         i < 7;
         i++
       ) {
+
         ctx.beginPath();
 
         ctx.ellipse(
-          420 + i * 8,
+          420 +
+          i * 8,
           175,
           18,
           55,
@@ -2877,7 +5209,9 @@
         ctx.stroke();
       }
 
-      /* Connecting wires */
+      // --------------------------------------------------------
+      // CONNECTING WIRES
+      // --------------------------------------------------------
 
       ctx.beginPath();
 
@@ -2927,7 +5261,9 @@
 
       ctx.stroke();
 
-      /* Galvanometer */
+      // --------------------------------------------------------
+      // GALVANOMETER
+      // --------------------------------------------------------
 
       ctx.beginPath();
 
@@ -2950,7 +5286,9 @@
         181
       );
 
-      /* Motion */
+      // --------------------------------------------------------
+      // MOTION ARROW
+      // --------------------------------------------------------
 
       ctx.beginPath();
 
@@ -2990,7 +5328,9 @@
         155
       );
 
-      /* Labels */
+      // --------------------------------------------------------
+      // LABELS
+      // --------------------------------------------------------
 
       ctx.fillText(
         "Bar magnet",
@@ -3010,18 +5350,60 @@
         230
       );
 
+      // --------------------------------------------------------
+      // RESULTS
+      // --------------------------------------------------------
+
+      ctx.font =
+        "14px Arial";
+
+      ctx.fillText(
+        `N = ${turns} turns`,
+        W / 2,
+        355
+      );
+
+      ctx.fillText(
+        `B = ${magneticField.toFixed(2)} T`,
+        W / 2,
+        378
+      );
+
+      ctx.fillText(
+        `v = ${velocity.toFixed(2)} m/s`,
+        W / 2,
+        401
+      );
+
+      ctx.font =
+        "bold 16px Arial";
+
+      ctx.fillText(
+        `Induced e.m.f. ≈ ${emf.toFixed(2)} units`,
+        W / 2,
+        430
+      );
+
+      ctx.font =
+        "14px Arial";
+
+      ctx.fillText(
+        "Faraday's Law: ε = −N dΦ/dt",
+        W / 2,
+        455
+      );
+
+      ctx.fillText(
+        "Lenz's Law: the induced effect opposes the change producing it.",
+        W / 2,
+        480
+      );
+
       ctx.textAlign =
         "left";
-
-      result.innerHTML =
-        `Induced e.m.f. ≈ ${emf.toFixed(2)} units<br>` +
-        `N = ${turns} turns, B = ${magneticField.toFixed(2)} T, ` +
-        `v = ${velocity.toFixed(2)} m/s<br>` +
-        `Faraday's Law: ε = −N dΦ/dt`;
     }
 
-
-        // ========================================================
+       // ========================================================
     // ELECTROLYSIS MODEL
     //
     // PhET-inspired separation:
@@ -3114,251 +5496,1051 @@
       createElectrolysisModel();
 
 
-// ========================================================
-// ELECTROLYSIS VIEW
-//
-// VIEW = canvas representation only
-// ========================================================
-
-function electrolysis() {
-
-  // Synchronise model with current control state.
-  electrolysisModel.setState(state);
-
-  const values =
-    electrolysisModel.calculate();
-
-  const I =
-    values.current;
-
-  const t =
-    values.time;
-
-  const M =
-    values.molarMass;
-
-  const n =
-    values.valency;
-
-  const F =
-    values.faradayConstant;
-
-  const Q =
-    values.charge;
-
-  const moles =
-    values.molesDeposited;
-
-  const mass =
-    values.massDeposited;
-
-  clear();
-
-  // ------------------------------------------------------
-  // Electrolyte vessel
-  // ------------------------------------------------------
-
-  ctx.strokeStyle =
-    "#333";
-
-  ctx.lineWidth =
-    2;
-
-  ctx.strokeRect(
-    160,
-    90,
-    440,
-    210
-  );
-
-  // Electrolyte
-
-  ctx.fillStyle =
-    "rgba(30,120,90,.10)";
-
-  ctx.fillRect(
-    165,
-    145,
-    430,
-    150
-  );
-
-  // ------------------------------------------------------
-  // Electrodes
-  // ------------------------------------------------------
-
-  ctx.fillStyle =
-    "#555";
-
-  ctx.fillRect(
-    250,
-    115,
-    35,
-    150
-  );
-
-  ctx.fillRect(
-    475,
-    115,
-    35,
-    150
-  );
-
-  ctx.fillStyle =
-    "#222";
-
-  ctx.font =
-    "bold 18px Arial";
-
-  ctx.textAlign =
-    "center";
-
-  ctx.fillText(
-    "ANODE (+)",
-    267,
-    105
-  );
-
-  ctx.fillText(
-    "CATHODE (−)",
-    492,
-    105
-  );
-
-  // ------------------------------------------------------
-  // Cations → cathode
-  // ------------------------------------------------------
-
-  ctx.font =
-    "16px Arial";
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    320,
-    185
-  );
-
-  ctx.lineTo(
-    450,
-    185
-  );
-
-  ctx.lineTo(
-    435,
-    175
-  );
-
-  ctx.moveTo(
-    450,
-    185
-  );
-
-  ctx.lineTo(
-    435,
-    195
-  );
-
-  ctx.stroke();
-
-  ctx.fillText(
-    "Cations →",
-    385,
-    165
-  );
-
-  // ------------------------------------------------------
-  // Anions → anode
-  // ------------------------------------------------------
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    440,
-    235
-  );
-
-  ctx.lineTo(
-    310,
-    235
-  );
-
-  ctx.lineTo(
-    325,
-    225
-  );
-
-  ctx.moveTo(
-    310,
-    235
-  );
-
-  ctx.lineTo(
-    325,
-    245
-  );
-
-  ctx.stroke();
-
-  ctx.fillText(
-    "← Anions",
-    375,
-    260
-  );
-
-  // ------------------------------------------------------
-  // Deposit on cathode
-  // ------------------------------------------------------
-
-  const depositHeight =
-    clamp(
-      mass * 80,
-      2,
-      90
-    );
-
-  ctx.fillStyle =
-    "#888";
-
-  ctx.fillRect(
-    465,
-    265 - depositHeight,
-    10,
-    depositHeight
-  );
-
-  ctx.font =
-    "14px Arial";
-
-  ctx.fillStyle =
-    "#222";
-
-  ctx.fillText(
-    "Deposit",
-    515,
-    280
-  );
-
-  // ------------------------------------------------------
-  // Result
-  // ------------------------------------------------------
-
-  ctx.textAlign =
-    "left";
-
-  result.innerHTML =
-    `Charge Q = ${Q.toFixed(2)} C<br>` +
-    `Amount deposited = ${moles.toFixed(6)} mol<br>` +
-    `Mass deposited m = ${mass.toFixed(4)} g<br>` +
-    `Faraday's Law: m = MIt / nF`;
-}
-
-
     // ========================================================
+    // ELECTROLYSIS VIEW
+    //
+    // VIEW = polished interactive canvas representation.
+    // MODEL remains responsible for all calculations.
+    // ========================================================
+
+    function electrolysis() {
+
+      // Synchronise model with current control state.
+      electrolysisModel.setState(state);
+
+      const values =
+        electrolysisModel.calculate();
+
+      const I = values.current;
+      const t = values.time;
+      const M = values.molarMass;
+      const n = values.valency;
+      const F = values.faradayConstant;
+      const Q = values.charge;
+      const moles = values.molesDeposited;
+      const mass = values.massDeposited;
+
+      clear();
+
+      // ------------------------------------------------------
+      // Polished Electrolysis Learning Simulation
+      // ------------------------------------------------------
+
+      const W = canvas.width;
+      const H = canvas.height;
+      const now = Date.now();
+      const motion = now / 900;
+
+      // Background
+      const bg =
+        ctx.createLinearGradient(0, 0, W, H);
+
+      bg.addColorStop(
+        0,
+        "#f7fbff"
+      );
+
+      bg.addColorStop(
+        1,
+        "#eef8f5"
+      );
+
+      ctx.fillStyle = bg;
+
+      ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+      );
+
+
+      // ------------------------------------------------------
+      // HEADER
+      // ------------------------------------------------------
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillStyle =
+        "#17382b";
+
+      ctx.font =
+        "bold 22px Arial";
+
+      ctx.fillText(
+        "Electrolysis Explorer",
+        24,
+        31
+      );
+
+      ctx.fillStyle =
+        "#66746d";
+
+      ctx.font =
+        "13px Arial";
+
+      ctx.fillText(
+        "Watch ions migrate and see how charge affects deposition.",
+        24,
+        51
+      );
+
+
+      // ------------------------------------------------------
+      // POWER SUPPLY
+      // ------------------------------------------------------
+
+      const batteryX =
+        42;
+
+      const batteryY =
+        75;
+
+      const batteryW =
+        125;
+
+      const batteryH =
+        62;
+
+      const batteryGrad =
+        ctx.createLinearGradient(
+          batteryX,
+          batteryY,
+          batteryX,
+          batteryY + batteryH
+        );
+
+      batteryGrad.addColorStop(
+        0,
+        "#ffffff"
+      );
+
+      batteryGrad.addColorStop(
+        1,
+        "#e8eef5"
+      );
+
+      ctx.fillStyle =
+        batteryGrad;
+
+      ctx.strokeStyle =
+        "#52606d";
+
+      ctx.lineWidth =
+        2;
+
+      ctx.beginPath();
+
+      ctx.roundRect(
+        batteryX,
+        batteryY,
+        batteryW,
+        batteryH,
+        12
+      );
+
+      ctx.fill();
+
+      ctx.stroke();
+
+      ctx.fillStyle =
+        "#334155";
+
+      ctx.font =
+        "bold 14px Arial";
+
+      ctx.textAlign =
+        "center";
+
+      ctx.fillText(
+        "DC POWER SUPPLY",
+        batteryX +
+          batteryW / 2,
+        batteryY + 24
+      );
+
+      ctx.font =
+        "bold 20px Arial";
+
+      ctx.fillStyle =
+        "#c0392b";
+
+      ctx.fillText(
+        "+",
+        batteryX + 28,
+        batteryY + 49
+      );
+
+      ctx.fillStyle =
+        "#2563a8";
+
+      ctx.fillText(
+        "−",
+        batteryX +
+          batteryW -
+          28,
+        batteryY + 49
+      );
+
+
+      // ------------------------------------------------------
+      // MAIN ELECTROLYTIC CELL
+      // ------------------------------------------------------
+
+      const vessel = {
+        x: 215,
+        y: 83,
+        w: 500,
+        h: 235
+      };
+
+
+      // Glass vessel
+
+      ctx.fillStyle =
+        "rgba(255,255,255,.72)";
+
+      ctx.strokeStyle =
+        "#536b70";
+
+      ctx.lineWidth =
+        3;
+
+      ctx.beginPath();
+
+      ctx.roundRect(
+        vessel.x,
+        vessel.y,
+        vessel.w,
+        vessel.h,
+        18
+      );
+
+      ctx.fill();
+
+      ctx.stroke();
+
+
+      // ------------------------------------------------------
+      // ELECTROLYTE LIQUID
+      // ------------------------------------------------------
+
+      const liquidGrad =
+        ctx.createLinearGradient(
+          0,
+          vessel.y + 70,
+          0,
+          vessel.y + vessel.h
+        );
+
+      liquidGrad.addColorStop(
+        0,
+        "rgba(65,190,175,.30)"
+      );
+
+      liquidGrad.addColorStop(
+        1,
+        "rgba(36,125,164,.22)"
+      );
+
+      ctx.fillStyle =
+        liquidGrad;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        vessel.x + 5,
+        vessel.y + 76
+      );
+
+      ctx.lineTo(
+        vessel.x +
+          vessel.w -
+          5,
+        vessel.y + 76
+      );
+
+      ctx.lineTo(
+        vessel.x +
+          vessel.w -
+          5,
+        vessel.y +
+          vessel.h -
+          5
+      );
+
+      ctx.lineTo(
+        vessel.x + 5,
+        vessel.y +
+          vessel.h -
+          5
+      );
+
+      ctx.closePath();
+
+      ctx.fill();
+
+
+      // Liquid surface
+
+      ctx.strokeStyle =
+        "rgba(35,120,145,.55)";
+
+      ctx.lineWidth =
+        2;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        vessel.x + 7,
+        vessel.y + 76
+      );
+
+      ctx.quadraticCurveTo(
+        vessel.x +
+          vessel.w / 2,
+        vessel.y + 67,
+        vessel.x +
+          vessel.w -
+          7,
+        vessel.y + 76
+      );
+
+      ctx.stroke();
+
+
+      // Electrolyte label
+
+      ctx.fillStyle =
+        "#24576a";
+
+      ctx.font =
+        "bold 15px Arial";
+
+      ctx.textAlign =
+        "center";
+
+      ctx.fillText(
+        "ELECTROLYTE",
+        vessel.x +
+          vessel.w / 2,
+        vessel.y + 102
+      );
+
+
+      // ------------------------------------------------------
+      // ELECTRODES
+      // ------------------------------------------------------
+
+      const anodeX =
+        305;
+
+      const cathodeX =
+        590;
+
+      const electrodeY =
+        126;
+
+      const electrodeW =
+        34;
+
+      const electrodeH =
+        155;
+
+
+      const electrodeGrad =
+        ctx.createLinearGradient(
+          0,
+          electrodeY,
+          0,
+          electrodeY +
+            electrodeH
+        );
+
+      electrodeGrad.addColorStop(
+        0,
+        "#7a8794"
+      );
+
+      electrodeGrad.addColorStop(
+        .5,
+        "#475569"
+      );
+
+      electrodeGrad.addColorStop(
+        1,
+        "#263646"
+      );
+
+      ctx.fillStyle =
+        electrodeGrad;
+
+      ctx.fillRect(
+        anodeX,
+        electrodeY,
+        electrodeW,
+        electrodeH
+      );
+
+      ctx.fillRect(
+        cathodeX,
+        electrodeY,
+        electrodeW,
+        electrodeH
+      );
+
+
+      // Electrode shine
+
+      ctx.fillStyle =
+        "rgba(255,255,255,.20)";
+
+      ctx.fillRect(
+        anodeX + 5,
+        electrodeY + 5,
+        5,
+        electrodeH - 10
+      );
+
+      ctx.fillRect(
+        cathodeX + 5,
+        electrodeY + 5,
+        5,
+        electrodeH - 10
+      );
+
+
+      // ------------------------------------------------------
+      // ELECTRODE LABELS
+      // ------------------------------------------------------
+
+      ctx.font =
+        "bold 17px Arial";
+
+      ctx.fillStyle =
+        "#a93226";
+
+      ctx.fillText(
+        "ANODE (+)",
+        anodeX +
+          electrodeW / 2,
+        112
+      );
+
+      ctx.fillStyle =
+        "#2166a5";
+
+      ctx.fillText(
+        "CATHODE (−)",
+        cathodeX +
+          electrodeW / 2,
+        112
+      );
+
+
+      // ------------------------------------------------------
+      // EXTERNAL WIRES
+      //
+      // Important:
+      // Wires remain outside the electrolyte.
+      // ------------------------------------------------------
+
+      ctx.strokeStyle =
+        "#334155";
+
+      ctx.lineWidth =
+        4;
+
+
+      // Positive terminal → anode
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        batteryX + 28,
+        batteryY + batteryH
+      );
+
+      ctx.lineTo(
+        batteryX + 28,
+        151
+      );
+
+      ctx.lineTo(
+        anodeX +
+          electrodeW / 2,
+        151
+      );
+
+      ctx.stroke();
+
+
+      // Negative terminal → cathode
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        batteryX +
+          batteryW -
+          28,
+        batteryY + batteryH
+      );
+
+      ctx.lineTo(
+        batteryX +
+          batteryW -
+          28,
+        164
+      );
+
+      ctx.lineTo(
+        cathodeX +
+          electrodeW / 2,
+        164
+      );
+
+      ctx.stroke();
+
+
+      // External circuit label
+
+      ctx.fillStyle =
+        "#7b8794";
+
+      ctx.font =
+        "12px Arial";
+
+      ctx.fillText(
+        "external circuit",
+        154,
+        158
+      );
+
+
+      // ------------------------------------------------------
+      // ION PARTICLES
+      // ------------------------------------------------------
+
+      const ionCount =
+        5;
+
+      for (
+        let i = 0;
+        i < ionCount;
+        i++
+      ) {
+
+        const y =
+          180 +
+          i * 21;
+
+        const base =
+          (
+            motion *
+              (
+                22 +
+                i * 3
+              ) +
+            i * 72
+          ) %
+          245;
+
+
+        // ----------------------------------------------------
+        // CATIONS → CATHODE
+        // ----------------------------------------------------
+
+        const cationX =
+          365 +
+          base;
+
+        const safeCationX =
+          Math.min(
+            cationX,
+            cathodeX - 22
+          );
+
+        ctx.beginPath();
+
+        ctx.fillStyle =
+          "rgba(226,82,82,.88)";
+
+        ctx.arc(
+          safeCationX,
+          y,
+          7,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle =
+          "#ffffff";
+
+        ctx.font =
+          "bold 9px Arial";
+
+        ctx.fillText(
+          "+",
+          safeCationX,
+          y + 3
+        );
+
+
+        // ----------------------------------------------------
+        // ANIONS → ANODE
+        // ----------------------------------------------------
+
+        const anionX =
+          545 -
+          base;
+
+        const safeAnionX =
+          Math.max(
+            anionX,
+            anodeX +
+              electrodeW +
+              22
+          );
+
+        ctx.beginPath();
+
+        ctx.fillStyle =
+          "rgba(47,116,190,.88)";
+
+        ctx.arc(
+          safeAnionX,
+          y + 8,
+          7,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle =
+          "#ffffff";
+
+        ctx.font =
+          "bold 9px Arial";
+
+        ctx.fillText(
+          "−",
+          safeAnionX,
+          y + 11
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // CATION MOVEMENT ARROW
+      // ------------------------------------------------------
+
+      ctx.strokeStyle =
+        "#d14b4b";
+
+      ctx.lineWidth =
+        2.5;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        392,
+        285
+      );
+
+      ctx.lineTo(
+        555,
+        285
+      );
+
+      ctx.lineTo(
+        542,
+        278
+      );
+
+      ctx.moveTo(
+        555,
+        285
+      );
+
+      ctx.lineTo(
+        542,
+        292
+      );
+
+      ctx.stroke();
+
+      ctx.fillStyle =
+        "#b33b3b";
+
+      ctx.font =
+        "bold 12px Arial";
+
+      ctx.fillText(
+        "CATIONS → CATHODE",
+        475,
+        305
+      );
+
+
+      // ------------------------------------------------------
+      // ANION MOVEMENT ARROW
+      // ------------------------------------------------------
+
+      ctx.strokeStyle =
+        "#3272b6";
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        520,
+        245
+      );
+
+      ctx.lineTo(
+        360,
+        245
+      );
+
+      ctx.lineTo(
+        373,
+        238
+      );
+
+      ctx.moveTo(
+        360,
+        245
+      );
+
+      ctx.lineTo(
+        373,
+        252
+      );
+
+      ctx.stroke();
+
+      ctx.fillStyle =
+        "#28609b";
+
+      ctx.fillText(
+        "← ANIONS → ANODE",
+        440,
+        232
+      );
+
+
+      // ------------------------------------------------------
+      // METAL DEPOSIT AT CATHODE
+      // ------------------------------------------------------
+
+      const depositHeight =
+        clamp(
+          4 +
+            mass * 28,
+          4,
+          82
+        );
+
+
+      const depositGrad =
+        ctx.createLinearGradient(
+          cathodeX - 9,
+          electrodeY +
+            electrodeH,
+          cathodeX + 3,
+          electrodeY +
+            electrodeH
+        );
+
+      depositGrad.addColorStop(
+        0,
+        "#d7b24c"
+      );
+
+      depositGrad.addColorStop(
+        .5,
+        "#f2d36b"
+      );
+
+      depositGrad.addColorStop(
+        1,
+        "#a98427"
+      );
+
+      ctx.fillStyle =
+        depositGrad;
+
+      ctx.fillRect(
+        cathodeX - 9,
+        electrodeY +
+          electrodeH -
+          depositHeight,
+        9,
+        depositHeight
+      );
+
+
+      // Deposit label
+
+      ctx.fillStyle =
+        "#765b17";
+
+      ctx.font =
+        "bold 11px Arial";
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillText(
+        "deposit",
+        cathodeX + 43,
+        electrodeY +
+          electrodeH -
+          depositHeight +
+          6
+      );
+
+
+      // ------------------------------------------------------
+      // LIVE LEARNING STATUS STRIP
+      // ------------------------------------------------------
+
+      ctx.fillStyle =
+        "rgba(255,255,255,.90)";
+
+      ctx.strokeStyle =
+        "#d7e3df";
+
+      ctx.lineWidth =
+        1;
+
+      ctx.beginPath();
+
+      ctx.roundRect(
+        24,
+        330,
+        712,
+        24,
+        8
+      );
+
+      ctx.fill();
+
+      ctx.stroke();
+
+
+      ctx.textAlign =
+        "left";
+
+      ctx.fillStyle =
+        "#35584b";
+
+      ctx.font =
+        "bold 12px Arial";
+
+      ctx.fillText(
+        `I = ${I.toFixed(1)} A   •   t = ${t.toFixed(0)} s   •   Q = ${Q.toFixed(1)} C   •   m = ${mass.toFixed(4)} g`,
+        38,
+        347
+      );
+
+
+      // ------------------------------------------------------
+      // RESULT PANEL
+      // ------------------------------------------------------
+
+      result.innerHTML = `
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(3,minmax(0,1fr));
+            gap:10px;
+            margin-bottom:12px;
+          "
+        >
+
+          <div
+            style="
+              background:#eef7ff;
+              border:1px solid #cfe2f5;
+              border-radius:10px;
+              padding:10px;
+              text-align:center;
+            "
+          >
+            <div
+              style="
+                font-size:12px;
+                color:#5f7080;
+              "
+            >
+              Charge passed
+            </div>
+
+            <strong
+              style="
+                font-size:18px;
+                color:#245f8e;
+              "
+            >
+              ${Q.toFixed(2)} C
+            </strong>
+          </div>
+
+
+          <div
+            style="
+              background:#fff8e8;
+              border:1px solid #ead9a5;
+              border-radius:10px;
+              padding:10px;
+              text-align:center;
+            "
+          >
+            <div
+              style="
+                font-size:12px;
+                color:#756438;
+              "
+            >
+              Amount deposited
+            </div>
+
+            <strong
+              style="
+                font-size:18px;
+                color:#8b6a17;
+              "
+            >
+              ${moles.toFixed(6)} mol
+            </strong>
+          </div>
+
+
+          <div
+            style="
+              background:#eef8f2;
+              border:1px solid #cfe4d6;
+              border-radius:10px;
+              padding:10px;
+              text-align:center;
+            "
+          >
+            <div
+              style="
+                font-size:12px;
+                color:#5c7265;
+              "
+            >
+              Mass deposited
+            </div>
+
+            <strong
+              style="
+                font-size:18px;
+                color:#286247;
+              "
+            >
+              ${mass.toFixed(4)} g
+            </strong>
+          </div>
+
+        </div>
+
+
+        <div
+          style="
+            font-size:14px;
+            line-height:1.55;
+          "
+        >
+
+          <strong>
+            Faraday's first law:
+          </strong>
+
+          m = MIt / nF
+
+          <br>
+
+          <span
+            style="
+              color:#66746d;
+            "
+          >
+            Increase current or time →
+            more charge →
+            more mass deposited.
+
+            Increase valency →
+            less mass deposited
+            for the same charge.
+          </span>
+
+        </div>
+      `;
+
+
+      // ------------------------------------------------------
+      // CONTINUOUS ION ANIMATION
+      //
+      // Respect the user's reduced-motion preference.
+      // ------------------------------------------------------
+
+      if (
+        !window.matchMedia ||
+        !window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches
+      ) {
+
+        if (
+          !canvas.__electrolysisAnimation
+        ) {
+
+          const animate =
+            () => {
+
+              if (
+                !document.body.contains(
+                  canvas
+                )
+              ) {
+
+                canvas.__electrolysisAnimation =
+                  null;
+
+                return;
+              }
+
+              electrolysis();
+
+              canvas.__electrolysisAnimation =
+                requestAnimationFrame(
+                  animate
+                );
+            };
+
+
+          canvas.__electrolysisAnimation =
+            requestAnimationFrame(
+              animate
+            );
+        }
+      }
+    }
+
+       // ========================================================
     // SIMULATION DISPATCH
     // ========================================================
 
     const draw = {
+
       projectile_motion:
         projectile,
 
@@ -3433,6 +6615,7 @@ function electrolysis() {
         ]
       ],
 
+
       ohms_law: [
         [
           "Voltage V (V)",
@@ -3450,6 +6633,7 @@ function electrolysis() {
         ]
       ],
 
+
       hookes_law: [
         [
           "Force F (N)",
@@ -3466,6 +6650,7 @@ function electrolysis() {
           1
         ]
       ],
+
 
       uniform_acceleration: [
         [
@@ -3491,6 +6676,7 @@ function electrolysis() {
         ]
       ],
 
+
       simple_pendulum: [
         [
           "Length L (m)",
@@ -3507,6 +6693,7 @@ function electrolysis() {
           .1
         ]
       ],
+
 
       series_parallel_circuit: [
         [
@@ -3532,6 +6719,7 @@ function electrolysis() {
         ]
       ],
 
+
       wave_motion: [
         [
           "Amplitude",
@@ -3556,6 +6744,7 @@ function electrolysis() {
         ]
       ],
 
+
       lens_formula: [
         [
           "Focal length f (cm)",
@@ -3572,6 +6761,7 @@ function electrolysis() {
           1
         ]
       ],
+
 
       transformer: [
         [
@@ -3597,6 +6787,7 @@ function electrolysis() {
         ]
       ],
 
+
       density_pressure: [
         [
           "Density ρ (kg/m³)",
@@ -3620,6 +6811,7 @@ function electrolysis() {
           .1
         ]
       ],
+
 
       gas_law: [
         [
@@ -3645,6 +6837,7 @@ function electrolysis() {
         ]
       ],
 
+
       probability: [
         [
           "Favourable outcomes",
@@ -3662,6 +6855,7 @@ function electrolysis() {
         ]
       ],
 
+
       electromagnetic_induction: [
         [
           "Number of turns (N)",
@@ -3675,16 +6869,17 @@ function electrolysis() {
           "velocity",
           0,
           10,
-          0.1
+          .1
         ],
         [
           "Magnetic field (B)",
           "magneticField",
           0,
           2,
-          0.1
+          .1
         ]
       ],
+
 
       electrolysis: [
         [
@@ -3766,19 +6961,24 @@ function electrolysis() {
     );
 
 
+    // Initial render
     draw[type]();
+
 
     return el;
   }
 
 
   // ==========================================================
-  // IMAGE METADATA — NO TEMPORARY URL
+  // IMAGE METADATA
   // ==========================================================
 
   function renderImage(v) {
+
     const el =
-      document.createElement("article");
+      document.createElement(
+        "article"
+      );
 
     el.className =
       "nbv3-card";
@@ -3806,10 +7006,12 @@ function electrolysis() {
 
         ${
           v.imageQuery
-            ? `<small>
+            ? `
+              <small>
                 Suggested subject:
                 ${esc(v.imageQuery)}
-               </small>`
+              </small>
+            `
             : ""
         }
 
@@ -3842,14 +7044,18 @@ function electrolysis() {
       case "equation":
         return renderEquation(v);
 
+
       case "diagram":
         return renderDiagram(v);
+
 
       case "graph":
         return renderGraph(v);
 
+
       case "table":
         return renderTable(v);
+
 
       case "comparison":
         return renderTable(
@@ -3857,8 +7063,10 @@ function electrolysis() {
           true
         );
 
+
       case "flowchart":
         return renderFlow(v);
+
 
       case "process":
         return renderFlow(
@@ -3866,14 +7074,18 @@ function electrolysis() {
           true
         );
 
+
       case "interactive":
         return renderInteractive(v);
+
 
       case "simulation":
         return renderSimulation(v);
 
+
       case "image":
         return renderImage(v);
+
 
       default:
         return null;
@@ -3882,7 +7094,7 @@ function electrolysis() {
 
 
   // ==========================================================
-  // MOUNT
+  // MOUNT VISUALS
   // ==========================================================
 
   function mountVisuals(data) {
@@ -3900,33 +7112,44 @@ function electrolysis() {
             )
         : [];
 
+
     if (!visuals.length) {
       return;
     }
+
 
     const host =
       document.getElementById(
         "notePromptPreview"
       );
 
+
     if (!host) {
+
       console.warn(
         "NoteBank visual host not found."
       );
+
       return;
     }
 
+
     injectStyles();
 
+
+    // Remove previous visual section
     const old =
       document.getElementById(
         "nbv3-visuals"
       );
 
+
     if (old) {
       old.remove();
     }
 
+
+    // Main visual container
     const wrap =
       document.createElement(
         "section"
@@ -3938,6 +7161,8 @@ function electrolysis() {
     wrap.className =
       "nbv3-visuals";
 
+
+    // Heading
     const heading =
       document.createElement(
         "h3"
@@ -3946,42 +7171,50 @@ function electrolysis() {
     heading.textContent =
       "📚 Visual Learning Components";
 
+
     wrap.appendChild(
       heading
     );
 
+
     let rendered =
       0;
 
-    visuals.forEach(v => {
 
-      try {
+    // Render every valid visual component
+    visuals.forEach(
+      v => {
 
-        const component =
-          renderVisual(v);
+        try {
 
-        if (component) {
+          const component =
+            renderVisual(v);
 
-          wrap.appendChild(
-            component
+
+          if (component) {
+
+            wrap.appendChild(
+              component
+            );
+
+            rendered++;
+          }
+
+        } catch (error) {
+
+          console.warn(
+            "NoteBank visual component skipped:",
+            error
           );
-
-          rendered++;
         }
-
-      } catch (error) {
-
-        console.warn(
-          "NoteBank visual component skipped:",
-          error
-        );
       }
+    );
 
-    });
 
     if (!rendered) {
       return;
     }
+
 
     host.parentNode.insertBefore(
       wrap,
@@ -3999,6 +7232,7 @@ function electrolysis() {
       window
     );
 
+
   window.fetch =
     async function (...args) {
 
@@ -4006,6 +7240,7 @@ function electrolysis() {
         await originalFetch(
           ...args
         );
+
 
       try {
 
@@ -4017,6 +7252,7 @@ function electrolysis() {
                 args[0].url
               ) || "";
 
+
         if (
           String(url).includes(
             "/api/ai-content"
@@ -4026,26 +7262,29 @@ function electrolysis() {
           const clone =
             response.clone();
 
+
           clone
             .json()
-            .then(data => {
+            .then(
+              data => {
 
-              if (
-                data &&
-                data.success === true &&
-                data.note
-              ) {
+                if (
+                  data &&
+                  data.success === true &&
+                  data.note
+                ) {
 
-                mountVisuals(
-                  data
-                );
+                  mountVisuals(
+                    data
+                  );
+                }
               }
-
-            })
+            )
             .catch(
               () => {}
             );
         }
+
 
       } catch (error) {
 
@@ -4054,6 +7293,7 @@ function electrolysis() {
           error
         );
       }
+
 
       return response;
     };
@@ -4064,14 +7304,27 @@ function electrolysis() {
   // ==========================================================
 
   window.AINoteVisuals = {
-    version: "3.0",
-    mount: mountVisuals,
-    simulations: Object.keys(SIMS)
+
+    version:
+      "3.0",
+
+    mount:
+      mountVisuals,
+
+    simulations:
+      Object.keys(
+        SIMS
+      )
   };
 
+
+  // ==========================================================
+  // FINAL ENGINE MESSAGE
+  // ==========================================================
 
   console.log(
     "Aibinu Flexiprep NoteBank Visual Learning Engine v3 loaded."
   );
+
 
 })();
