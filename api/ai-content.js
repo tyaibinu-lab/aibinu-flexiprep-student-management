@@ -2,347 +2,174 @@
 // Enhanced AI NoteBank backend: equations, diagrams, images, graphs and safe simulations.
 // Replace api/ai-content.js with this file.
 
-const AIRTABLE_API = "https://api.airtable.com/v0";
-const OPENAI_API = "https://api.openai.com/v1/responses";
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.6-luna";
-
-const TABLES = {
-  AI_JOBS: "tbldFSYwYcTMtMm9A",
-  NOTES: "tblsEjHgHA7vhPgm0",
-  QUESTIONS: "tblWz5hU4tpVvMJbF"
+const AIRTABLE_API="https://api.airtable.com/v0";
+const OPENAI_API="https://api.openai.com/v1/responses";
+const OPENAI_MODEL=process.env.OPENAI_MODEL||"gpt-5.6-luna";
+const TABLES={
+  AI_JOBS:"tbldFSYwYcTMtMm9A",
+  NOTES:"tblsEjHgHA7vhPgm0",
+  QUESTIONS:"tblWz5hU4tpVvMJbF"
 };
 
+export default async function handler(req,res){
+  res.setHeader("Access-Control-Allow-Origin","*");
+  res.setHeader("Access-Control-Allow-Methods","POST, GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
 
-// ============================================================
-// VERCEL HANDLER
-// ============================================================
-
-export default async function handler(req, res) {
-
-  res.setHeader("Access-Control-Allow-Origin", "*");
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, GET, OPTIONS"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
-
-  if (req.method === "OPTIONS") {
+  if(req.method==="OPTIONS") {
     return res.status(200).end();
   }
 
-  // ----------------------------------------------------------
-  // HEALTH CHECK
-  // ----------------------------------------------------------
-
-  if (req.method === "GET") {
-
+  if(req.method==="GET") {
     return res.status(200).json({
-
-      success: true,
-
-      service:
-        "AIBINU Flexiprep AI Content API",
-
-      model:
-        OPENAI_MODEL,
-
-      airtableConfigured:
-        Boolean(process.env.AIRTABLE_PAT),
-
-      baseConfigured:
-        Boolean(process.env.AIRTABLE_BASE_ID),
-
-      openaiConfigured:
-        Boolean(process.env.OPENAI_API_KEY)
-
+      success:true,
+      service:"AIBINU Flexiprep AI Content API",
+      model:OPENAI_MODEL,
+      airtableConfigured:Boolean(process.env.AIRTABLE_PAT),
+      baseConfigured:Boolean(process.env.AIRTABLE_BASE_ID),
+      openaiConfigured:Boolean(process.env.OPENAI_API_KEY)
     });
-
   }
 
-  // ----------------------------------------------------------
-  // ONLY POST
-  // ----------------------------------------------------------
-
-  if (req.method !== "POST") {
-
+  if(req.method!=="POST") {
     return res.status(405).json({
-
-      success: false,
-
-      error:
-        "Method not allowed."
-
+      success:false,
+      error:"Method not allowed."
     });
-
   }
 
-  try {
+  try{
+    const config=getConfig();
+    const body=req.body||{};
+    const type=clean(
+      body.contentType||
+      body.type||
+      body.mode
+    ).toLowerCase();
 
-    const config =
-      getConfig();
-
-    const body =
-      req.body || {};
-
-    const type =
-      clean(
-        body.contentType ||
-        body.type ||
-        body.mode
-      ).toLowerCase();
-
-
-    // --------------------------------------------------------
-    // NOTE
-    // --------------------------------------------------------
-
-    if (
-      ["note", "notes", "generate-note"]
-        .includes(type)
-    ) {
-
+    if(["note","notes","generate-note"].includes(type)){
       return res.status(200).json({
-
-        success: true,
-
-        ...await generateNote(
-          config,
-          body
-        )
-
+        success:true,
+        ...await generateNote(config,body)
       });
-
     }
 
-
-    // --------------------------------------------------------
-    // QUESTION
-    // --------------------------------------------------------
-
-    if (
-      ["question", "questions", "generate-question"]
-        .includes(type)
-    ) {
-
+    if(["question","questions","generate-question"].includes(type)){
       return res.status(200).json({
-
-        success: true,
-
-        ...await generateQuestions(
-          config,
-          body
-        )
-
+        success:true,
+        ...await generateQuestions(config,body)
       });
-
     }
-
 
     return res.status(400).json({
-
-      success: false,
-
-      error:
-        "Invalid contentType. Use Note or Question."
-
+      success:false,
+      error:"Invalid contentType. Use Note or Question."
     });
 
-
-  } catch (error) {
-
+  }catch(error){
     console.error(
       "AI CONTENT API ERROR:",
       error
     );
 
     return res.status(500).json({
-
-      success: false,
-
-      error:
-        error.message ||
+      success:false,
+      error:error.message||
         "AI content generation failed."
-
     });
-
   }
-
 }
 
 
-// ============================================================
-// ENVIRONMENT
-// ============================================================
-
-function getConfig() {
-
-  const config = {
-
-    openaiKey:
-      process.env.OPENAI_API_KEY,
-
-    airtablePat:
-      process.env.AIRTABLE_PAT,
-
-    airtableBaseId:
-      process.env.AIRTABLE_BASE_ID
-
+function getConfig(){
+  const config={
+    openaiKey:process.env.OPENAI_API_KEY,
+    airtablePat:process.env.AIRTABLE_PAT,
+    airtableBaseId:process.env.AIRTABLE_BASE_ID
   };
 
+  const missing=[];
 
-  const missing = [];
-
-
-  if (!config.openaiKey) {
-
-    missing.push(
-      "OPENAI_API_KEY"
-    );
-
+  if(!config.openaiKey){
+    missing.push("OPENAI_API_KEY");
   }
 
-
-  if (!config.airtablePat) {
-
-    missing.push(
-      "AIRTABLE_PAT"
-    );
-
+  if(!config.airtablePat){
+    missing.push("AIRTABLE_PAT");
   }
 
-
-  if (!config.airtableBaseId) {
-
-    missing.push(
-      "AIRTABLE_BASE_ID"
-    );
-
+  if(!config.airtableBaseId){
+    missing.push("AIRTABLE_BASE_ID");
   }
 
-
-  if (missing.length) {
-
+  if(missing.length){
     throw new Error(
       `Missing environment variables: ${missing.join(", ")}`
     );
-
   }
-
 
   return config;
-
 }
 
 
-// ============================================================
-// BASIC HELPERS
-// ============================================================
-
-function clean(value) {
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-
-    return "";
-
-  }
-
-  return String(value).trim();
-
+function clean(v){
+  return v===undefined||v===null
+    ? ""
+    : String(v).trim();
 }
 
 
-function makeId(prefix) {
-
-  return (
-    `${prefix}-${Date.now()}-` +
-    `${Math.floor(
-      Math.random() * 100000
-    )}`
-  );
-
+function makeId(prefix){
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random()*100000)}`;
 }
 
 
-// ============================================================
-// NORMALIZATION
-// ============================================================
-
-function normalizeDifficulty(value) {
-
-  const valid = [
+function normalizeDifficulty(v){
+  return [
     "Easy",
     "Medium",
     "Hard"
-  ];
-
-  return (
-    valid.find(
-      x =>
-        x.toLowerCase() ===
-        clean(value).toLowerCase()
-    ) ||
-    "Medium"
-  );
-
+  ].find(
+    x =>
+      x.toLowerCase()===
+      clean(v).toLowerCase()
+  )||"Medium";
 }
 
 
-function normalizeBloom(value) {
-
-  const valid = [
+function normalizeBloom(v){
+  return [
     "Remember",
     "Understand",
     "Apply",
     "Analyze",
     "Evaluate",
     "Create"
-  ];
-
-  return (
-    valid.find(
-      x =>
-        x.toLowerCase() ===
-        clean(value).toLowerCase()
-    ) ||
-    "Understand"
-  );
-
+  ].find(
+    x =>
+      x.toLowerCase()===
+      clean(v).toLowerCase()
+  )||"Understand";
 }
 
 
-function normalizeQuestionType(value) {
-
-  const valid = [
+function normalizeQuestionType(v){
+  return [
     "MCQ",
     "Theory",
     "Calculation",
     "Practical",
     "Objective"
-  ];
-
-  return (
-    valid.find(
-      x =>
-        x.toLowerCase() ===
-        clean(value).toLowerCase()
-    ) ||
-    "MCQ"
-  );
-
+  ].find(
+    x =>
+      x.toLowerCase()===
+      clean(v).toLowerCase()
+  )||"MCQ";
 }
 
 
-function normalizeExamTypes(value) {
-
-  const valid = [
+function normalizeExamTypes(v){
+  const valid=[
     "WAEC",
     "NECO",
     "UTME",
@@ -351,84 +178,62 @@ function normalizeExamTypes(value) {
     "JUPEB"
   ];
 
-  const values =
-    Array.isArray(value)
-      ? value
-      : clean(value)
+  const a=
+    Array.isArray(v)
+      ? v
+      : clean(v)
           .split(",")
-          .map(x => x.trim());
+          .map(x=>x.trim());
 
-  const result =
-    values.filter(
+  const r=
+    a.filter(
       x =>
         valid.some(
           y =>
-            y.toLowerCase() ===
+            y.toLowerCase()===
             String(x).toLowerCase()
         )
     );
 
-  return result.length
-    ? result
+  return r.length
+    ? r
     : ["General"];
-
 }
 
 
-// ============================================================
-// MIXED DISTRIBUTION
-// ============================================================
-
-function createBalancedList(
-  count,
-  values
-) {
-
-  const result =
+function createBalancedList(count,values){
+  const r=
     Array.from(
-      { length: count },
-      (_, i) =>
-        values[i % values.length]
+      {length:count},
+      (_,i)=>
+        values[i%values.length]
     );
 
-
-  for (
-    let i = result.length - 1;
-    i > 0;
+  for(
+    let i=r.length-1;
+    i>0;
     i--
-  ) {
-
-    const j =
+  ){
+    const j=
       Math.floor(
-        Math.random() *
-        (i + 1)
+        Math.random()*(i+1)
       );
 
     [
-      result[i],
-      result[j]
-    ] = [
-      result[j],
-      result[i]
+      r[i],
+      r[j]
+    ]=[
+      r[j],
+      r[i]
     ];
-
   }
 
-  return result;
-
+  return r;
 }
 
 
-function getDifficultyList(
-  count,
-  value
-) {
-
-  return (
-    clean(value).toLowerCase() ===
-    "mixed"
-  )
-
+function getDifficultyList(count,v){
+  return clean(v).toLowerCase()==="mixed"
     ? createBalancedList(
         count,
         [
@@ -437,26 +242,16 @@ function getDifficultyList(
           "Hard"
         ]
       )
-
     : Array(count).fill(
         normalizeDifficulty(
-          value || "Medium"
+          v||"Medium"
         )
       );
-
 }
 
 
-function getBloomList(
-  count,
-  value
-) {
-
-  return (
-    clean(value).toLowerCase() ===
-    "mixed"
-  )
-
+function getBloomList(count,v){
+  return clean(v).toLowerCase()==="mixed"
     ? createBalancedList(
         count,
         [
@@ -468,452 +263,264 @@ function getBloomList(
           "Create"
         ]
       )
-
     : Array(count).fill(
         normalizeBloom(
-          value || "Apply"
+          v||"Apply"
         )
       );
-
 }
 
-
-// ============================================================
-// AIRTABLE REQUEST
-// ============================================================
 
 async function airtableRequest(
   config,
   tableId,
   method,
   body
-) {
-
-  const response =
+){
+  const response=
     await fetch(
-
-      `${AIRTABLE_API}/` +
-      `${config.airtableBaseId}/` +
-      `${tableId}`,
-
+      `${AIRTABLE_API}/${config.airtableBaseId}/${tableId}`,
       {
-
         method,
-
-        headers: {
-
+        headers:{
           Authorization:
             `Bearer ${config.airtablePat}`,
-
           "Content-Type":
             "application/json"
-
         },
-
-        ...(body === undefined
+        ...(body===undefined
           ? {}
           : {
               body:
                 JSON.stringify(body)
             })
-
       }
-
     );
 
-
-  const text =
+  const text=
     await response.text();
 
   let data;
 
-
-  try {
-
-    data =
+  try{
+    data=
       JSON.parse(text);
-
-  } catch {
-
-    data = {
-      raw: text
+  }catch{
+    data={
+      raw:text
     };
-
   }
 
-
-  if (!response.ok) {
-
+  if(!response.ok){
     throw new Error(
-
-      data?.error?.message ||
-      data?.error?.type ||
+      data?.error?.message||
+      data?.error?.type||
       `Airtable error ${response.status}`
-
     );
-
   }
-
 
   return data;
-
 }
 
-
-// ============================================================
-// CREATE ONE RECORD
-// ============================================================
 
 async function createRecord(
   config,
   tableId,
   fields
-) {
-
+){
   return airtableRequest(
-
     config,
-
     tableId,
-
     "POST",
-
     {
-
-      records: [
+      records:[
         {
           fields
         }
       ],
-
-      typecast: true
-
+      typecast:true
     }
-
   );
-
 }
 
-
-// ============================================================
-// CREATE MANY RECORDS
-// ============================================================
 
 async function createManyRecords(
   config,
   tableId,
   records
-) {
+){
+  const out=[];
 
-  const output = [];
-
-
-  for (
-    let i = 0;
-    i < records.length;
-    i += 10
-  ) {
-
-    const chunk =
-      records.slice(
-        i,
-        i + 10
-      );
-
-
-    const result =
+  for(
+    let i=0;
+    i<records.length;
+    i+=10
+  ){
+    const r=
       await airtableRequest(
-
         config,
-
         tableId,
-
         "POST",
-
         {
-
           records:
-            chunk.map(
-              fields => ({
-                fields
-              })
-            ),
-
-          typecast:
-            true
-
+            records
+              .slice(i,i+10)
+              .map(
+                fields=>({
+                  fields
+                })
+              ),
+          typecast:true
         }
-
       );
 
-
-    if (
-      Array.isArray(
-        result.records
-      )
-    ) {
-
-      output.push(
-        ...result.records
-      );
-
+    if(Array.isArray(r.records)){
+      out.push(...r.records);
     }
-
   }
 
-
-  return output;
-
+  return out;
 }
 
-
-// ============================================================
-// OPENAI RESPONSES API
-// ============================================================
 
 async function callOpenAI(
   config,
   instructions,
   input
-) {
-
-  const response =
+){
+  const response=
     await fetch(
-
       OPENAI_API,
-
       {
-
-        method: "POST",
-
-        headers: {
-
+        method:"POST",
+        headers:{
           Authorization:
             `Bearer ${config.openaiKey}`,
-
           "Content-Type":
             "application/json"
-
         },
+        body:JSON.stringify({
+          model:OPENAI_MODEL,
+          store:false,
 
-        body:
-          JSON.stringify({
-
-            model:
-              OPENAI_MODEL,
-
-            store:
-              false,
-
-            instructions:
-              `${instructions}
+          instructions:
+            `${instructions}
 
 IMPORTANT JSON OUTPUT REQUIREMENT:
-
 Return valid JSON only.
+No Markdown fences.
+No text outside JSON.`,
 
-Do not use Markdown fences.
-
-Do not write text outside the JSON object.`,
-
-            input:
-              `IMPORTANT:
+          input:
+            `IMPORTANT:
 The required response format is JSON.
 
 ${input}
 
 Return valid JSON only.`,
 
-            text: {
-
-              format: {
-
-                type:
-                  "json_object"
-
-              }
-
+          text:{
+            format:{
+              type:"json_object"
             }
-
-          })
-
+          }
+        })
       }
-
     );
 
-
-  const responseText =
+  const responseText=
     await response.text();
 
   let data;
 
-
-  try {
-
-    data =
-      JSON.parse(
-        responseText
-      );
-
-  } catch {
-
+  try{
+    data=
+      JSON.parse(responseText);
+  }catch{
     throw new Error(
-
-      `OpenAI returned an invalid response: ` +
-      `${responseText.slice(0, 500)}`
-
+      `OpenAI returned an invalid response: ${responseText.slice(0,500)}`
     );
-
   }
 
-
-  if (!response.ok) {
-
+  if(!response.ok){
     throw new Error(
-
-      data?.error?.message ||
+      data?.error?.message||
       `OpenAI error ${response.status}`
-
     );
-
   }
 
-
-  if (
-    data.output_text
-  ) {
-
-    return data
-      .output_text
-      .trim();
-
+  if(data.output_text){
+    return data.output_text.trim();
   }
 
+  let output="";
 
-  let output = "";
-
-
-  for (
-    const item
-    of Array.isArray(data.output)
+  for(
+    const item of
+    Array.isArray(data.output)
       ? data.output
       : []
-  ) {
-
-    for (
-      const content
-      of Array.isArray(item.content)
+  ){
+    for(
+      const c of
+      Array.isArray(item.content)
         ? item.content
         : []
-    ) {
-
-      if (
-        content.type ===
-        "output_text"
-      ) {
-
-        output +=
-          content.text || "";
-
+    ){
+      if(c.type==="output_text"){
+        output+=c.text||"";
       }
-
     }
-
   }
 
-
-  if (!output.trim()) {
-
+  if(!output.trim()){
     throw new Error(
       "OpenAI returned no usable output."
     );
-
   }
 
-
   return output.trim();
-
 }
 
 
-// ============================================================
-// PARSE AI JSON
-// ============================================================
-
-function parseAIJSON(text) {
-
-  const cleaned =
+function parseAIJSON(text){
+  const c=
     clean(text)
-      .replace(
-        /^```json/i,
-        ""
-      )
-      .replace(
-        /^```/i,
-        ""
-      )
-      .replace(
-        /```$/i,
-        ""
-      )
+      .replace(/^```json/i,"")
+      .replace(/^```/i,"")
+      .replace(/```$/i,"")
       .trim();
 
+  try{
+    return JSON.parse(c);
+  }catch{}
 
-  try {
+  const a=
+    c.indexOf("{");
 
-    return JSON.parse(
-      cleaned
-    );
+  const b=
+    c.lastIndexOf("}");
 
-  } catch {}
-
-
-  const first =
-    cleaned.indexOf("{");
-
-  const last =
-    cleaned.lastIndexOf("}");
-
-
-  if (
-    first >= 0 &&
-    last > first
-  ) {
-
-    try {
-
+  if(a>=0&&b>a){
+    try{
       return JSON.parse(
-        cleaned.slice(
-          first,
-          last + 1
-        )
+        c.slice(a,b+1)
       );
-
-    } catch {}
-
+    }catch{}
   }
-
 
   throw new Error(
     "AI returned invalid JSON."
   );
-
 }
 
-
-// ============================================================
-// AI JOB LOGGING
-// ============================================================
 
 async function logAIJob(
   config,
   data
-) {
-
-  try {
-
-    const fields = {
-
+){
+  try{
+    const f={
       "AI Job ID":
         makeId("AI"),
 
@@ -934,91 +541,78 @@ async function logAIJob(
 
       "Created Date":
         new Date().toISOString()
-
     };
 
-
-    if (
-      data.requestedBy
-    ) {
-
-      fields["Requested By"] =
-        [data.requestedBy];
-
+    if(data.requestedBy){
+      f["Requested By"]=[
+        data.requestedBy
+      ];
     }
 
-
-    if (
-      data.subjectId
-    ) {
-
-      fields.Subject =
-        [data.subjectId];
-
+    if(data.subjectId){
+      f.Subject=[
+        data.subjectId
+      ];
     }
 
-
-    if (
-      data.topicId
-    ) {
-
-      fields.Topic =
-        [data.topicId];
-
+    if(data.topicId){
+      f.Topic=[
+        data.topicId
+      ];
     }
 
-
-    if (
-      data.classId
-    ) {
-
-      fields.Class =
-        [data.classId];
-
+    if(data.classId){
+      f.Class=[
+        data.classId
+      ];
     }
-
 
     return await createRecord(
       config,
       TABLES.AI_JOBS,
-      fields
+      f
     );
 
-  } catch (error) {
-
+  }catch(e){
     console.error(
       "AI JOB LOGGING ERROR:",
-      error.message
+      e.message
     );
 
     return null;
-
   }
-
 }
 
 
-// ============================================================
-// TRUSTED VISUAL REGISTRY
-// ============================================================
+// ==========================================================
+// VISUAL SAFETY REGISTRY
+//
+// AI can describe visuals, but cannot supply executable
+// code or arbitrary URLs.
+// ==========================================================
 
-const VISUAL_TYPES =
+const VISUAL_TYPES=
   new Set([
-
     "equation",
     "diagram",
     "image",
     "graph",
     "interactive",
-    "simulation",
-    "table",
-    "comparison",
-    "flowchart",
-    "process"
-
+    "simulation"
   ]);
 
-const SIMULATIONS =
+
+/*
+ * APPROVED SIMULATIONS
+ *
+ * IMPORTANT:
+ * Every simulation named here must have a corresponding
+ * trusted renderer in public/academic-note-visual-v3.js.
+ *
+ * electrolysis has now been added to match the frontend.
+ */
+
+const SIMULATIONS=
   new Set([
     "projectile_motion",
     "ohms_law",
@@ -1026,734 +620,345 @@ const SIMULATIONS =
     "uniform_acceleration",
     "simple_pendulum",
     "series_parallel_circuit",
-    "wave_motion",
-    "lens_formula",
-    "transformer",
-    "density_pressure",
-    "gas_law",
-    "probability",
-    "electromagnetic_induction",
     "electrolysis"
   ]);
 
 
-// ============================================================
-// VALIDATE ONE VISUAL
-// ============================================================
+function safeVisual(v){
+  if(
+    !v||
+    typeof v!=="object"
+  ){
+    return null;
+  }
 
-function safeVisual(v) {
-
-  if (!v || typeof v !== "object") return null;
-
-  const type =
+  const type=
     clean(v.type).toLowerCase();
 
+  if(!VISUAL_TYPES.has(type)){
+    return null;
+  }
 
-  if (!VISUAL_TYPES.has(type)) return null;
+  const o={
+    type
+  };
 
+  // --------------------------------------------------------
+  // EQUATION
+  // --------------------------------------------------------
 
-  if (type === "equation") {
+  if(type==="equation"){
+    o.latex=
+      clean(v.latex)
+        .slice(0,1000);
 
-    const latex =
-      clean(v.latex);
+    o.caption=
+      clean(v.caption)
+        .slice(0,300);
 
-    if (!latex) return null;
+    o.variables=
+      clean(v.variables)
+        .slice(0,1000);
 
-    return {
-
-      type: "equation",
-
-      latex,
-
-      caption:
-        clean(v.caption),
-
-      variables:
-        Array.isArray(v.variables)
-          ? v.variables.slice(0, 20)
-          : []
-
-    };
-
+    if(!o.latex){
+      return null;
+    }
   }
 
 
-  if (type === "diagram") {
+  // --------------------------------------------------------
+  // DIAGRAM
+  // --------------------------------------------------------
 
-    const title =
-      clean(v.title);
+  if(type==="diagram"){
+    o.diagram=
+      clean(v.diagram)
+        .slice(0,80);
 
-    const description =
-      clean(v.description);
+    o.title=
+      clean(v.title)
+        .slice(0,200);
 
-    const labels =
+    o.labels=
       Array.isArray(v.labels)
-        ? v.labels.slice(0, 30)
+        ? v.labels
+            .map(clean)
+            .slice(0,30)
         : [];
 
-
-    if (
-      !title &&
-      !description &&
-      !labels.length
-    ) {
-
-      return null;
-
-    }
-
-
-    return {
-
-      type: "diagram",
-
-      diagram:
-        clean(v.diagram) ||
-        description ||
-        title,
-
-      title,
-
-      labels,
-
-      description
-
-    };
-
+    o.description=
+      clean(v.description)
+        .slice(0,1000);
   }
 
 
-  if (type === "image") {
+  // --------------------------------------------------------
+  // IMAGE
+  // --------------------------------------------------------
 
-    const imageQuery =
-      clean(v.imageQuery);
+  if(type==="image"){
+    o.imageQuery=
+      clean(v.imageQuery)
+        .slice(0,300);
 
-    const alt =
-      clean(v.alt);
+    o.caption=
+      clean(v.caption)
+        .slice(0,300);
 
+    o.alt=
+      clean(v.alt)
+        .slice(0,300);
 
-    if (
-      !imageQuery &&
-      !alt
-    ) {
-
+    if(
+      !o.imageQuery &&
+      !o.alt
+    ){
       return null;
-
     }
-
-
-    return {
-
-      type: "image",
-
-      imageQuery,
-
-      caption:
-        clean(v.caption),
-
-      alt,
-
-      source:
-        clean(v.source),
-
-      licence:
-        clean(v.licence),
-
-      attribution:
-        clean(v.attribution),
-
-      reviewed:
-        Boolean(v.reviewed)
-
-    };
-
   }
 
 
-  if (type === "graph") {
+  // --------------------------------------------------------
+  // GRAPH
+  // --------------------------------------------------------
 
-    const title =
-      clean(v.title);
+  if(type==="graph"){
+    o.graph=
+      clean(v.graph)
+        .slice(0,80);
 
-    const xLabel =
-      clean(v.xLabel);
+    o.title=
+      clean(v.title)
+        .slice(0,200);
 
-    const yLabel =
-      clean(v.yLabel);
+    o.xLabel=
+      clean(v.xLabel)
+        .slice(0,100);
 
+    o.yLabel=
+      clean(v.yLabel)
+        .slice(0,100);
 
-    const data =
+    o.data=
       Array.isArray(v.data)
-
         ? v.data
-            .filter(point =>
-              Array.isArray(point) &&
-              point.length >= 2 &&
-              Number.isFinite(
-                Number(point[0])
-              ) &&
-              Number.isFinite(
-                Number(point[1])
-              )
+            .slice(0,100)
+            .map(
+              p =>
+                Array.isArray(p)
+                  ? p.slice(0,2)
+                  : null
             )
-            .slice(0, 100)
-            .map(point => [
-              Number(point[0]),
-              Number(point[1])
-            ])
-
+            .filter(Boolean)
         : [];
-
-
-    if (
-      !title &&
-      !xLabel &&
-      !yLabel &&
-      !data.length
-    ) {
-
-      return null;
-
-    }
-
-
-    return {
-
-      type: "graph",
-
-      graph:
-        clean(v.graph) ||
-        title,
-
-      title,
-
-      xLabel,
-
-      yLabel,
-
-      data
-
-    };
-
   }
 
 
-  if (type === "interactive") {
+  // --------------------------------------------------------
+  // INTERACTIVE
+  // --------------------------------------------------------
 
-    const parameters =
+  if(type==="interactive"){
+    o.interaction=
+      clean(v.interaction)
+        .slice(0,80);
+
+    o.title=
+      clean(v.title)
+        .slice(0,200);
+
+    o.instructions=
+      clean(v.instructions)
+        .slice(0,500);
+
+    o.parameters=
       Array.isArray(v.parameters)
-
         ? v.parameters
-            .filter(p =>
-              p &&
-              typeof p === "object" &&
-              clean(p.name)
-            )
-            .slice(0, 20)
-            .map(p => {
-
-              const min =
-                Number(p.min);
-
-              const max =
-                Number(p.max);
-
-              const step =
-                Number(p.step);
-
-              const value =
-                Number(p.value);
-
-
-              if (
-                !Number.isFinite(min) ||
-                !Number.isFinite(max) ||
-                min > max
-              ) {
-
-                return null;
-
-              }
-
-
-              return {
-
+            .slice(0,12)
+            .map(
+              p=>({
                 name:
-                  clean(p.name),
+                  clean(p?.name)
+                    .slice(0,80),
 
-                min,
+                min:
+                  Number(p?.min),
 
-                max,
+                max:
+                  Number(p?.max),
 
                 step:
-                  Number.isFinite(step) &&
-                  step > 0
-                    ? step
-                    : 1,
+                  Number(p?.step),
 
                 value:
-                  Number.isFinite(value)
-                    ? Math.min(
-                        max,
-                        Math.max(
-                          min,
-                          value
-                        )
-                      )
-                    : min
-
-              };
-
-            })
-            .filter(Boolean)
-
+                  Number(p?.value)
+              })
+            )
         : [];
-
-
-    return {
-
-      type: "interactive",
-
-      title:
-        clean(v.title),
-
-      instructions:
-        clean(v.instructions),
-
-      interaction:
-        clean(v.interaction),
-
-      parameters
-
-    };
-
   }
 
 
-  if (type === "simulation") {
+  // --------------------------------------------------------
+  // SIMULATION
+  // --------------------------------------------------------
 
-    const simulation =
-      clean(v.simulation);
+  if(type==="simulation"){
 
+    o.simulation=
+      clean(v.simulation)
+        .toLowerCase();
 
-    if (
-      !simulation ||
-      !SIMULATIONS.has(simulation)
-    ) {
+    /*
+     * This is the backend gate.
+     *
+     * electrolysis is now accepted because it exists
+     * in the SIMULATIONS registry above.
+     */
 
+    if(!SIMULATIONS.has(o.simulation)){
       return null;
-
     }
 
+    o.title=
+      clean(v.title)
+        .slice(0,200);
 
-    const variables =
+    o.instructions=
+      clean(v.instructions)
+        .slice(0,500);
+
+    o.variables={};
+
+    if(
       v.variables &&
-      typeof v.variables === "object"
+      typeof v.variables==="object"
+    ){
+      for(
+        const [k,val]
+        of Object.entries(v.variables).slice(0,12)
+      ){
+        const n=
+          Number(val);
 
-        ? Object.fromEntries(
-
-            Object.entries(
-              v.variables
-            )
-              .slice(0, 20)
-              .map(
-                ([key, value]) => [
-
-                  key,
-
-                  Number.isFinite(
-                    Number(value)
-                  )
-                    ? Number(value)
-                    : value
-
-                ]
+        if(Number.isFinite(n)){
+          o.variables[k]=
+            Math.max(
+              -100000,
+              Math.min(
+                100000,
+                n
               )
-
-          )
-
-        : {};
-
-
-    return {
-
-      type: "simulation",
-
-      simulation,
-
-      title:
-        clean(v.title),
-
-      instructions:
-        clean(v.instructions),
-
-      variables
-
-    };
-
+            );
+        }
+      }
+    }
   }
 
-
-  if (
-    type === "table" ||
-    type === "comparison"
-  ) {
-
-    const rows =
-      Array.isArray(v.rows)
-        ? v.rows.slice(0, 50)
-        : [];
-
-
-    if (!rows.length) return null;
-
-
-    return {
-
-      type,
-
-      title:
-        clean(v.title),
-
-      headers:
-        Array.isArray(v.headers)
-          ? v.headers.slice(0, 20)
-          : [],
-
-      rows
-
-    };
-
-  }
-
-
-  if (
-    type === "flowchart" ||
-    type === "process"
-  ) {
-
-    const steps =
-      Array.isArray(v.steps)
-
-        ? v.steps
-            .filter(
-              step =>
-                step !== null &&
-                step !== undefined
-            )
-            .slice(0, 30)
-
-        : [];
-
-
-    if (!steps.length) return null;
-
-
-    return {
-
-      type,
-
-      title:
-        clean(v.title),
-
-      steps
-
-    };
-
-  }
-
-
-  return null;
-
+  return o;
 }
 
 
-// ============================================================
-// NORMALIZE VISUALS
-// ============================================================
-
-function normalizeVisuals(
-  visuals
-) {
-
-  return Array.isArray(visuals)
-
-    ? visuals
+function normalizeVisuals(a){
+  return Array.isArray(a)
+    ? a
         .map(safeVisual)
         .filter(Boolean)
-        .slice(0, 40)
-
+        .slice(0,40)
     : [];
-
 }
 
 
-// ============================================================
+// ==========================================================
 // GENERATE NOTE
-// ============================================================
+// ==========================================================
 
 async function generateNote(
   config,
   body
-) {
-
-  const subject =
+){
+  const subject=
     clean(body.subject);
 
-  const subjectId =
+  const subjectId=
     clean(body.subjectId);
 
-  const topic =
+  const topic=
     clean(body.topic);
 
-  const topicId =
+  const topicId=
     clean(body.topicId);
 
-  const className =
-    clean(body.className) ||
+  const className=
+    clean(body.className)||
     "SS1";
 
-  const classId =
+  const classId=
     clean(body.classId);
 
-  const programme =
-    clean(body.programme) ||
+  const programme=
+    clean(body.programme)||
     "General";
 
-  const requestedBy =
+  const requestedBy=
     clean(body.requestedBy);
 
-  const teacherPrompt =
+  const teacherPrompt=
     clean(
-      body.teacherPrompt ||
+      body.teacherPrompt||
       body.prompt
     );
 
-  const examTypes =
+  const examTypes=
     normalizeExamTypes(
       body.examTypes
     );
 
-
-  if (!subject) {
-
+  if(!subject){
     throw new Error(
       "Subject is required."
     );
-
   }
 
-
-  if (!topic) {
-
+  if(!topic){
     throw new Error(
       "Topic is required."
     );
-
   }
 
-
-  if (!teacherPrompt) {
-
+  if(!teacherPrompt){
     throw new Error(
       "Teacher prompt is required."
     );
-
   }
 
 
-  // ----------------------------------------------------------
-  // AI INSTRUCTIONS
-  // ----------------------------------------------------------
+  const instructions=
+    `You are the official AI academic content assistant for AIBINU FLEXIPREP EDUCONSULT. The TEACHER'S PROMPT is the PRIMARY instruction. Prepare accurate, engaging, age-appropriate Nigerian secondary-school material aligned to WAEC, NECO and UTME where applicable.`;
 
-  const instructions = `
 
-You are the official AI academic
-content assistant for AIBINU
-FLEXIPREP EDUCONSULT.
+  const input=
+    `RESPONSE FORMAT: JSON
+SUBJECT: ${subject}
+CLASS: ${className}
+PROGRAMME: ${programme}
+TOPIC: ${topic}
+EXAMINATION FOCUS: ${examTypes.join(", ")}
+TEACHER'S PROMPT: ${teacherPrompt}
 
-The TEACHER'S PROMPT is the
-PRIMARY instruction.
+Create a comprehensive study note with title, learningObjectives, keyTerms, content, examples, workedExamples, formulae, applications, commonMisconceptions, diagrams, summary, examTips, waecFocus, necoFocus and utmeFocus.
 
-Prepare accurate, engaging,
-age-appropriate Nigerian
-secondary-school material.
+VISUAL COMPONENTS:
+Add visualComponents where pedagogically useful.
 
-Align with WAEC, NECO and UTME
-where applicable.
+Equations MUST use LaTeX.
 
-Do not invent examination
-requirements.
+Diagrams must be descriptive and label-based.
 
-Do not output executable code.
+Graphs may contain numeric [x,y] data.
 
-Do not output arbitrary URLs.
+Images must contain imageQuery/alt metadata only; never invent image URLs.
 
-Return JSON only.
-
-`;
-
-
-  // ----------------------------------------------------------
-  // AI INPUT
-  // ----------------------------------------------------------
-
-  const input = `
-
-RESPONSE FORMAT:
-
-JSON
-
-
-SUBJECT:
-${subject}
-
-CLASS:
-${className}
-
-
-PROGRAMME:
-${programme}
-
-
-TOPIC:
-${topic}
-
-
-EXAMINATION FOCUS:
-${examTypes.join(", ")}
-
-
-TEACHER'S PROMPT:
-${teacherPrompt}
-
-
-Create a comprehensive study note
-containing:
-
-title
-
-learningObjectives
-
-keyTerms
-
-content
-
-examples
-
-workedExamples
-
-formulae
-
-applications
-
-commonMisconceptions
-
-diagrams
-
-summary
-
-examTips
-
-waecFocus
-
-necoFocus
-
-utmeFocus
-
-
-VISUAL COMPONENTS — MANDATORY WHEN REQUESTED:
-
-The teacher's prompt is the primary instruction.
-
-If the teacher explicitly requests equations, diagrams, graphs,
-images, interactive diagrams, simulations, tables, comparisons,
-flowcharts or process illustrations, you MUST generate the
-appropriate visualComponents.
-
-NEVER return an empty visualComponents array when the teacher
-has explicitly requested visual content.
-
-RULES:
-
-1. If important equations or formulae are present, include
-   equation components using LaTeX.
-
-2. If a labelled diagram is requested, include at least one
-   diagram component with clear educational labels.
-
-3. If a graph is requested, include a graph component with
-   meaningful numeric data where appropriate.
-
-4. If an interactive simulation is requested, include at least
-   one simulation component using ONLY an approved simulation
-   type listed below.
-
-5. If an image would improve understanding, include an image
-   component containing imageQuery and alt metadata only.
-
-6. NEVER invent image URLs.
-
-7. Visual components must be directly relevant to the topic.
-
-8. Return visualComponents as a JSON array.
-
-9. Never put arbitrary HTML, CSS, JavaScript or SVG inside
-   visualComponents.
-
-10. Use these structures:
-
-Equation:
-{
-  "type": "equation",
-  "latex": "F = ma",
-  "caption": "Newton's Second Law"
-}
-
-Diagram:
-{
-  "type": "diagram",
-  "title": "Electromagnetic Induction",
-  "description": "A labelled diagram showing a bar magnet moving into a coil connected to a galvanometer.",
-  "labels": [
-    "bar magnet",
-    "coil",
-    "galvanometer",
-    "direction of motion"
-  ]
-}
-
-Graph:
-{
-  "type": "graph",
-  "title": "Velocity-Time Graph",
-  "xLabel": "Time (s)",
-  "yLabel": "Velocity (m/s)",
-  "data": [
-    [0,0],
-    [1,5],
-    [2,10],
-    [3,15]
-  ]
-}
-
-Simulation:
-{
-  "type": "simulation",
-  "simulation": "projectile_motion",
-  "variables": {
-    "velocity": 20,
-    "angle": 45,
-    "gravity": 9.81
-  }
-}
-
-If the teacher does NOT explicitly request a particular visual,
-include visuals only when they genuinely improve understanding.
-
-SIMULATIONS:
-
-Only use these simulation names:
+Simulations/interactives MUST use ONLY these approved simulation names:
 
 projectile_motion
 ohms_law
@@ -1761,261 +966,67 @@ hookes_law
 uniform_acceleration
 simple_pendulum
 series_parallel_circuit
-wave_motion
-lens_formula
-transformer
-density_pressure
-gas_law
-probability
-electromagnetic_induction
 electrolysis
 
-For electrolysis, use:
+If the teacher explicitly requests an electrolysis simulation, use:
 
-{
-  "type": "simulation",
-  "simulation": "electrolysis",
-  "title": "Electrolysis Simulation",
-  "instructions": "Adjust current, time, molar mass and valency to observe the mass deposited.",
-  "variables": {
-    "current": 2,
-    "time": 600,
-    "molarMass": 63.5,
-    "valency": 2
-  }
-}
+"simulation": "electrolysis"
 
-The electrolysis simulation follows Faraday's first law:
+For electrolysis, appropriate variables may include:
+- current
+- time
+- molarMass
+- valency
 
-m = MIt / nF
+Never invent another simulation name.
 
-where:
-
-m = mass deposited
-
-M = molar mass
-
-I = current
-
-t = time
-
-n = ionic valency
-
-F = Faraday constant
-
-Use realistic educational values.
-
-Never output:
-
-JavaScript
-
-HTML
-
-CSS
-
-SVG
-
-iframe code
-
-data URLs
-
-arbitrary URLs
-
+Never output executable JS/HTML/CSS/SVG, iframe code, data URLs or arbitrary URLs.
 
 Return exactly:
-
 {
-  "title": "",
-  "learningObjectives": "",
-  "keyTerms": "",
-  "content": "",
-  "examples": "",
-  "workedExamples": "",
-  "formulae": "",
-  "applications": "",
-  "commonMisconceptions": "",
-  "diagrams": "",
-  "summary": "",
-  "examTips": "",
-  "waecFocus": "",
-  "necoFocus": "",
-  "utmeFocus": "",
-  "visualComponents": []
-}
-
-`;
+  "title":"",
+  "learningObjectives":"",
+  "keyTerms":"",
+  "content":"",
+  "examples":"",
+  "workedExamples":"",
+  "formulae":"",
+  "applications":"",
+  "commonMisconceptions":"",
+  "diagrams":"",
+  "summary":"",
+  "examTips":"",
+  "waecFocus":"",
+  "necoFocus":"",
+  "utmeFocus":"",
+  "visualComponents":[]
+}`;
 
 
-  // ----------------------------------------------------------
-  // CALL AI
-  // ----------------------------------------------------------
-
-  const aiText =
+  const aiText=
     await callOpenAI(
       config,
       instructions,
       input
     );
 
+  const raw=
+    parseAIJSON(aiText);
 
-  const raw =
-    parseAIJSON(
-      aiText
-    );
-
-
-  // ----------------------------------------------------------
-  // VISUAL VALIDATION
-  // ----------------------------------------------------------
-
-  const visualComponents =
+  const visualComponents=
     normalizeVisuals(
       raw.visualComponents
     );
 
-
-  const requestedVisualText =
-    teacherPrompt.toLowerCase();
-
-
-  const requestedVisualTypes = [];
-
-
-  if (
-    /equation|formula/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "equation"
-    );
-
-  }
-
-
-  if (
-    /diagram/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "diagram"
-    );
-
-  }
-
-
-  if (
-    /graph/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "graph"
-    );
-
-  }
-
-
-  if (
-    /image|illustration|picture|photo/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "image"
-    );
-
-  }
-
-
-  if (
-    /interactive\s+simulation|simulation/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "simulation"
-    );
-
-  } else if (
-    /interactive/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "interactive"
-    );
-
-  }
-
-
-  if (
-    /flowchart/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "flowchart"
-    );
-
-  }
-
-
-  if (
-    /process/.test(
-      requestedVisualText
-    )
-  ) {
-
-    requestedVisualTypes.push(
-      "process"
-    );
-
-  }
-
-
-  const missingVisualTypes =
-    requestedVisualTypes.filter(
-      type =>
-        !visualComponents.some(
-          visual =>
-            visual.type === type
-        )
-    );
-
-
-  if (
-    missingVisualTypes.length > 0
-  ) {
-
-    throw new Error(
-
-      `The AI did not generate the requested visual components: ${missingVisualTypes.join(", ")}. Please generate the note again.`
-
-    );
-
-  }
-
-
-  const diagramVisuals =
+  const diagramVisuals=
     visualComponents.filter(
-      visual =>
-        visual.type === "diagram" ||
-        visual.type === "graph"
+      v =>
+        v.type==="diagram"||
+        v.type==="graph"
     );
 
-
-  const diagrams =
-    clean(raw.diagrams) ||
-
+  const diagrams=
+    clean(raw.diagrams)||
     (
       diagramVisuals.length
         ? JSON.stringify(
@@ -2024,22 +1035,16 @@ Return exactly:
         : ""
     );
 
-
-  // ----------------------------------------------------------
-  // CREATE NOTE
-  // ----------------------------------------------------------
-
-  const now =
+  const now=
     new Date().toISOString();
 
 
-  const fields = {
-
+  const fields={
     "Note ID":
       makeId("NOTE"),
 
     "Title":
-      clean(raw.title) ||
+      clean(raw.title)||
       `${subject}: ${topic}`,
 
     "Content":
@@ -2051,14 +1056,10 @@ Return exactly:
       ),
 
     "Key Terms":
-      clean(
-        raw.keyTerms
-      ),
+      clean(raw.keyTerms),
 
     "Examples":
-      clean(
-        raw.examples
-      ),
+      clean(raw.examples),
 
     "Worked Examples":
       clean(
@@ -2066,14 +1067,10 @@ Return exactly:
       ),
 
     "Formulae":
-      clean(
-        raw.formulae
-      ),
+      clean(raw.formulae),
 
     "Applications":
-      clean(
-        raw.applications
-      ),
+      clean(raw.applications),
 
     "Common Misconceptions":
       clean(
@@ -2084,29 +1081,19 @@ Return exactly:
       diagrams,
 
     "Summary":
-      clean(
-        raw.summary
-      ),
+      clean(raw.summary),
 
     "Exam Tips":
-      clean(
-        raw.examTips
-      ),
+      clean(raw.examTips),
 
     "WAEC Focus":
-      clean(
-        raw.waecFocus
-      ),
+      clean(raw.waecFocus),
 
     "NECO Focus":
-      clean(
-        raw.necoFocus
-      ),
+      clean(raw.necoFocus),
 
     "UTME Focus":
-      clean(
-        raw.utmeFocus
-      ),
+      clean(raw.utmeFocus),
 
     "Teacher Prompt":
       teacherPrompt,
@@ -2122,99 +1109,51 @@ Return exactly:
 
     "Updated Date":
       now
-
   };
 
 
-  // ----------------------------------------------------------
-  // LINK TOPIC
-  // ----------------------------------------------------------
+  if(topicId){
+    fields.Topic=[
+      topicId
+    ];
+  }
 
-  if (
-    topicId
-  ) {
-
-    fields.Topic =
-      [topicId];
-
+  if(requestedBy){
+    fields["Created By"]=[
+      requestedBy
+    ];
   }
 
 
-  // ----------------------------------------------------------
-  // LINK TEACHER
-  // ----------------------------------------------------------
-
-  if (
-    requestedBy
-  ) {
-
-    fields["Created By"] =
-      [requestedBy];
-
-  }
-
-
-  // ----------------------------------------------------------
-  // CREATE AIRTABLE NOTE
-  // ----------------------------------------------------------
-
-  const created =
+  const created=
     await createRecord(
-
       config,
-
       TABLES.NOTES,
-
       fields
-
     );
 
 
-  // ----------------------------------------------------------
-  // LOG AI JOB
-  // ----------------------------------------------------------
-
   await logAIJob(
-
     config,
-
     {
-
       requestedBy,
-
-      contentType:
-        "Note",
-
+      contentType:"Note",
       subjectId,
-
       topicId,
-
       classId,
-
-      prompt:
-        teacherPrompt,
-
-      aiOutput:
-        aiText
-
+      prompt:teacherPrompt,
+      aiOutput:aiText
     }
-
   );
 
 
-  // ----------------------------------------------------------
-  // RESPONSE
-  // ----------------------------------------------------------
-
   return {
-
     message:
       "AI note generated successfully.",
 
-    note: {
-
+    note:{
       id:
-        created?.records?.[0]?.id ||
+        created?.records?.[0]?.id||
         null,
 
       ...raw,
@@ -2225,493 +1164,319 @@ Return exactly:
 
       status:
         "AI Draft"
-
     }
-
   };
-
 }
 
 
-// ============================================================
+// ==========================================================
 // GENERATE QUESTIONS
-// ============================================================
+// ==========================================================
 
 async function generateQuestions(
   config,
   body
-) {
-
-  const subject =
+){
+  const subject=
     clean(body.subject);
 
-  const subjectId =
+  const subjectId=
     clean(body.subjectId);
 
-  const topic =
+  const topic=
     clean(body.topic);
 
-  const className =
-    clean(body.className) ||
+  const className=
+    clean(body.className)||
     "SS1";
 
-  const classId =
+  const classId=
     clean(body.classId);
 
-  const programme =
-    clean(body.programme) ||
+  const programme=
+    clean(body.programme)||
     "General";
 
-  const requestedBy =
+  const requestedBy=
     clean(body.requestedBy);
 
-  const teacherPrompt =
+  const teacherPrompt=
     clean(
-      body.teacherPrompt ||
+      body.teacherPrompt||
       body.prompt
     );
 
-  const examTypes =
+  const examTypes=
     normalizeExamTypes(
       body.examTypes
     );
 
 
-  const count =
+  const count=
     Math.max(
-
       1,
-
       Math.min(
-
         100,
-
         Number(
-
-          body.numberOfQuestions ||
-          body.numberQuestions ||
-          body.count ||
-          body.questionCount ||
+          body.numberOfQuestions||
+          body.numberQuestions||
+          body.count||
+          body.questionCount||
           1
-
         )
-
       )
-
     );
 
 
-  const difficulty =
+  const difficulty=
     clean(
-      body.difficulty ||
+      body.difficulty||
       "Medium"
     );
 
-
-  const bloomLevel =
+  const bloomLevel=
     clean(
-      body.bloomLevel ||
+      body.bloomLevel||
       "Apply"
     );
 
-
-  const questionType =
+  const questionType=
     normalizeQuestionType(
-
-      body.questionType ||
+      body.questionType||
       "MCQ"
-
     );
 
-
-  const source =
+  const source=
     clean(
-      body.source ||
+      body.source||
       "AI Generated"
     );
 
-
-  const year =
+  const year=
     Number(
-      body.year ||
+      body.year||
       2026
     );
 
-
-  const marks =
+  const marks=
     Number(
-      body.marks ||
+      body.marks||
       1
     );
 
 
-  if (!subject) {
-
+  if(!subject){
     throw new Error(
       "Subject is required."
     );
-
   }
 
-
-  if (!topic) {
-
+  if(!topic){
     throw new Error(
       "Topic is required."
     );
-
   }
 
-
-  if (!teacherPrompt) {
-
+  if(!teacherPrompt){
     throw new Error(
       "Teacher prompt is required."
     );
-
   }
 
 
-  const difficultyList =
+  const difficultyList=
     getDifficultyList(
       count,
       difficulty
     );
 
-
-  const bloomList =
+  const bloomList=
     getBloomList(
       count,
       bloomLevel
     );
 
 
-  const generatedQuestions =
-    [];
+  const generatedQuestions=[];
 
 
-  // ----------------------------------------------------------
-  // GENERATE IN BATCHES OF 10
-  // ----------------------------------------------------------
-
-  for (
-    let start = 0;
-    start < count;
-    start += 10
-  ) {
-
-    const batchSize =
+  for(
+    let start=0;
+    start<count;
+    start+=10
+  ){
+    const batchSize=
       Math.min(
         10,
-        count - start
+        count-start
       );
 
 
-    const assignments =
+    const assignments=
       Array.from(
-
         {
-          length:
-            batchSize
+          length:batchSize
         },
-
-        (_, i) =>
-          `Question ${start + i + 1}: ` +
-          `Difficulty=${difficultyList[start + i]}; ` +
-          `Bloom=${bloomList[start + i]}`
-
+        (_,i)=>
+          `Question ${start+i+1}: Difficulty=${difficultyList[start+i]}; Bloom=${bloomList[start+i]}`
       ).join("\n");
 
 
-    const instructions = `
-
-You are an expert Nigerian
-secondary-school examination
-question setter for AIBINU
-FLEXIPREP EDUCONSULT.
-
-Standards:
-
-WAEC
-
-NECO
-
-UTME
-
-The backend difficulty and Bloom
-assignment is FINAL and must be
-obeyed.
-
-Return JSON only.
-
-`;
+    const instructions=
+      `You are an expert Nigerian secondary-school examination question setter for AIBINU FLEXIPREP EDUCONSULT. Standards: WAEC, NECO and UTME. The backend difficulty and Bloom assignment is FINAL and must be obeyed. Return only JSON.`;
 
 
-    const input = `
+    const input=
+      `RESPONSE FORMAT: JSON
+SUBJECT: ${subject}
+CLASS: ${className}
+PROGRAMME: ${programme}
+TOPIC: ${topic}
+EXAMINATION FOCUS: ${examTypes.join(", ")}
+QUESTION TYPE: ${questionType}
+TEACHER'S PROMPT: ${teacherPrompt}
 
-RESPONSE FORMAT:
-
-JSON
-
-
-SUBJECT:
-${subject}
-
-
-CLASS:
-${className}
-
-
-PROGRAMME:
-${programme}
-
-
-TOPIC:
-${topic}
-
-
-EXAMINATION FOCUS:
-${examTypes.join(", ")}
-
-
-QUESTION TYPE:
-${questionType}
-
-
-TEACHER'S PROMPT:
-${teacherPrompt}
-
-
-GENERATE EXACTLY
-${batchSize}
-QUESTIONS.
-
+GENERATE EXACTLY ${batchSize} QUESTIONS.
 
 MANDATORY ASSIGNMENTS:
-
 ${assignments}
 
+For MCQ use four options A-D, exactly one correct answer, plausible distractors, and no all/none of the above.
 
-For MCQ:
-
-Use four options:
-
-A
-
-B
-
-C
-
-D
-
-
-There must be exactly one
-correct answer.
-
-
-Use plausible distractors.
-
-
-Do not use:
-
-All of the above
-
-None of the above
-
-
-Return:
-
-{
-  "questions": [
+Return {
+  "questions":[
     {
-      "question": "",
-      "optionA": "",
-      "optionB": "",
-      "optionC": "",
-      "optionD": "",
-      "correctAnswer": "A",
-      "bloomLevel": "",
-      "difficulty": "",
-      "explanation": "",
-      "questionType": "MCQ",
-      "marks": 1,
-      "source": "",
-      "year": 2026
+      "question":"",
+      "optionA":"",
+      "optionB":"",
+      "optionC":"",
+      "optionD":"",
+      "correctAnswer":"A",
+      "bloomLevel":"",
+      "difficulty":"",
+      "explanation":"",
+      "questionType":"MCQ",
+      "marks":1,
+      "source":"",
+      "year":2026
     }
   ]
-}
-
-`;
+}`;
 
 
-    const parsed =
+    const parsed=
       parseAIJSON(
-
         await callOpenAI(
           config,
           instructions,
           input
         )
-
       );
 
 
-    if (
-      !Array.isArray(
-        parsed.questions
-      )
-    ) {
-
+    if(!Array.isArray(parsed.questions)){
       throw new Error(
         "AI did not return a questions array."
       );
-
     }
 
 
-    if (
-      parsed.questions.length !==
+    if(
+      parsed.questions.length!==
       batchSize
-    ) {
-
+    ){
       throw new Error(
-
-        `AI returned ${parsed.questions.length} ` +
-        `questions instead of ${batchSize}.`
-
+        `AI returned ${parsed.questions.length} questions instead of ${batchSize}.`
       );
-
     }
 
 
     parsed.questions.forEach(
-      (question, i) => {
+      (q,i)=>{
+        const gi=
+          start+i;
 
-        const globalIndex =
-          start + i;
+        q.difficulty=
+          difficultyList[gi];
 
+        q.bloomLevel=
+          bloomList[gi];
 
-        question.difficulty =
-          difficultyList[
-            globalIndex
-          ];
-
-
-        question.bloomLevel =
-          bloomList[
-            globalIndex
-          ];
-
-
-        question.questionType =
+        q.questionType=
           normalizeQuestionType(
             questionType
           );
 
-
-        question.marks =
+        q.marks=
           Number(
-            question.marks ||
-            marks ||
+            q.marks||
+            marks||
             1
           );
 
-
-        question.source =
+        q.source=
           clean(
-            question.source ||
+            q.source||
             source
           );
 
-
-        question.year =
+        q.year=
           Number(
-            question.year ||
+            q.year||
             year
           );
 
-
-        question.correctAnswer =
+        q.correctAnswer=
           clean(
-            question.correctAnswer
+            q.correctAnswer
           ).toUpperCase();
 
 
-        if (
+        if(
           ![
             "A",
             "B",
             "C",
             "D"
           ].includes(
-            question.correctAnswer
+            q.correctAnswer
           )
-        ) {
-
+        ){
           throw new Error(
-
-            `Invalid correct answer ` +
-            `in Question ${globalIndex + 1}.`
-
+            `Invalid correct answer in Question ${gi+1}.`
           );
-
         }
 
 
-        if (
-          !clean(
-            question.question
-          )
-        ) {
-
+        if(!clean(q.question)){
           throw new Error(
-
-            `Question ${globalIndex + 1} ` +
-            `has no question text.`
-
+            `Question ${gi+1} has no question text.`
           );
-
         }
 
 
-        if (
-          !clean(question.optionA) ||
-          !clean(question.optionB) ||
-          !clean(question.optionC) ||
-          !clean(question.optionD)
-        ) {
-
+        if(
+          !clean(q.optionA)||
+          !clean(q.optionB)||
+          !clean(q.optionC)||
+          !clean(q.optionD)
+        ){
           throw new Error(
-
-            `Question ${globalIndex + 1} ` +
-            `has incomplete options.`
-
+            `Question ${gi+1} has incomplete options.`
           );
-
         }
 
 
-        generatedQuestions.push(
-          question
-        );
-
+        generatedQuestions.push(q);
       }
-
     );
-
   }
 
 
-  // ==========================================================
-  // AIRTABLE QUESTION RECORDS
-  // ==========================================================
-
-  const records =
+  const records=
     generatedQuestions.map(
-      question => {
-
-        const fields = {
-
+      q=>{
+        const f={
           "Question ID":
             makeId("Q"),
 
@@ -2719,47 +1484,35 @@ Return:
             topic,
 
           "Question":
-            clean(
-              question.question
-            ),
+            clean(q.question),
 
           "Option A":
-            clean(
-              question.optionA
-            ),
+            clean(q.optionA),
 
           "Option B":
-            clean(
-              question.optionB
-            ),
+            clean(q.optionB),
 
           "Option C":
-            clean(
-              question.optionC
-            ),
+            clean(q.optionC),
 
           "Option D":
-            clean(
-              question.optionD
-            ),
+            clean(q.optionD),
 
           "Correct Answer":
-            question.correctAnswer,
+            q.correctAnswer,
 
           "Bloom Level":
             normalizeBloom(
-              question.bloomLevel
+              q.bloomLevel
             ),
 
           "Difficulty":
             normalizeDifficulty(
-              question.difficulty
+              q.difficulty
             ),
 
           "Explanation":
-            clean(
-              question.explanation
-            ),
+            clean(q.explanation),
 
           "Status":
             "Draft",
@@ -2769,7 +1522,7 @@ Return:
 
           "Question Type":
             normalizeQuestionType(
-              question.questionType
+              q.questionType
             ),
 
           "Programme":
@@ -2777,155 +1530,101 @@ Return:
 
           "Marks":
             Number(
-              question.marks ||
-              marks ||
+              q.marks||
+              marks||
               1
             ),
 
           "Source":
             clean(
-              question.source ||
+              q.source||
               source
             ),
 
           "Year":
             Number(
-              question.year ||
+              q.year||
               year
             ),
 
           "Exam Type":
             examTypes
-
         };
 
 
-        if (
-          subjectId
-        ) {
-
-          fields.Subject =
-            [subjectId];
-
+        if(subjectId){
+          f.Subject=[
+            subjectId
+          ];
         }
 
-
-        if (
-          classId
-        ) {
-
-          fields.Class =
-            [classId];
-
+        if(classId){
+          f.Class=[
+            classId
+          ];
         }
 
-
-        if (
-          requestedBy
-        ) {
-
-          fields["Created By"] =
-            [requestedBy];
-
+        if(requestedBy){
+          f["Created By"]=[
+            requestedBy
+          ];
         }
 
-
-        return fields;
-
+        return f;
       }
-
     );
 
 
-  // ==========================================================
-  // CREATE QUESTIONS
-  // ==========================================================
-
-  const created =
+  const created=
     await createManyRecords(
-
       config,
-
       TABLES.QUESTIONS,
-
       records
-
     );
 
-
-  // ==========================================================
-  // LOG AI JOB
-  // ==========================================================
 
   await logAIJob(
-
     config,
-
     {
-
       requestedBy,
-
-      contentType:
-        "Question",
-
+      contentType:"Question",
       subjectId,
-
-      topicId:
-        null,
-
+      topicId:null,
       classId,
-
-      prompt:
-        teacherPrompt,
-
+      prompt:teacherPrompt,
       aiOutput:
         JSON.stringify(
           generatedQuestions
         )
-
     }
-
   );
 
 
-  // ==========================================================
-  // RESPONSE
-  // ==========================================================
-
   return {
-
     message:
-      `${generatedQuestions.length} ` +
-      `AI questions generated successfully.`,
+      `${generatedQuestions.length} AI questions generated successfully.`,
 
     count:
       generatedQuestions.length,
 
     questions:
       generatedQuestions.map(
-        (question, i) => ({
-
+        (q,i)=>({
           id:
-            created[i]?.id ||
+            created[i]?.id||
             null,
 
           questionId:
-            records[i][
-              "Question ID"
-            ],
+            records[i]["Question ID"],
 
-          ...question,
+          ...q,
 
           status:
             "Draft",
 
           publicationStatus:
             "Draft"
-
         })
-
       )
-
   };
-
 }
