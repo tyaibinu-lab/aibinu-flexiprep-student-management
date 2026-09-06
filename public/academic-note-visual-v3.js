@@ -29,42 +29,70 @@
   const SIMS = {
     projectile_motion: {
       title: "Projectile Motion",
-      defaults: { velocity: 20, angle: 45, gravity: 9.81 }
+      defaults: {
+        velocity: 20,
+        angle: 45,
+        gravity: 9.81
+      }
     },
 
     ohms_law: {
       title: "Ohm's Law",
-      defaults: { voltage: 12, resistance: 6 }
+      defaults: {
+        voltage: 12,
+        resistance: 6
+      }
     },
 
     hookes_law: {
       title: "Hooke's Law",
-      defaults: { force: 5, springConstant: 50 }
+      defaults: {
+        force: 5,
+        springConstant: 50
+      }
     },
 
     uniform_acceleration: {
       title: "Uniform Acceleration",
-      defaults: { u: 5, acceleration: 2, time: 5 }
+      defaults: {
+        u: 5,
+        acceleration: 2,
+        time: 5
+      }
     },
 
     simple_pendulum: {
       title: "Simple Pendulum",
-      defaults: { length: 1, gravity: 9.81 }
+      defaults: {
+        length: 1,
+        gravity: 9.81
+      }
     },
 
     series_parallel_circuit: {
       title: "Series & Parallel Circuit",
-      defaults: { resistance1: 4, resistance2: 6, voltage: 12 }
+      defaults: {
+        resistance1: 4,
+        resistance2: 6,
+        voltage: 12
+      }
     },
 
     wave_motion: {
       title: "Wave Motion",
-      defaults: { amplitude: 1, frequency: 2, wavelength: 2 }
+      defaults: {
+        amplitude: 1,
+        frequency: 2,
+        wavelength: 2
+      }
     },
 
     lens_formula: {
       title: "Lens Formula",
-      defaults: { focalLength: 10, objectDistance: 20 }
+      defaults: {
+        focalLength: 10,
+        objectDistance: 20
+      }
     },
 
     transformer: {
@@ -348,70 +376,71 @@
 
 
   // ==========================================================
-  // EQUATION
+  // EQUATION FORMATTER
   // ==========================================================
 
   function formatEquation(latex) {
     let s = esc(latex || "");
+
+    // --------------------------------------------------------
+    // Fractions
+    // --------------------------------------------------------
 
     s = s.replace(
       /\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,
       '<span class="nbv3-frac"><span>$1</span><span>$2</span></span>'
     );
 
+    // --------------------------------------------------------
+    // Square roots
+    // --------------------------------------------------------
+
     s = s.replace(
       /\\sqrt\s*\{([^{}]*)\}/g,
       "√($1)"
     );
 
+    // --------------------------------------------------------
+    // Basic operators
+    // --------------------------------------------------------
+
     s = s.replace(/\\times/g, " × ");
     s = s.replace(/\\cdot/g, " · ");
     s = s.replace(/\\pm/g, " ± ");
 
-    s = s.replace(/\\pi/g, "π");
-    s = s.replace(/\\theta/g, "θ");
-    s = s.replace(/\\Delta/g, "Δ");
-    s = s.replace(/\\lambda/g, "λ");
-    s = s.replace(/\\alpha/g, "α");
-    s = s.replace(/\\beta/g, "β");
-    s = s.replace(/\\gamma/g, "γ");
-    s = s.replace(/\\varepsilon/g, "ε");
-    s = s.replace(/\\epsilon/g, "ε");
-    s = s.replace(/\\Phi/g, "Φ");
-    s = s.replace(/\\phi/g, "φ");
-    s = s.replace(/\\Omega/g, "Ω");
-    s = s.replace(/\\omega/g, "ω");
-    s = s.replace(/\\Sigma/g, "Σ");
-    s = s.replace(/\\sigma/g, "σ");
-    s = s.replace(/\\mu/g, "μ");
-    s = s.replace(/\\rho/g, "ρ");
-    s = s.replace(/\\nu/g, "ν");
-    s = s.replace(/\\tau/g, "τ");
-
-    s = s.replace(
-      /\\(cos|sin|tan|log|ln)/g,
-      "$1"
-    );
-
-    s = s.replace(
-      /\\left|\\right/g,
-      ""
-    );
-
     // --------------------------------------------------------
-    // Additional Greek symbols
+    // Greek symbols
     // --------------------------------------------------------
 
     s = s
       .replace(/\\Gamma/g, "Γ")
+      .replace(/\\Delta/g, "Δ")
       .replace(/\\Lambda/g, "Λ")
       .replace(/\\Theta/g, "Θ")
       .replace(/\\Pi/g, "Π")
+      .replace(/\\Sigma/g, "Σ")
+      .replace(/\\Phi/g, "Φ")
       .replace(/\\Psi/g, "Ψ")
+      .replace(/\\Omega/g, "Ω")
       .replace(/\\Xi/g, "Ξ")
       .replace(/\\Upsilon/g, "Υ")
       .replace(/\\Chi/g, "Χ")
+      .replace(/\\pi/g, "π")
+      .replace(/\\theta/g, "θ")
+      .replace(/\\lambda/g, "λ")
+      .replace(/\\alpha/g, "α")
+      .replace(/\\beta/g, "β")
+      .replace(/\\gamma/g, "γ")
+      .replace(/\\varepsilon/g, "ε")
+      .replace(/\\epsilon/g, "ε")
+      .replace(/\\phi/g, "φ")
       .replace(/\\psi/g, "ψ")
+      .replace(/\\omega/g, "ω")
+      .replace(/\\sigma/g, "σ")
+      .replace(/\\mu/g, "μ")
+      .replace(/\\rho/g, "ρ")
+      .replace(/\\nu/g, "ν")
+      .replace(/\\tau/g, "τ")
       .replace(/\\chi/g, "χ")
       .replace(/\\eta/g, "η")
       .replace(/\\zeta/g, "ζ")
@@ -421,6 +450,15 @@
       .replace(/\\upsilon/g, "υ");
 
     // --------------------------------------------------------
+    // Trigonometric / mathematical functions
+    // --------------------------------------------------------
+
+    s = s.replace(
+      /\\(cos|sin|tan|log|ln)/g,
+      "$1"
+    );
+
+    // --------------------------------------------------------
     // Arrows and mathematical symbols
     // --------------------------------------------------------
 
@@ -428,6 +466,9 @@
       .replace(/\\rightleftharpoons/g, "⇌")
       .replace(/\\longrightarrow/g, "→")
       .replace(/\\rightarrow/g, "→")
+      .replace(/\\arrow/g, "→")
+      .replace(/\\longarrow/g, "→")
+      .replace(/\\xrightarrow/g, "→")
       .replace(/\\to/g, "→")
       .replace(/\\Rightarrow/g, "⇒")
       .replace(/\\leftarrow/g, "←")
@@ -448,42 +489,67 @@
       .replace(/\\%/g, "%");
 
     // --------------------------------------------------------
+    // Remove LaTeX sizing commands
+    // --------------------------------------------------------
+
+    s = s.replace(/\\left/g, "");
+    s = s.replace(/\\right/g, "");
+
+    // --------------------------------------------------------
     // Text/math wrappers
     // --------------------------------------------------------
 
     s = s
-      .replace(/\\text\{([^{}]*)\}/g, "$1")
-      .replace(/\\mathrm\{([^{}]*)\}/g, "$1")
-      .replace(/\\mathbf\{([^{}]*)\}/g, "$1")
-      .replace(/\\mathit\{([^{}]*)\}/g, "$1")
-      .replace(/\\[,;:!]/g, " ");
+      .replace(/\\text\{/g, "")
+      .replace(/\\mathrm\{/g, "")
+      .replace(/\\mathbf\{/g, "")
+      .replace(/\\mathit\{/g, "");
 
+    // --------------------------------------------------------
     // Superscripts
+    // --------------------------------------------------------
+
     s = s.replace(
       /\^(\{([^{}]+)\}|([A-Za-z0-9+\-]+))/g,
       (_, all, a, b) =>
         `<sup>${a || b}</sup>`
     );
 
-    // Safer subscripts:
-    // single digits can be unbraced;
-    // multi-character subscripts should use braces.
+    // --------------------------------------------------------
+    // Safer subscripts
+    //
+    // Single/multiple digits may be unbraced.
+    // Multi-character symbolic subscripts should use braces.
+    // --------------------------------------------------------
+
     s = s.replace(
       /_(\{([^{}]+)\}|([0-9]+))/g,
       (_, all, a, b) =>
         `<sub>${a || b}</sub>`
     );
 
+    // --------------------------------------------------------
+    // Remove structural braces left by simple LaTeX wrappers.
+    // --------------------------------------------------------
+
+    s = s.replace(/[{}]/g, "");
+
+    // Remove remaining escaped backslashes.
     return s.replace(/\\\\/g, "");
   }
 
 
   function renderEquation(v) {
-    const el = document.createElement("article");
-    el.className = "nbv3-card";
+    const el =
+      document.createElement("article");
+
+    el.className =
+      "nbv3-card";
 
     el.innerHTML = `
-      <div class="nbv3-title">📐 Equation</div>
+      <div class="nbv3-title">
+        📐 Equation
+      </div>
 
       <div class="nbv3-equation">
         ${formatEquation(v.latex)}
@@ -642,6 +708,7 @@
     ) {
       return svg(`
         ${line(70,270,650,270)}
+
         ${line(
           360,
           60,
@@ -737,9 +804,7 @@
     // ELECTROLYTIC CELL
     //
     // IMPORTANT:
-    // This MUST come before the generic "cell" condition below.
-    // Otherwise "electrolytic cell" would be caught by the
-    // biological-cell renderer.
+    // This MUST come before generic "cell".
     // --------------------------------------------------------
 
     if (
@@ -750,6 +815,7 @@
     ) {
       return svg(`
         <!-- Electrolyte container -->
+
         <rect
           x="190"
           y="95"
@@ -761,6 +827,7 @@
           stroke-width="3"/>
 
         <!-- Electrolyte -->
+
         <rect
           x="195"
           y="145"
@@ -770,6 +837,7 @@
           opacity=".08"/>
 
         <!-- Anode -->
+
         <rect
           x="250"
           y="125"
@@ -780,6 +848,7 @@
           opacity=".75"/>
 
         <!-- Cathode -->
+
         <rect
           x="442"
           y="125"
@@ -790,6 +859,7 @@
           opacity=".75"/>
 
         <!-- Power supply -->
+
         <rect
           x="285"
           y="25"
@@ -803,6 +873,7 @@
         ${txt(315,59,"DC POWER SUPPLY")}
 
         <!-- Wires -->
+
         ${line(264,125,264,80)}
         ${line(264,80,330,80)}
         ${line(330,80,330,25)}
@@ -812,10 +883,12 @@
         ${line(390,80,390,25)}
 
         <!-- Polarity -->
+
         ${txt(235,118,"+")}
         ${txt(458,118,"−")}
 
         <!-- Ion movement -->
+
         <path
           d="M310 190 L400 190"
           fill="none"
@@ -841,9 +914,9 @@
           stroke-width="2"/>
 
         <!-- Labels -->
+
         ${txt(215,115,"Anode (+)")}
         ${txt(475,115,"Cathode (−)")}
-
         ${txt(300,165,"Electrolyte")}
 
         ${txt(325,185,"Cations →")}
@@ -1023,11 +1096,17 @@
 
     el.innerHTML = `
       <div class="nbv3-title">
-        🔬 ${esc(v.title || "Educational Diagram")}
+        🔬 ${esc(
+          v.title ||
+          "Educational Diagram"
+        )}
       </div>
 
       <div class="nbv3-svg-wrap">
-        ${drawDiagram(v.diagram, v.labels)}
+        ${drawDiagram(
+          v.diagram,
+          v.labels
+        )}
       </div>
 
       <p>
@@ -1046,7 +1125,10 @@
   // TABLE / COMPARISON
   // ==========================================================
 
-  function renderTable(v, comparison = false) {
+  function renderTable(
+    v,
+    comparison = false
+  ) {
     const el =
       document.createElement("article");
 
@@ -1066,11 +1148,14 @@
     el.innerHTML = `
       <div class="nbv3-title">
         ${comparison ? "⚖️" : "📋"}
+
         ${esc(
           v.title ||
-          (comparison
-            ? "Comparison"
-            : "Study Table")
+          (
+            comparison
+              ? "Comparison"
+              : "Study Table"
+          )
         )}
       </div>
 
@@ -1081,7 +1166,8 @@
             <tr>
               ${headers
                 .map(
-                  h => `<th>${esc(h)}</th>`
+                  h =>
+                    `<th>${esc(h)}</th>`
                 )
                 .join("")}
             </tr>
@@ -1130,7 +1216,10 @@
   // FLOWCHART / PROCESS
   // ==========================================================
 
-  function renderFlow(v, process = false) {
+  function renderFlow(
+    v,
+    process = false
+  ) {
     const el =
       document.createElement("article");
 
@@ -1149,11 +1238,14 @@
     el.innerHTML = `
       <div class="nbv3-title">
         ${process ? "🔄" : "➡️"}
+
         ${esc(
           v.title ||
-          (process
-            ? "Process"
-            : "Flowchart")
+          (
+            process
+              ? "Process"
+              : "Flowchart"
+          )
         )}
       </div>
 
@@ -1609,9 +1701,9 @@
       );
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // DRAWING HELPERS
-    // --------------------------------------------------------
+    // ========================================================
 
     function clear() {
       ctx.clearRect(
@@ -1620,12 +1712,18 @@
         canvas.width,
         canvas.height
       );
+
+      ctx.fillStyle = "#222";
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 2;
+      ctx.font = "16px Arial";
+      ctx.textAlign = "left";
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // PROJECTILE MOTION
-    // --------------------------------------------------------
+    // ========================================================
 
     function projectile() {
       clear();
@@ -1737,9 +1835,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // OHM'S LAW
-    // --------------------------------------------------------
+    // ========================================================
 
     function ohm() {
       clear();
@@ -1802,9 +1900,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // HOOKE'S LAW
-    // --------------------------------------------------------
+    // ========================================================
 
     function hooke() {
       clear();
@@ -1883,9 +1981,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // UNIFORM ACCELERATION
-    // --------------------------------------------------------
+    // ========================================================
 
     function uniformAcceleration() {
       clear();
@@ -1953,9 +2051,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // SIMPLE PENDULUM
-    // --------------------------------------------------------
+    // ========================================================
 
     function pendulum() {
       clear();
@@ -2042,9 +2140,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // SERIES / PARALLEL CIRCUIT
-    // --------------------------------------------------------
+    // ========================================================
 
     function circuit() {
       clear();
@@ -2132,9 +2230,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // WAVE
-    // --------------------------------------------------------
+    // ========================================================
 
     function wave() {
       clear();
@@ -2209,9 +2307,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // LENS FORMULA
-    // --------------------------------------------------------
+    // ========================================================
 
     function lens() {
       clear();
@@ -2278,9 +2376,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // TRANSFORMER
-    // --------------------------------------------------------
+    // ========================================================
 
     function transformer() {
       clear();
@@ -2350,9 +2448,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // DENSITY / PRESSURE
-    // --------------------------------------------------------
+    // ========================================================
 
     function densityPressure() {
       clear();
@@ -2410,9 +2508,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // GAS LAW
-    // --------------------------------------------------------
+    // ========================================================
 
     function gasLaw() {
       clear();
@@ -2475,9 +2573,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // PROBABILITY
-    // --------------------------------------------------------
+    // ========================================================
 
     function probability() {
       clear();
@@ -2527,9 +2625,9 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // ELECTROMAGNETIC INDUCTION
-    // --------------------------------------------------------
+    // ========================================================
 
     function electromagneticInduction() {
       clear();
@@ -2569,8 +2667,7 @@
        *
        * emf ∝ N × B × v
        *
-       * The negative sign represents Lenz's law
-       * (opposition to the change in magnetic flux).
+       * The negative sign represents Lenz's law.
        */
 
       const emf =
@@ -2580,6 +2677,7 @@
         0.1;
 
       /* Magnetic field lines */
+
       ctx.strokeStyle =
         "#555";
 
@@ -2605,6 +2703,7 @@
       }
 
       /* Bar magnet */
+
       ctx.fillStyle =
         "#777";
 
@@ -2630,7 +2729,8 @@
         181
       );
 
-      /* Coil / solenoid */
+      /* Coil */
+
       ctx.strokeStyle =
         "#222";
 
@@ -2658,6 +2758,7 @@
       }
 
       /* Connecting wires */
+
       ctx.beginPath();
 
       ctx.moveTo(
@@ -2707,6 +2808,7 @@
       ctx.stroke();
 
       /* Galvanometer */
+
       ctx.beginPath();
 
       ctx.arc(
@@ -2728,7 +2830,8 @@
         181
       );
 
-      /* Direction of motion */
+      /* Motion */
+
       ctx.beginPath();
 
       ctx.moveTo(
@@ -2768,8 +2871,6 @@
       );
 
       /* Labels */
-      ctx.font =
-        "14px Arial";
 
       ctx.fillText(
         "Bar magnet",
@@ -2789,7 +2890,6 @@
         230
       );
 
-      /* Faraday's law result */
       ctx.textAlign =
         "left";
 
@@ -2801,21 +2901,13 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // ELECTROLYSIS SIMULATION
     //
     // Faraday's first law:
     //
     // m = MIt / nF
-    //
-    // where:
-    // m = mass deposited
-    // M = molar mass
-    // I = current
-    // t = time
-    // n = valency / number of electrons
-    // F = Faraday constant
-    // --------------------------------------------------------
+    // ========================================================
 
     function electrolysis() {
       clear();
@@ -2874,7 +2966,7 @@
         moles * M;
 
       // ------------------------------------------------------
-      // Draw electrolyte vessel
+      // Electrolyte vessel
       // ------------------------------------------------------
 
       ctx.strokeStyle =
@@ -2891,6 +2983,7 @@
       );
 
       // Electrolyte
+
       ctx.fillStyle =
         "rgba(30,120,90,.10)";
 
@@ -2944,13 +3037,12 @@
       );
 
       // ------------------------------------------------------
-      // Ion movement
+      // Cations → cathode
       // ------------------------------------------------------
 
       ctx.font =
         "16px Arial";
 
-      // Cations → cathode
       ctx.beginPath();
 
       ctx.moveTo(
@@ -2986,7 +3078,10 @@
         165
       );
 
+      // ------------------------------------------------------
       // Anions → anode
+      // ------------------------------------------------------
+
       ctx.beginPath();
 
       ctx.moveTo(
@@ -3056,7 +3151,7 @@
       );
 
       // ------------------------------------------------------
-      // Faraday law result
+      // Result
       // ------------------------------------------------------
 
       ctx.textAlign =
@@ -3070,33 +3165,61 @@
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // SIMULATION DISPATCH
-    // --------------------------------------------------------
+    // ========================================================
 
     const draw = {
-      projectile_motion: projectile,
-      ohms_law: ohm,
-      hookes_law: hooke,
-      uniform_acceleration: uniformAcceleration,
-      simple_pendulum: pendulum,
-      series_parallel_circuit: circuit,
-      wave_motion: wave,
-      lens_formula: lens,
-      transformer: transformer,
-      density_pressure: densityPressure,
-      gas_law: gasLaw,
-      probability: probability,
-      electromagnetic_induction: electromagneticInduction,
-      electrolysis: electrolysis
+      projectile_motion:
+        projectile,
+
+      ohms_law:
+        ohm,
+
+      hookes_law:
+        hooke,
+
+      uniform_acceleration:
+        uniformAcceleration,
+
+      simple_pendulum:
+        pendulum,
+
+      series_parallel_circuit:
+        circuit,
+
+      wave_motion:
+        wave,
+
+      lens_formula:
+        lens,
+
+      transformer:
+        transformer,
+
+      density_pressure:
+        densityPressure,
+
+      gas_law:
+        gasLaw,
+
+      probability:
+        probability,
+
+      electromagnetic_induction:
+        electromagneticInduction,
+
+      electrolysis:
+        electrolysis
     };
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // SIMULATION RANGES
-    // --------------------------------------------------------
+    // ========================================================
 
     const ranges = {
+
       projectile_motion: [
         [
           "Initial velocity u (m/s)",
@@ -3407,9 +3530,9 @@
     };
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // BUILD CONTROLS
-    // --------------------------------------------------------
+    // ========================================================
 
     (
       ranges[type] || []
@@ -3649,6 +3772,7 @@
           renderVisual(v);
 
         if (component) {
+
           wrap.appendChild(
             component
           );
@@ -3662,7 +3786,6 @@
           "NoteBank visual component skipped:",
           error
         );
-
       }
 
     });
