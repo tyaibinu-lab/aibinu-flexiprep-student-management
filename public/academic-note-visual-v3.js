@@ -3114,298 +3114,244 @@
       createElectrolysisModel();
 
 
-    // ========================================================
-    // ELECTROLYSIS VIEW
-    //
-    // VIEW = canvas representation only
-    // ========================================================
-
-    function electrolysis() {
-
-      // Synchronise model with current control state.
-      electrolysisModel.setState(state);
-
-      const values =
-        electrolysisModel.calculate();
-
-      const I =
-        values.current;
-
-      const t =
-        values.time;
-
-      const M =
-        values.molarMass;
-
-      const n =
-        values.valency;
-
-      const F =
-        values.faradayConstant;
-
-      const Q =
-        values.charge;
-
-      const moles =
-        values.molesDeposited;
-
-      const mass =
-        values.massDeposited;
-
-      clear();
-      clear();
-
-      const I =
-        clamp(
-          num(
-            state.current,
-            2
-          ),
-          0,
-          20
-        );
-
-      const t =
-        clamp(
-          num(
-            state.time,
-            600
-          ),
-          1,
-          7200
-        );
-
-      const M =
-        clamp(
-          num(
-            state.molarMass,
-            63.5
-          ),
-          1,
-          300
-        );
-
-      const n =
-        clamp(
-          num(
-            state.valency,
-            2
-          ),
-          1,
-          6
-        );
-
-      const F =
-        96485;
-
-      const Q =
-        I * t;
-
-      const moles =
-        Q /
-        (n * F);
-
-      const mass =
-        moles * M;
-
-      // ------------------------------------------------------
-      // Electrolyte vessel
-      // ------------------------------------------------------
-
-      ctx.strokeStyle =
-        "#333";
-
-      ctx.lineWidth =
-        2;
-
-      ctx.strokeRect(
-        160,
-        90,
-        440,
-        210
-      );
-
-      // Electrolyte
-
-      ctx.fillStyle =
-        "rgba(30,120,90,.10)";
-
-      ctx.fillRect(
-        165,
-        145,
-        430,
-        150
-      );
-
-      // ------------------------------------------------------
-      // Electrodes
-      // ------------------------------------------------------
-
-      ctx.fillStyle =
-        "#555";
-
-      ctx.fillRect(
-        250,
-        115,
-        35,
-        150
-      );
-
-      ctx.fillRect(
-        475,
-        115,
-        35,
-        150
-      );
-
-      ctx.fillStyle =
-        "#222";
-
-      ctx.font =
-        "bold 18px Arial";
-
-      ctx.textAlign =
-        "center";
-
-      ctx.fillText(
-        "ANODE (+)",
-        267,
-        105
-      );
-
-      ctx.fillText(
-        "CATHODE (−)",
-        492,
-        105
-      );
-
-      // ------------------------------------------------------
-      // Cations → cathode
-      // ------------------------------------------------------
-
-      ctx.font =
-        "16px Arial";
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        320,
-        185
-      );
-
-      ctx.lineTo(
-        450,
-        185
-      );
-
-      ctx.lineTo(
-        435,
-        175
-      );
-
-      ctx.moveTo(
-        450,
-        185
-      );
-
-      ctx.lineTo(
-        435,
-        195
-      );
-
-      ctx.stroke();
-
-      ctx.fillText(
-        "Cations →",
-        385,
-        165
-      );
-
-      // ------------------------------------------------------
-      // Anions → anode
-      // ------------------------------------------------------
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        440,
-        235
-      );
-
-      ctx.lineTo(
-        310,
-        235
-      );
-
-      ctx.lineTo(
-        325,
-        225
-      );
-
-      ctx.moveTo(
-        310,
-        235
-      );
-
-      ctx.lineTo(
-        325,
-        245
-      );
-
-      ctx.stroke();
-
-      ctx.fillText(
-        "← Anions",
-        375,
-        260
-      );
-
-      // ------------------------------------------------------
-      // Deposit on cathode
-      // ------------------------------------------------------
-
-      const depositHeight =
-        clamp(
-          mass * 80,
-          2,
-          90
-        );
-
-      ctx.fillStyle =
-        "#888";
-
-      ctx.fillRect(
-        465,
-        265 - depositHeight,
-        10,
-        depositHeight
-      );
-
-      ctx.font =
-        "14px Arial";
-
-      ctx.fillStyle =
-        "#222";
-
-      ctx.fillText(
-        "Deposit",
-        515,
-        280
-      );
-
-      // ------------------------------------------------------
-      // Result
-      // ------------------------------------------------------
-
-      ctx.textAlign =
-        "left";
-
-      result.innerHTML =
-        `Charge Q = ${Q.toFixed(2)} C<br>` +
-        `Amount deposited = ${moles.toFixed(6)} mol<br>` +
-        `Mass deposited m = ${mass.toFixed(4)} g<br>` +
-        `Faraday's Law: m = MIt / nF`;
-    }
+// ========================================================
+// ELECTROLYSIS VIEW
+//
+// VIEW = canvas representation only
+// ========================================================
+
+function electrolysis() {
+
+  // Synchronise model with current control state.
+  electrolysisModel.setState(state);
+
+  const values =
+    electrolysisModel.calculate();
+
+  const I =
+    values.current;
+
+  const t =
+    values.time;
+
+  const M =
+    values.molarMass;
+
+  const n =
+    values.valency;
+
+  const F =
+    values.faradayConstant;
+
+  const Q =
+    values.charge;
+
+  const moles =
+    values.molesDeposited;
+
+  const mass =
+    values.massDeposited;
+
+  clear();
+
+  // ------------------------------------------------------
+  // Electrolyte vessel
+  // ------------------------------------------------------
+
+  ctx.strokeStyle =
+    "#333";
+
+  ctx.lineWidth =
+    2;
+
+  ctx.strokeRect(
+    160,
+    90,
+    440,
+    210
+  );
+
+  // Electrolyte
+
+  ctx.fillStyle =
+    "rgba(30,120,90,.10)";
+
+  ctx.fillRect(
+    165,
+    145,
+    430,
+    150
+  );
+
+  // ------------------------------------------------------
+  // Electrodes
+  // ------------------------------------------------------
+
+  ctx.fillStyle =
+    "#555";
+
+  ctx.fillRect(
+    250,
+    115,
+    35,
+    150
+  );
+
+  ctx.fillRect(
+    475,
+    115,
+    35,
+    150
+  );
+
+  ctx.fillStyle =
+    "#222";
+
+  ctx.font =
+    "bold 18px Arial";
+
+  ctx.textAlign =
+    "center";
+
+  ctx.fillText(
+    "ANODE (+)",
+    267,
+    105
+  );
+
+  ctx.fillText(
+    "CATHODE (−)",
+    492,
+    105
+  );
+
+  // ------------------------------------------------------
+  // Cations → cathode
+  // ------------------------------------------------------
+
+  ctx.font =
+    "16px Arial";
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    320,
+    185
+  );
+
+  ctx.lineTo(
+    450,
+    185
+  );
+
+  ctx.lineTo(
+    435,
+    175
+  );
+
+  ctx.moveTo(
+    450,
+    185
+  );
+
+  ctx.lineTo(
+    435,
+    195
+  );
+
+  ctx.stroke();
+
+  ctx.fillText(
+    "Cations →",
+    385,
+    165
+  );
+
+  // ------------------------------------------------------
+  // Anions → anode
+  // ------------------------------------------------------
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    440,
+    235
+  );
+
+  ctx.lineTo(
+    310,
+    235
+  );
+
+  ctx.lineTo(
+    325,
+    225
+  );
+
+  ctx.moveTo(
+    310,
+    235
+  );
+
+  ctx.lineTo(
+    325,
+    245
+  );
+
+  ctx.stroke();
+
+  ctx.fillText(
+    "← Anions",
+    375,
+    260
+  );
+
+  // ------------------------------------------------------
+  // Deposit on cathode
+  // ------------------------------------------------------
+
+  const depositHeight =
+    clamp(
+      mass * 80,
+      2,
+      90
+    );
+
+  ctx.fillStyle =
+    "#888";
+
+  ctx.fillRect(
+    465,
+    265 - depositHeight,
+    10,
+    depositHeight
+  );
+
+  ctx.font =
+    "14px Arial";
+
+  ctx.fillStyle =
+    "#222";
+
+  ctx.fillText(
+    "Deposit",
+    515,
+    280
+  );
+
+  // ------------------------------------------------------
+  // Result
+  // ------------------------------------------------------
+
+  ctx.textAlign =
+    "left";
+
+  result.innerHTML =
+    `Charge Q = ${Q.toFixed(2)} C<br>` +
+    `Amount deposited = ${moles.toFixed(6)} mol<br>` +
+    `Mass deposited m = ${mass.toFixed(4)} g<br>` +
+    `Faraday's Law: m = MIt / nF`;
+}
 
 
     // ========================================================
