@@ -3021,15 +3021,138 @@
     }
 
 
+        // ========================================================
+    // ELECTROLYSIS MODEL
+    //
+    // PhET-inspired separation:
+    // MODEL = state + scientific relationships
+    // VIEW  = drawing and presentation
+    // CONTROLS = existing trusted sliders
     // ========================================================
-    // ELECTROLYSIS SIMULATION
+
+    function createElectrolysisModel() {
+
+      const model = {
+
+        // Faraday constant
+        F: 96485,
+
+        // State
+        current: 2,
+        time: 600,
+        molarMass: 63.5,
+        valency: 2,
+
+        setState(values) {
+
+          this.current =
+            clamp(
+              num(values.current, 2),
+              0,
+              20
+            );
+
+          this.time =
+            clamp(
+              num(values.time, 600),
+              1,
+              7200
+            );
+
+          this.molarMass =
+            clamp(
+              num(values.molarMass, 63.5),
+              1,
+              300
+            );
+
+          this.valency =
+            clamp(
+              num(values.valency, 2),
+              1,
+              6
+            );
+        },
+
+        calculate() {
+
+          const Q =
+            this.current *
+            this.time;
+
+          const moles =
+            Q /
+            (
+              this.valency *
+              this.F
+            );
+
+          const mass =
+            moles *
+            this.molarMass;
+
+          return {
+            current: this.current,
+            time: this.time,
+            molarMass: this.molarMass,
+            valency: this.valency,
+            faradayConstant: this.F,
+            charge: Q,
+            molesDeposited: moles,
+            massDeposited: mass
+          };
+        }
+      };
+
+      return model;
+    }
+
+
+    // One persistent model instance.
+    // Controls modify state; the view reads calculated results.
+    const electrolysisModel =
+      createElectrolysisModel();
+
+
+    // ========================================================
+    // ELECTROLYSIS VIEW
     //
-    // Faraday's first law:
-    //
-    // m = MIt / nF
+    // VIEW = canvas representation only
     // ========================================================
 
     function electrolysis() {
+
+      // Synchronise model with current control state.
+      electrolysisModel.setState(state);
+
+      const values =
+        electrolysisModel.calculate();
+
+      const I =
+        values.current;
+
+      const t =
+        values.time;
+
+      const M =
+        values.molarMass;
+
+      const n =
+        values.valency;
+
+      const F =
+        values.faradayConstant;
+
+      const Q =
+        values.charge;
+
+      const moles =
+        values.molesDeposited;
+
+      const mass =
+        values.massDeposited;
+
+      clear();
       clear();
 
       const I =
