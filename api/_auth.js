@@ -209,11 +209,14 @@ function extractSessionToken(req) {
       .trim();
 
     const value = part
-      .slice(separator + 1)
-      .trim();
+  .slice(separator + 1)
+  .trim();
 
-    cookies[name] = decodeURIComponent(value);
-  });
+try {
+  cookies[name] = decodeURIComponent(value);
+} catch {
+  cookies[name] = "";
+}
 
   return cookies[SESSION_COOKIE_NAME] || null;
 }
