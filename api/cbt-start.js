@@ -20,29 +20,6 @@ export default async function handler(req, res) {
       error: "Method not allowed"
     });
   }
-    // STEP 54B:
-  // Only an authenticated student may submit a CBT.
-  // Student identity comes from the signed session,
-  // never from the browser request body.
-  const user = requireRole(req, res, "student");
-
-  if (!user) {
-    return;
-  }
-
-  const authenticatedStudentId =
-    String(user.studentId || "")
-      .trim()
-      .toUpperCase();
-
-  if (!authenticatedStudentId) {
-    return res.status(403).json({
-      success: false,
-      error:
-        "Authenticated student account is not linked to a student record.",
-      code: "STUDENT_IDENTITY_NOT_LINKED"
-    });
-  }
 
   /*
     STEP 54B:
@@ -66,12 +43,15 @@ export default async function handler(req, res) {
     and the existing Students Airtable record.
   */
   const authenticatedStudentId =
-    String(user.studentId || "").trim().toUpperCase();
+    String(user.studentId || "")
+      .trim()
+      .toUpperCase();
 
   if (!authenticatedStudentId) {
     return res.status(403).json({
       success: false,
-      error: "Authenticated student account is not linked to a student record.",
+      error:
+        "Authenticated student account is not linked to a student record.",
       code: "STUDENT_IDENTITY_NOT_LINKED"
     });
   }
@@ -203,7 +183,8 @@ export default async function handler(req, res) {
     ) {
       return res.status(403).json({
         success: false,
-        error: "Student is not currently eligible to start an examination.",
+        error:
+          "Student is not currently eligible to start an examination.",
         code: "STUDENT_NOT_ELIGIBLE",
         studentId: authenticatedStudentId
       });
@@ -244,7 +225,7 @@ export default async function handler(req, res) {
     }
 
     /*
-      3. Create the attempt.9k(k(
+      3. Create the attempt.
 
       The Student field is derived exclusively from
       the authenticated session -> Students record.
