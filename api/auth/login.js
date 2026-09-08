@@ -1,241 +1,133 @@
-/**
- * AIBINU FLEXIPREP — Authentication Login
- * POST /api/auth/login
- */
-import crypto from "crypto";
-import { createSessionToken, setSessionCookie } from "../_auth.js";
+// api/auth/login.js
 
-const API = "https://api.airtable.com/v0";
-const MAX_FAILURES = 5;
-const LOCK_MINUTES = 15;
-const N = 16384, R = 8, P = 1, KEY_LENGTH = 64, SALT_LENGTH = 16;
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const Airtable = require('airtable');
 
-function config() {
-  const { AIRTABLE_PAT, AIRTABLE_BASE_ID } = process.env;
-  if (!AIRTABLE_PAT || !AIRTABLE_BASE_ID) {
-    throw new Error("Airtable authentication configuration is missing.");
-  }
-  return {
-    token: AIRTABLE_PAT,
-    base: AIRTABLE_BASE_ID,
-    users: process.env.AIRTABLE_AUTH_USERS_TABLE || "Auth_Users",
-    students: process.env.AIRTABLE_STUDENTS_TABLE || "Students",
-  };
+const COOKIE_NAME = process.env.COOKIE_NAME || 'aibinu_sess';
+const AUTH_SECRET = process.env.AUTH_SECRET;
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_TABLE = process.env.AIRTABLE_TABLE_NAME || 'Auth_Users';
+const SESSION_TTL_SECONDS = +(process.env.SESSION_TTL_SECONDS || 7 * 24 * 3600);
+const MAX_FAILED = +(process.env.MAX_FAILED_LOGIN || 5);
+const LOCKOUT_SECONDS = +(process.env.LOCKOUT_SECONDS || 15 * 60);
+
+if (!AUTH_SECRET || !AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
+  console.error('Missing required env vars: AUTH_SECRET, AIRTABLE_API_KEY, AIRTABLE_BASE_ID');
 }
 
-async function airtable(c, table, method = "GET", body, query = "") {
-  const url = `${API}/${c.base}/${encodeURIComponent(table)}${query}`;
-  const options = {
-    method,
-    headers: {
-      Authorization: `Bearer ${c.token}`,
-      "Content-Type": "application/json",
-    },
-  };
-  if (body !== undefined) options.body = JSON.stringify(body);
-  const r = await fetch(url, options);
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d?.error?.message || `Airtable request failed (${r.status}).`);
-  return d;
+const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
+
+function signSession(payload) {
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64');
+  const hmac = crypto.createHmac('sha256', AUTH_SECRET).update(data).digest('base64');
+  return `${data}.${hmac}`;
 }
 
-function escapeFormula(value) {
-  return String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-function isLocked(fields) {
-  const value = fields?.["Locked Until"];
-  if (!value) return false;
-  const date = new Date(value);
-  return !Number.isNaN(date.getTime()) && date.getTime() > Date.now();
-}
-
-function verifyPassword(password, stored) {
-  return new Promise((resolve) => {
-    try {
-      const parts = String(stored || "").split("$");
-      if (parts.length !== 6 || parts[0] !== "scrypt") return resolve(false);
-
-      const n = Number(parts[1]);
-      const r = Number(parts[2]);
-      const p = Number(parts[3]);
-      const salt = Buffer.from(parts[4], "base64url");
-      const expected = Buffer.from(parts[5], "base64url");
-
-      if (!n || !r || !p || !salt.length || !expected.length || expected.length > 128) {
-        return resolve(false);
-      }
-
-      crypto.scrypt(
-        password,
-        salt,
-        expected.length,
-        { N: n, r, p, maxmem: 32 * 1024 * 1024 },
-        (error, derived) => {
-          if (error || derived.length !== expected.length) return resolve(false);
-          resolve(crypto.timingSafeEqual(derived, expected));
-        }
-      );
-    } catch {
-      resolve(false);
-    }
-  });
-}
-
-async function updateUser(c, recordId, fields) {
-  return airtable(c, `${c.users}/${recordId}`, "PATCH", { fields });
-}
-
-async function findUser(c, identifier) {
-  const formula = `LOWER({Login Identifier})=LOWER("${escapeFormula(identifier)}")`;
-  return (
-    await airtable(
-      c,
-      c.users,
-      "GET",
-      undefined,
-      `?maxRecords=1&filterByFormula=${encodeURIComponent(formula)}`
-    )
-  ).records?.[0] || null;
-}
-
-async function resolveStudentId(c, record) {
-  const links = record.fields?.["Student"];
-  if (!Array.isArray(links) || !links[0]) return null;
-
-  const linkedId = typeof links[0] === "string" ? links[0] : links[0].id;
-  if (!linkedId) return null;
-
-  const student = await airtable(c, `${c.students}/${linkedId}`);
-  const f = student.fields || {};
-  return String(f["Student ID"] ?? f["Student_ID"] ?? "").trim().toUpperCase() || null;
-}
-
-function publicUser(record, role, studentId, teacherId) {
-  const f = record.fields || {};
-  return {
-    id: record.id,
-    userId: f["User ID"] || null,
-    loginIdentifier: f["Login Identifier"] || null,
-    role,
-    studentId: studentId || null,
-    teacherId: teacherId || null,
-    status: f["Status"] || "Active",
-  };
-}
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).json({ success: false, error: "Method not allowed." });
-  }
-
+function parseIso(s) {
   try {
-    const identifier = String(
-      req.body?.loginIdentifier ?? req.body?.username ?? ""
-    ).trim();
-
-    const password =
-      typeof req.body?.password === "string" ? req.body.password : "";
-
-    if (!identifier || !password || identifier.length > 150 || password.length > 1024) {
-      return res.status(401).json({
-        success: false,
-        error: "Invalid credentials.",
-        code: "INVALID_CREDENTIALS",
-      });
-    }
-
-    const c = config();
-    const record = await findUser(c, identifier);
-
-    const invalid = () =>
-      res.status(401).json({
-        success: false,
-        error: "Invalid credentials.",
-        code: "INVALID_CREDENTIALS",
-      });
-
-    if (!record) return invalid();
-
-    const f = record.fields || {};
-
-    if (isLocked(f)) return invalid();
-
-    const status = String(f["Status"] ?? "Active").trim().toLowerCase();
-    if (!["active", "enabled"].includes(status)) return invalid();
-
-    const valid = await verifyPassword(password, f["Password Hash"]);
-
-    if (!valid) {
-      const failures = Number(f["Failed Attempts"] || 0) + 1;
-      const fields = { "Failed Attempts": failures };
-
-      if (failures >= MAX_FAILURES) {
-        fields["Locked Until"] = new Date(
-          Date.now() + LOCK_MINUTES * 60 * 1000
-        ).toISOString();
-      }
-
-      await updateUser(c, record.id, fields).catch((e) =>
-        console.error("Auth lockout update failed:", e.message)
-      );
-
-      return invalid();
-    }
-
-    const role = String(f["Role"] || "").trim().toLowerCase();
-    if (!["student", "teacher", "reviewer", "admin"].includes(role)) {
-      return invalid();
-    }
-
-    let studentId = null;
-    let teacherId = null;
-
-    if (role === "student") {
-      studentId = await resolveStudentId(c, record);
-
-      if (!studentId) {
-        return res.status(403).json({
-          success: false,
-          error: "Student account is not linked to a student record.",
-          code: "IDENTITY_NOT_LINKED",
-        });
-      }
-    }
-
-    if (Array.isArray(f["Teacher"]) && f["Teacher"][0]) {
-      teacherId =
-        typeof f["Teacher"][0] === "string"
-          ? f["Teacher"][0]
-          : f["Teacher"][0].id;
-    }
-
-    await updateUser(c, record.id, {
-      "Failed Attempts": 0,
-      "Locked Until": null,
-      "Last Login": new Date().toISOString(),
-    });
-
-    const token = createSessionToken({
-      userId: record.id,
-      role,
-      studentId,
-      teacherId,
-    });
-
-    setSessionCookie(res, token);
-
-    return res.status(200).json({
-      success: true,
-      authenticated: true,
-      user: publicUser(record, role, studentId, teacherId),
-    });
-  } catch (error) {
-    console.error("Authentication login error:", error);
-    return res.status(500).json({
-      success: false,
-      error: "Authentication service is temporarily unavailable.",
-    });
+    return new Date(s);
+  } catch (e) {
+    return null;
   }
+}
+
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const { identifier, password } = req.body || {};
+  if (!identifier || !password) return res.status(400).json({ error: 'identifier and password required' });
+
+  // Lookup user by email or username
+  const filter = `OR({email} = '${identifier}', {username} = '${identifier}')`;
+  let records;
+  try {
+    records = await base(AIRTABLE_TABLE).select({ filterByFormula: filter, maxRecords: 1 }).firstPage();
+  } catch (err) {
+    console.error('Airtable lookup error', err);
+    return res.status(500).json({ error: 'internal error' });
+  }
+
+  const record = records && records[0];
+  if (!record) {
+    // Generic failure — avoid user enumeration
+    await fakeDelay();
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  const fields = record.fields || {};
+  const failedCount = +(fields.failed_login_count || 0);
+  const lockedUntil = fields.locked_until ? new Date(fields.locked_until) : null;
+  const now = new Date();
+
+  if (lockedUntil && lockedUntil > now) {
+    return res.status(403).json({ error: 'Account locked. Try later.' });
+  }
+
+  const passwordHash = fields.password_hash;
+  const role = fields.role || 'student';
+  const status = (fields.status || 'active').toLowerCase();
+
+  if (status !== 'active') {
+    return res.status(403).json({ error: 'Account not active' });
+  }
+
+  let match = false;
+  try {
+    match = await bcrypt.compare(password, passwordHash || '');
+  } catch (err) {
+    console.error('bcrypt compare error', err);
+    return res.status(500).json({ error: 'internal error' });
+  }
+
+  if (!match) {
+    // increment failed count and possibly lock
+    const updates = { failed_login_count: failedCount + 1 };
+    if (failedCount + 1 >= MAX_FAILED) {
+      const lockUntil = new Date(Date.now() + LOCKOUT_SECONDS * 1000).toISOString();
+      updates.locked_until = lockUntil;
+    }
+    try {
+      await base(AIRTABLE_TABLE).update(record.id, updates);
+    } catch (err) {
+      console.error('Airtable update failed', err);
+    }
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  // Successful login — reset failed count and set last_login
+  try {
+    await base(AIRTABLE_TABLE).update(record.id, { failed_login_count: 0, locked_until: null, last_login_at: new Date().toISOString() });
+  } catch (err) {
+    console.error('Airtable update failed', err);
+  }
+
+  // Create session token
+  const sessionPayload = {
+    auth_id: fields.auth_id || record.id,
+    role,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS,
+  };
+
+  const token = signSession(sessionPayload);
+
+  const expires = new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toUTCString();
+  const cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; HttpOnly; Path=/; Expires=${expires}; SameSite=Strict; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`;
+
+  res.setHeader('Set-Cookie', cookie);
+
+  const sanitized = {
+    auth_id: sessionPayload.auth_id,
+    email: fields.email,
+    username: fields.username,
+    role,
+    status,
+  };
+
+  return res.status(200).json({ user: sanitized });
+};
+
+async function fakeDelay() {
+  return new Promise((r) => setTimeout(r, 300));
 }
