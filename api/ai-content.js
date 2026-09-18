@@ -17,23 +17,8 @@ const TABLES = {
 // VERCEL HANDLER
 // ============================================================
 
+import { requireRole } from "./_auth.js";
 export default async function handler(req, res) {
-
-  res.setHeader("Access-Control-Allow-Origin", "*");
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, GET, OPTIONS"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
 
   // ----------------------------------------------------------
   // HEALTH CHECK
@@ -80,12 +65,25 @@ export default async function handler(req, res) {
 
   try {
 
-    const config =
-      getConfig();
+    const user = requireRole(
+  req,
+  res,
+  ["teacher", "admin"]
+);
 
-    const body =
-      req.body || {};
+if (!user) {
+  return;
+}
 
+const config =
+  getConfig();
+
+// Identity is derived from the signed server session.
+// Browser-supplied requestedBy is deliberately ignored.
+const body = {
+  ...(req.body || {}),
+  requestedBy: user.teacherId || null
+};
     const type =
       clean(
         body.contentType ||
