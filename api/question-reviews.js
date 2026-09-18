@@ -1,9 +1,16 @@
+```javascript
+import { requireRole } from "./_auth.js";
+
 const AIRTABLE_API = "https://api.airtable.com/v0";
 
 const TABLES = {
   questions: "CBT_Questions",
   reviews: "Question_Reviews"
 };
+
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
 
 function getConfig() {
   const token = process.env.AIRTABLE_PAT;
@@ -13,10 +20,17 @@ function getConfig() {
     throw new Error("Airtable environment variables are missing.");
   }
 
-  return { token, baseId };
+  return {
+    token,
+    baseId
+  };
 }
 
-function headers(token) {
+/* ============================================================
+   AIRTABLE HELPERS
+   ============================================================ */
+
+function airtableHeaders(token) {
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json"
@@ -25,7 +39,8 @@ function headers(token) {
 
 async function airtableRequest(url, options) {
   const response = await fetch(url, options);
-  const data = await response.json();
+
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(
@@ -38,42 +53,60 @@ async function airtableRequest(url, options) {
   return data;
 }
 
-
 /* ============================================================
-   FIND QUESTION
+   NORMALISE RECORD IDS
    ============================================================ */
 
-async function findQuestion(baseId, token, questionId) {
+function recordIds(value) {
+  if (Array.isArray(value)) {
+    return value.map(String);
+  }
 
+  if (value) {
+    return [String(value)];
+  }
+
+  return [];
+}
+
+/* ============================================================
+   QUESTION LOOKUP
+   ============================================================ */
+
+async function findQuestion(
+  baseId,
+  token,
+  questionId
+) {
   let offset = null;
 
   do {
-
     let url =
       `${AIRTABLE_API}/${baseId}/${TABLES.questions}`;
 
     if (offset) {
-      url += `?offset=${encodeURIComponent(offset)}`;
+      url +=
+        `?offset=${encodeURIComponent(offset)}`;
     }
 
     const data = await airtableRequest(
       url,
       {
         method: "GET",
-        headers: headers(token)
+        headers: airtableHeaders(token)
       }
     );
 
-    const found = (data.records || []).find(record => {
+    const found =
+      (data.records || []).find((record) => {
+        const fields = record.fields || {};
 
-      const f = record.fields || {};
-
-      return (
-        String(record.id) === String(questionId) ||
-        String(f["Question ID"] || "") === String(questionId)
-      );
-
-    });
+        return (
+          String(record.id) === String(questionId) ||
+          String(fields["Question ID"] || "") ===
+            String(questionId)
+        );
+      });
 
     if (found) {
       return found;
@@ -86,42 +119,63 @@ async function findQuestion(baseId, token, questionId) {
   return null;
 }
 
-
 /* ============================================================
-   FIND REVIEW
+   REVIEW LOOKUP BY REVIEW RECORD ID
    ============================================================ */
 
-async function findReview(baseId, token, questionId) {
+async function findReviewById(
+  baseId,
+  token,
+  reviewId
+) {
+  return airtableRequest(
+    `${AIRTABLE_API}/${baseId}/${TABLES.reviews}/${reviewId}`,
+    {
+      method: "GET",
+      headers: airtableHeaders(token)
+    }
+  );
+}
 
+/* ============================================================
+   REVIEW LOOKUP BY QUESTION
+   ============================================================ */
+
+async function findReviewForQuestion(
+  baseId,
+  token,
+  questionId
+) {
   let offset = null;
 
   do {
-
     let url =
       `${AIRTABLE_API}/${baseId}/${TABLES.reviews}`;
 
     if (offset) {
-      url += `?offset=${encodeURIComponent(offset)}`;
+      url +=
+        `?offset=${encodeURIComponent(offset)}`;
     }
 
     const data = await airtableRequest(
       url,
       {
         method: "GET",
-        headers: headers(token)
+        headers: airtableHeaders(token)
       }
     );
 
-    const found = (data.records || []).find(record => {
+    const found =
+      (data.records || []).find((record) => {
+        const fields = record.fields || {};
 
-      const f = record.fields || {};
+        const linkedQuestions =
+          recordIds(fields["Question"]);
 
-      return (
-        String(f["Question ID"] || "") ===
-        String(questionId)
-      );
-
-    });
+        return linkedQuestions.includes(
+          String(questionId)
+        );
+      });
 
     if (found) {
       return found;
@@ -133,7 +187,6 @@ async function findReview(baseId, token, questionId) {
 
   return null;
 }
-
 
 /* ============================================================
    CREATE REVIEW
@@ -144,27 +197,27 @@ async function createReview(
   token,
   fields
 ) {
-
   return airtableRequest(
     `${AIRTABLE_API}/${baseId}/${TABLES.reviews}`,
     {
       method: "POST",
 
-      headers: headers(token),
+      headers:
+        airtableHeaders(token),
 
-      body: JSON.stringify({
-        records: [
-          {
-            fields
-          }
-        ],
+      body:
+        JSON.stringify({
+          records: [
+            {
+              fields
+            }
+          ],
 
-        typecast: true
-      })
+          typecast: true
+        })
     }
   );
 }
-
 
 /* ============================================================
    UPDATE REVIEW
@@ -176,23 +229,22 @@ async function updateReview(
   recordId,
   fields
 ) {
-
   return airtableRequest(
     `${AIRTABLE_API}/${baseId}/${TABLES.reviews}/${recordId}`,
     {
       method: "PATCH",
 
-      headers: headers(token),
+      headers:
+        airtableHeaders(token),
 
-      body: JSON.stringify({
-        fields,
-
-        typecast: true
-      })
+      body:
+        JSON.stringify({
+          fields,
+          typecast: true
+        })
     }
   );
 }
-
 
 /* ============================================================
    UPDATE QUESTION
@@ -204,116 +256,122 @@ async function updateQuestion(
   recordId,
   fields
 ) {
-
   return airtableRequest(
     `${AIRTABLE_API}/${baseId}/${TABLES.questions}/${recordId}`,
     {
       method: "PATCH",
 
-      headers: headers(token),
+      headers:
+        airtableHeaders(token),
 
-      body: JSON.stringify({
-        fields,
-
-        typecast: true
-      })
+      body:
+        JSON.stringify({
+          fields,
+          typecast: true
+        })
     }
   );
 }
 
+/* ============================================================
+   QUESTION OWNERSHIP
+   ============================================================ */
+
+function teacherOwnsQuestion(
+  question,
+  teacherId
+) {
+  if (!teacherId) {
+    return false;
+  }
+
+  const createdBy =
+    recordIds(
+      question.fields?.["Created By"]
+    );
+
+  return createdBy.includes(
+    String(teacherId)
+  );
+}
+
+/* ============================================================
+   REVIEW STATUS
+   ============================================================ */
+
+function getReviewStatus(review) {
+  return String(
+    review?.fields?.["Status"] || ""
+  )
+    .trim()
+    .toLowerCase();
+}
+
+/* ============================================================
+   RESPONSE FORMAT
+   ============================================================ */
+
+function formatReview(review) {
+  if (!review) {
+    return null;
+  }
+
+  return {
+    id: review.id,
+    ...review.fields
+  };
+}
 
 /* ============================================================
    MAIN HANDLER
    ============================================================ */
 
-export default async function handler(req, res) {
-
+export default async function handler(
+  req,
+  res
+) {
   try {
+
+    /* ========================================================
+       AUTHENTICATION
+       ======================================================== */
+
+    const user =
+      requireRole(
+        req,
+        res,
+        [
+          "teacher",
+          "reviewer",
+          "admin"
+        ]
+      );
+
+    if (!user) {
+      return;
+    }
 
     const {
       token,
       baseId
     } = getConfig();
 
-
     /* ========================================================
        GET
+       Retrieve review for a question
        ======================================================== */
 
     if (req.method === "GET") {
 
-      const {
-        questionId
-      } = req.query;
-
-      if (!questionId) {
-
-        return res.status(400).json({
-          error: "questionId is required"
-        });
-
-      }
-
-      const review =
-        await findReview(
-          baseId,
-          token,
-          questionId
-        );
-
-      if (!review) {
-
-        return res.status(200).json({
-          exists: false,
-          review: null
-        });
-
-      }
-
-      return res.status(200).json({
-        exists: true,
-        review: {
-          id: review.id,
-          ...review.fields
-        }
-      });
-
-    }
-
-
-    /* ========================================================
-       POST
-       Submit question for review
-       ======================================================== */
-
-    if (req.method === "POST") {
-
-      const body = req.body || {};
-
       const questionId =
-        body.questionId;
-
-      const reviewer =
-        body.reviewer || "";
-
-      const submitter =
-        body.submitter || "";
-
-      const comments =
-        body.comments || "";
+        req.query?.questionId;
 
       if (!questionId) {
-
         return res.status(400).json({
-          error: "questionId is required"
+          error:
+            "questionId is required"
         });
-
       }
-
-
-      /* ------------------------------------------------------
-         Check question
-         ------------------------------------------------------ */
 
       const question =
         await findQuestion(
@@ -323,108 +381,265 @@ export default async function handler(req, res) {
         );
 
       if (!question) {
-
         return res.status(404).json({
-          error: "Question not found",
+          error:
+            "Question not found",
+
           questionId
         });
-
       }
 
-
-      const questionFields =
-        question.fields || {};
-
-
-      /* ------------------------------------------------------
-         Prevent review of already published question
-         ------------------------------------------------------ */
-
-      const publicationStatus =
-        String(
-          questionFields["Publication Status"] ||
-          ""
-        ).trim();
-
+      /*
+       * Teachers may only inspect reviews
+       * for their own questions.
+       *
+       * Reviewers/admins may inspect any question.
+       */
 
       if (
-        publicationStatus.toLowerCase() ===
-        "published"
+        user.role === "teacher" &&
+        !teacherOwnsQuestion(
+          question,
+          user.teacherId
+        )
       ) {
-
-        return res.status(409).json({
+        return res.status(403).json({
           error:
-            "This question is already published."
+            "You are not allowed to view this question review."
         });
-
       }
 
+      const review =
+        await findReviewForQuestion(
+          baseId,
+          token,
+          question.id
+        );
 
-      /* ------------------------------------------------------
-         Check existing review
-         ------------------------------------------------------ */
+      return res.status(200).json({
 
-      const existingReview =
-        await findReview(
+        exists:
+          Boolean(review),
+
+        review:
+          formatReview(review)
+
+      });
+    }
+
+    /* ========================================================
+       POST
+       Submit question for review
+       ======================================================== */
+
+    if (req.method === "POST") {
+
+      /*
+       * Only teachers and administrators
+       * can submit questions.
+       */
+
+      if (
+        user.role !== "teacher" &&
+        user.role !== "admin"
+      ) {
+        return res.status(403).json({
+          error:
+            "Only teachers or administrators can submit questions for review."
+        });
+      }
+
+      /*
+       * A teacher must have a linked
+       * Teachers Airtable record.
+       */
+
+      if (
+        user.role === "teacher" &&
+        !user.teacherId
+      ) {
+        return res.status(403).json({
+          error:
+            "Authenticated teacher is not linked to a Teacher record."
+        });
+      }
+
+      const body =
+        req.body || {};
+
+      const questionId =
+        body.questionId;
+
+      if (!questionId) {
+        return res.status(400).json({
+          error:
+            "questionId is required"
+        });
+      }
+
+      /* --------------------------------------------------------
+         Find question
+         -------------------------------------------------------- */
+
+      const question =
+        await findQuestion(
           baseId,
           token,
           questionId
         );
 
+      if (!question) {
+        return res.status(404).json({
+          error:
+            "Question not found",
+
+          questionId
+        });
+      }
+
+      /* --------------------------------------------------------
+         Ownership protection
+         -------------------------------------------------------- */
+
+      if (
+        user.role === "teacher" &&
+        !teacherOwnsQuestion(
+          question,
+          user.teacherId
+        )
+      ) {
+        return res.status(403).json({
+          error:
+            "You can only submit questions that you created."
+        });
+      }
+
+      const questionFields =
+        question.fields || {};
+
+      /* --------------------------------------------------------
+         Prevent submission of published question
+         -------------------------------------------------------- */
+
+      const publicationStatus =
+        String(
+          questionFields[
+            "Publication Status"
+          ] || ""
+        )
+          .trim()
+          .toLowerCase();
+
+      if (
+        publicationStatus ===
+        "published"
+      ) {
+        return res.status(409).json({
+          error:
+            "This question is already published."
+        });
+      }
+
+      /* --------------------------------------------------------
+         Find existing review
+         -------------------------------------------------------- */
+
+      const existingReview =
+        await findReviewForQuestion(
+          baseId,
+          token,
+          question.id
+        );
+
+      /* ========================================================
+         EXISTING REVIEW
+         ======================================================== */
 
       if (existingReview) {
 
-        const existingFields =
-          existingReview.fields || {};
-
         const existingStatus =
-          String(
-            existingFields["Review Status"] ||
-            ""
-          ).toLowerCase();
+          getReviewStatus(
+            existingReview
+          );
 
+        /*
+         * Do not create duplicate pending reviews.
+         */
 
         if (
-          existingStatus === "pending"
+          existingStatus ===
+          "pending"
         ) {
-
           return res.status(409).json({
+
             error:
               "This question already has a pending review.",
+
             reviewId:
               existingReview.id
-          });
 
+          });
         }
 
+        /*
+         * A previously rejected or
+         * changes-requested question
+         * may be resubmitted.
+         */
 
-        /* ----------------------------------------------------
-           Re-submit previously rejected question
-           ---------------------------------------------------- */
+        const version =
+          body.version ||
+          existingReview.fields?.[
+            "Version"
+          ] ||
+          "1";
 
-        const updated =
+        const updatedReview =
           await updateReview(
             baseId,
             token,
             existingReview.id,
             {
-              "Review Status":
+              "Question":
+                [question.id],
+
+              /*
+               * IMPORTANT:
+               * Identity comes from the
+               * authenticated session.
+               */
+
+              "Submitted By":
+                user.teacherId
+                  ? [user.teacherId]
+                  : undefined,
+
+              "Reviewer":
+                [],
+
+              "Status":
                 "Pending",
 
-              Reviewer:
-                reviewer,
+              "Comments":
+                String(
+                  body.comments || ""
+                ),
 
-              Submitter:
-                submitter,
+              "Version":
+                String(version),
 
-              Comments:
-                comments,
+              "Submitted Date":
+                new Date().toISOString(),
 
-              "Review Date":
-                new Date().toISOString()
+              "Reviewed Date":
+                null
             }
           );
 
+        /*
+         * Put the question back
+         * into the review workflow.
+         */
 
         await updateQuestion(
           baseId,
@@ -436,67 +651,83 @@ export default async function handler(req, res) {
           }
         );
 
-
         return res.status(200).json({
 
           message:
             "Question resubmitted for review.",
 
-          review: updated
+          review:
+            updatedReview
 
         });
-
       }
 
+      /* ========================================================
+         CREATE NEW REVIEW
+         ======================================================== */
 
-      /* ------------------------------------------------------
-         Create new review
-         ------------------------------------------------------ */
+      const reviewFields = {
+
+        "Review ID":
+          `QR-${Date.now()}`,
+
+        /*
+         * Actual Airtable relationship.
+         */
+
+        "Question":
+          [question.id],
+
+        /*
+         * Server-derived identity.
+         *
+         * The browser cannot choose
+         * Submitted By.
+         */
+
+        "Submitted By":
+          user.teacherId
+            ? [user.teacherId]
+            : undefined,
+
+        /*
+         * Reviewer is intentionally
+         * empty at submission.
+         */
+
+        "Reviewer":
+          [],
+
+        "Status":
+          "Pending",
+
+        "Comments":
+          String(
+            body.comments || ""
+          ),
+
+        "Version":
+          String(
+            body.version || "1"
+          ),
+
+        "Submitted Date":
+          new Date().toISOString()
+
+      };
 
       const review =
         await createReview(
           baseId,
           token,
-          {
-
-            "Question ID":
-              questionFields["Question ID"] ||
-              question.id,
-
-            Question:
-              questionFields["Question"] ||
-              "",
-
-            Subject:
-              questionFields["Subject"] ||
-              "",
-
-            Topic:
-              questionFields["Topic"] ||
-              "",
-
-            Submitter:
-              submitter,
-
-            Reviewer:
-              reviewer,
-
-            "Review Status":
-              "Pending",
-
-            Comments:
-              comments,
-
-            "Review Date":
-              new Date().toISOString()
-
-          }
+          reviewFields
         );
 
-
-      /* ------------------------------------------------------
-         Mark question under review
-         ------------------------------------------------------ */
+      /*
+       * Only after the review record
+       * is created do we mark the
+       * question Under Review.
+       */
 
       await updateQuestion(
         baseId,
@@ -508,28 +739,54 @@ export default async function handler(req, res) {
         }
       );
 
-
       return res.status(201).json({
 
         message:
           "Question submitted for review.",
 
         review:
-          review.records?.[0] || null
+          review.records?.[0] ||
+          null
 
       });
-
     }
-
 
     /* ========================================================
        PUT
-       Approve / Reject review
+       Approve / Reject / Request Changes
        ======================================================== */
 
     if (req.method === "PUT") {
 
-      const body = req.body || {};
+      /*
+       * Only reviewers and administrators
+       * can perform review decisions.
+       */
+
+      if (
+        user.role !== "reviewer" &&
+        user.role !== "admin"
+      ) {
+        return res.status(403).json({
+          error:
+            "Only reviewers or administrators can review questions."
+        });
+      }
+
+      /*
+       * Reviewer identity must resolve
+       * to an actual Teachers record.
+       */
+
+      if (!user.teacherId) {
+        return res.status(403).json({
+          error:
+            "Authenticated reviewer is not linked to a Teacher record."
+        });
+      }
+
+      const body =
+        req.body || {};
 
       const reviewId =
         body.reviewId;
@@ -537,254 +794,297 @@ export default async function handler(req, res) {
       const action =
         String(
           body.action || ""
-        ).toLowerCase();
-
-      const reviewer =
-        body.reviewer || "";
+        )
+          .trim()
+          .toLowerCase();
 
       const comments =
-        body.comments || "";
-
+        String(
+          body.comments || ""
+        ).trim();
 
       if (!reviewId) {
-
         return res.status(400).json({
-          error: "reviewId is required"
+          error:
+            "reviewId is required"
         });
-
       }
 
+      /*
+       * Supported review actions.
+       */
 
       if (
         action !== "approve" &&
-        action !== "reject"
+        action !== "reject" &&
+        action !== "changes_requested"
       ) {
-
         return res.status(400).json({
           error:
-            "action must be approve or reject"
+            "action must be approve, reject, or changes_requested"
         });
-
       }
 
-
-      /* ------------------------------------------------------
-         Get review
-         ------------------------------------------------------ */
-
-      const reviewResponse =
-        await airtableRequest(
-          `${AIRTABLE_API}/${baseId}/${TABLES.reviews}/${reviewId}`,
-          {
-            method: "GET",
-            headers: headers(token)
-          }
-        );
-
+      /* --------------------------------------------------------
+         Retrieve review
+         -------------------------------------------------------- */
 
       const review =
-        reviewResponse;
-
+        await findReviewById(
+          baseId,
+          token,
+          reviewId
+        );
 
       if (!review) {
-
         return res.status(404).json({
-          error: "Review not found"
+          error:
+            "Review not found"
         });
-
       }
-
 
       const reviewFields =
         review.fields || {};
 
+      const currentStatus =
+        getReviewStatus(review);
 
-      const questionId =
-        reviewFields["Question ID"];
+      /*
+       * Only Pending reviews may
+       * receive a decision.
+       */
 
-
-      if (!questionId) {
-
-        return res.status(400).json({
+      if (
+        currentStatus !==
+        "pending"
+      ) {
+        return res.status(409).json({
           error:
-            "Review does not contain Question ID"
+            `This review is already ${reviewFields["Status"] || "closed"}.`
         });
-
       }
 
+      /* --------------------------------------------------------
+         Resolve linked question
+         -------------------------------------------------------- */
 
-      /* ------------------------------------------------------
-         Find question
-         ------------------------------------------------------ */
+      const linkedQuestions =
+        recordIds(
+          reviewFields["Question"]
+        );
+
+      if (
+        linkedQuestions.length === 0
+      ) {
+        return res.status(400).json({
+          error:
+            "Review is not linked to a question."
+        });
+      }
 
       const question =
         await findQuestion(
           baseId,
           token,
-          questionId
+          linkedQuestions[0]
         );
 
-
       if (!question) {
-
         return res.status(404).json({
           error:
-            "Associated question not found",
-          questionId
+            "Associated question not found."
         });
-
       }
 
+      const questionPublicationStatus =
+        String(
+          question.fields?.[
+            "Publication Status"
+          ] || ""
+        )
+          .trim()
+          .toLowerCase();
 
-      /* ======================================================
-         APPROVE
-         ====================================================== */
+      /*
+       * Protect against a question being
+       * published elsewhere while this
+       * review is still pending.
+       */
 
-      if (action === "approve") {
-
-        const updatedReview =
-          await updateReview(
-            baseId,
-            token,
-            reviewId,
-            {
-
-              "Review Status":
-                "Approved",
-
-              Reviewer:
-                reviewer ||
-                reviewFields.Reviewer ||
-                "",
-
-              Comments:
-                comments ||
-                reviewFields.Comments ||
-                "",
-
-              "Review Date":
-                new Date().toISOString()
-
-            }
-          );
-
-
-        /* ----------------------------------------------------
-           VERY IMPORTANT:
-           Only approval publishes question
-           ---------------------------------------------------- */
-
-        const updatedQuestion =
-          await updateQuestion(
-            baseId,
-            token,
-            question.id,
-            {
-
-              "Publication Status":
-                "Published",
-
-              Status:
-                "Active"
-
-            }
-          );
-
-
-        return res.status(200).json({
-
-          message:
-            "Question approved and published.",
-
-          review:
-            updatedReview,
-
-          question:
-            updatedQuestion
-
+      if (
+        questionPublicationStatus ===
+        "published"
+      ) {
+        return res.status(409).json({
+          error:
+            "This question is already published."
         });
-
       }
 
+      /* --------------------------------------------------------
+         Determine decision
+         -------------------------------------------------------- */
 
-      /* ======================================================
-         REJECT
-         ====================================================== */
+      let nextReviewStatus;
+      let nextPublicationStatus;
+      let message;
 
-      if (action === "reject") {
+      if (
+        action === "approve"
+      ) {
 
-        const updatedReview =
-          await updateReview(
-            baseId,
-            token,
-            reviewId,
-            {
+        nextReviewStatus =
+          "Approved";
 
-              "Review Status":
-                "Rejected",
+        nextPublicationStatus =
+          "Published";
 
-              Reviewer:
-                reviewer ||
-                reviewFields.Reviewer ||
-                "",
+        message =
+          "Question approved and published.";
 
-              Comments:
-                comments ||
-                reviewFields.Comments ||
-                "",
+      } else if (
+        action ===
+        "changes_requested"
+      ) {
 
-              "Review Date":
-                new Date().toISOString()
+        /*
+         * Comments are mandatory
+         * when requesting changes.
+         */
 
-            }
-          );
+        if (!comments) {
+          return res.status(400).json({
+            error:
+              "Comments are required when requesting changes."
+          });
+        }
 
+        nextReviewStatus =
+          "Changes Requested";
 
-        /* ----------------------------------------------------
-           Rejected questions must NOT be published
-           ---------------------------------------------------- */
+        nextPublicationStatus =
+          "Changes Requested";
 
-        const updatedQuestion =
-          await updateQuestion(
-            baseId,
-            token,
-            question.id,
-            {
+        message =
+          "Changes requested for this question.";
 
-              "Publication Status":
-                "Rejected"
+      } else {
 
-            }
-          );
+        nextReviewStatus =
+          "Rejected";
 
+        nextPublicationStatus =
+          "Rejected";
 
-        return res.status(200).json({
-
-          message:
-            "Question rejected.",
-
-          review:
-            updatedReview,
-
-          question:
-            updatedQuestion
-
-        });
-
+        message =
+          "Question rejected.";
       }
 
+      const now =
+        new Date().toISOString();
+
+      /* ========================================================
+         UPDATE REVIEW
+         ======================================================== */
+
+      const updatedReview =
+        await updateReview(
+          baseId,
+          token,
+          reviewId,
+          {
+            "Status":
+              nextReviewStatus,
+
+            /*
+             * IMPORTANT:
+             * Reviewer comes exclusively
+             * from the authenticated session.
+             */
+
+            "Reviewer":
+              [user.teacherId],
+
+            "Comments":
+              comments ||
+              reviewFields[
+                "Comments"
+              ] ||
+              "",
+
+            "Reviewed Date":
+              now
+          }
+        );
+
+      /* ========================================================
+         UPDATE QUESTION
+         ======================================================== */
+
+      const questionUpdates = {
+
+        "Publication Status":
+          nextPublicationStatus
+
+      };
+
+      /*
+       * Approval activates the
+       * question and records the
+       * authenticated reviewer.
+       */
+
+      if (
+        action === "approve"
+      ) {
+
+        questionUpdates[
+          "Status"
+        ] = "Active";
+
+        /*
+         * CBT_Questions has Approved By
+         * linked to Teachers.
+         */
+
+        questionUpdates[
+          "Approved By"
+        ] = [user.teacherId];
+      }
+
+      const updatedQuestion =
+        await updateQuestion(
+          baseId,
+          token,
+          question.id,
+          questionUpdates
+        );
+
+      return res.status(200).json({
+
+        message,
+
+        review:
+          updatedReview,
+
+        question:
+          updatedQuestion
+
+      });
     }
-
 
     /* ========================================================
        METHOD NOT ALLOWED
        ======================================================== */
 
-    return res.status(405).json({
+    res.setHeader(
+      "Allow",
+      "GET, POST, PUT"
+    );
 
+    return res.status(405).json({
       error:
         "Method not allowed"
-
     });
 
   } catch (error) {
@@ -803,7 +1103,6 @@ export default async function handler(req, res) {
         error.message
 
     });
-
   }
-
 }
+```
