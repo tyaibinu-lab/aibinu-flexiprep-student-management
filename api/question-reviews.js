@@ -1,4 +1,3 @@
-```javascript
 import { requireRole } from "./_auth.js";
 
 const AIRTABLE_API = "https://api.airtable.com/v0";
@@ -1105,4 +1104,4 @@ export default async function handler(
     });
   }
 }
-```
+
