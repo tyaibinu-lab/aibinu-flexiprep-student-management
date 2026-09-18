@@ -1,12 +1,15 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#08783f">
+
 <title>Aibinu Flexiprep | NoteBank Review Center</title>
 
 <style>
+
 :root{
   --g:#08783f;
   --gold:#d7a62a;
@@ -15,25 +18,25 @@
   --bg:#f4f7f5;
   --line:#dce6e0;
   --danger:#b42318;
-  --ok:#e7f6ec
+  --ok:#e7f6ec;
 }
 
 *{
-  box-sizing:border-box
+  box-sizing:border-box;
 }
 
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:var(--bg);
-  color:var(--ink)
+  color:var(--ink);
 }
 
 button,
 input,
 textarea,
 select{
-  font:inherit
+  font:inherit;
 }
 
 button{
@@ -41,29 +44,29 @@ button{
   border-radius:10px;
   padding:11px 15px;
   font-weight:700;
-  cursor:pointer
+  cursor:pointer;
 }
 
 button:disabled{
   opacity:.6;
-  cursor:not-allowed
+  cursor:not-allowed;
 }
 
 .primary{
   background:var(--gold);
-  color:var(--ink)
+  color:var(--ink);
 }
 
 .secondary{
   background:#fff;
   color:var(--g);
-  border:1px solid var(--line)
+  border:1px solid var(--line);
 }
 
 header{
   background:var(--g);
   color:#fff;
-  padding:16px 5%
+  padding:16px 5%;
 }
 
 .header-inner{
@@ -73,13 +76,13 @@ header{
   justify-content:space-between;
   align-items:center;
   gap:15px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .brand{
   display:flex;
   align-items:center;
-  gap:10px
+  gap:10px;
 }
 
 .logo{
@@ -88,23 +91,23 @@ header{
   padding:11px;
   border-radius:10px;
   font-weight:800;
-  font-size:20px
+  font-size:20px;
 }
 
 .brand b{
-  font-size:18px
+  font-size:18px;
 }
 
 .brand small{
   display:block;
   opacity:.8;
-  margin-top:3px
+  margin-top:3px;
 }
 
 main{
   max-width:1200px;
   margin:25px auto;
-  padding:0 16px
+  padding:0 16px;
 }
 
 .top{
@@ -112,33 +115,33 @@ main{
   justify-content:space-between;
   align-items:end;
   gap:15px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 h1{
   margin:5px 0;
-  font-size:38px
+  font-size:38px;
 }
 
 .muted{
   color:var(--muted);
-  font-size:17px
+  font-size:17px;
 }
 
 .msg{
   margin:15px 0;
   padding:11px;
-  border-radius:9px
+  border-radius:9px;
 }
 
 .ok{
   background:var(--ok);
-  color:var(--g)
+  color:var(--g);
 }
 
 .err{
   background:#fde9e7;
-  color:var(--danger)
+  color:var(--danger);
 }
 
 .panel{
@@ -146,7 +149,7 @@ h1{
   border:1px solid var(--line);
   border-radius:18px;
   padding:18px;
-  margin-top:20px
+  margin-top:20px;
 }
 
 .queue-head{
@@ -154,7 +157,7 @@ h1{
   justify-content:space-between;
   align-items:center;
   gap:10px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .count{
@@ -163,25 +166,25 @@ h1{
   border-radius:99px;
   background:var(--ok);
   color:var(--g);
-  font-weight:800
+  font-weight:800;
 }
 
 .card{
   border:1px solid var(--line);
   border-radius:14px;
   padding:17px;
-  margin-top:14px
+  margin-top:14px;
 }
 
 .card h2{
-  margin:0 0 7px
+  margin:0 0 7px;
 }
 
 .meta{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
-  margin:10px 0
+  margin:10px 0;
 }
 
 .badge{
@@ -191,12 +194,12 @@ h1{
   font-size:12px;
   font-weight:700;
   background:#fff7df;
-  color:#765b00
+  color:#765b00;
 }
 
 .small{
   font-size:13px;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .target-box{
@@ -204,20 +207,20 @@ h1{
   padding:15px;
   border:1px solid var(--line);
   border-radius:12px;
-  background:#f8fbf9
+  background:#f8fbf9;
 }
 
 .target-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
-  margin-top:10px
+  margin-top:10px;
 }
 
 .field label{
   display:block;
   font-weight:700;
-  margin-bottom:6px
+  margin-bottom:6px;
 }
 
 .field select,
@@ -228,29 +231,29 @@ h1{
   border:1px solid #ccd8d1;
   border-radius:9px;
   background:#fff;
-  color:var(--ink)
+  color:var(--ink);
 }
 
 .field select:disabled{
   background:#eef2ef;
   color:#7b8580;
-  cursor:not-allowed
+  cursor:not-allowed;
 }
 
 .actions{
   display:flex;
   gap:9px;
   flex-wrap:wrap;
-  margin-top:13px
+  margin-top:13px;
 }
 
 .comment{
-  margin-top:14px
+  margin-top:14px;
 }
 
 .comment textarea{
   min-height:90px;
-  resize:vertical
+  resize:vertical;
 }
 
 .note-body{
@@ -258,85 +261,104 @@ h1{
   border:1px solid var(--line);
   border-radius:12px;
   padding:15px;
-  background:#f8fbf9
+  background:#f8fbf9;
 }
 
 .section{
-  margin-top:15px
+  margin-top:15px;
 }
 
 .section h3{
-  margin-bottom:6px
+  margin-bottom:6px;
 }
 
 .content{
   white-space:pre-wrap;
-  line-height:1.55
+  line-height:1.55;
 }
 
 details{
-  margin-top:13px
+  margin-top:13px;
 }
 
 summary{
   cursor:pointer;
   font-weight:800;
-  color:var(--g)
+  color:var(--g);
 }
 
 .empty{
   padding:30px 10px;
   text-align:center;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 @media(max-width:700px){
 
   main{
-    padding:0 12px
+    padding:0 12px;
   }
 
   h1{
-    font-size:31px
+    font-size:31px;
   }
 
   .panel{
-    padding:13px
+    padding:13px;
   }
 
   .actions button{
-    width:100%
+    width:100%;
   }
 
   .target-grid{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
+
 }
+
 </style>
 </head>
+
 
 <body>
 
 <header>
+
   <div class="header-inner">
 
     <div class="brand">
-      <div class="logo">AF</div>
+
+      <div class="logo">
+        AF
+      </div>
 
       <div>
-        <b>AIBINU FLEXIPREP</b>
-        <small>EDUCONSULT · NOTEBANK REVIEW</small>
+
+        <b>
+          AIBINU FLEXIPREP
+        </b>
+
+        <small>
+          EDUCONSULT · NOTEBANK REVIEW
+        </small>
+
       </div>
+
     </div>
+
 
     <button
       class="secondary"
       type="button"
       onclick="location.href='/academic.html'">
+
       ← Academic Management
+
     </button>
 
   </div>
+
 </header>
 
 
@@ -346,23 +368,32 @@ summary{
 
     <div>
 
-      <small>AIBINU FLEXIPREP</small>
+      <small>
+        AIBINU FLEXIPREP
+      </small>
 
-      <h1>📋 NoteBank Review Center</h1>
+      <h1>
+        📋 NoteBank Review Center
+      </h1>
 
       <div class="muted">
+
         Review AI-generated notes before publication.
         Publication target is selected here and stored only
         in NoteBank_Publications.
+
       </div>
 
     </div>
+
 
     <button
       class="primary"
       type="button"
       onclick="loadQueue()">
+
       ↻ Refresh Queue
+
     </button>
 
   </div>
@@ -377,41 +408,58 @@ summary{
 
       <div>
 
-        <h2>Notes Awaiting Approval</h2>
+        <h2>
+          Notes Awaiting Approval
+        </h2>
 
         <div class="small">
+
           Only notes with status
           <b>Under Review</b>
           appear here.
+
         </div>
 
       </div>
 
-      <span id="queueCount" class="count">0</span>
+
+      <span
+        id="queueCount"
+        class="count">
+
+        0
+
+      </span>
 
     </div>
 
 
+    <!-- =====================================================
+         AUTHENTICATED REVIEWER INFORMATION
+    ====================================================== -->
+
     <div class="target-box">
 
-      <div class="field">
-
-        <label for="reviewerName">
-          Reviewer Name
-        </label>
-
-        <input
-          id="reviewerName"
-          placeholder="Enter the reviewer's name">
-
-      </div>
+      <b>
+        Authenticated Reviewer
+      </b>
 
       <div
         class="small"
         style="margin-top:6px">
 
-        If the name matches a teacher record,
-        the reviewer will be linked to Teachers.
+        Your reviewer identity is obtained securely from
+        your authenticated account. You do not need to enter
+        your name manually.
+
+      </div>
+
+      <div
+        id="reviewerStatus"
+        class="small"
+        style="margin-top:8px">
+
+        Checking authentication...
 
       </div>
 
@@ -432,6 +480,7 @@ summary{
 
 
 <script>
+
 "use strict";
 
 
@@ -440,6 +489,7 @@ summary{
 ========================================================= */
 
 let programmes = [];
+
 let classes = [];
 
 
@@ -465,7 +515,11 @@ const esc = v =>
 
 
 function txt(v){
-  return String(v ?? "").trim();
+
+  return String(
+    v ?? ""
+  ).trim();
+
 }
 
 
@@ -475,21 +529,30 @@ function txt(v){
 
 async function safeJson(r){
 
-  const raw = await r.text();
+  const raw =
+    await r.text();
 
   const type =
-    r.headers.get("content-type") || "";
+    r.headers.get(
+      "content-type"
+    ) || "";
+
 
   if(
     !type
       .toLowerCase()
-      .includes("application/json")
+      .includes(
+        "application/json"
+      )
   ){
+
     throw new Error(
       raw ||
       `Server returned ${r.status}.`
     );
+
   }
+
 
   try{
 
@@ -504,6 +567,7 @@ async function safeJson(r){
     );
 
   }
+
 }
 
 
@@ -511,17 +575,125 @@ async function safeJson(r){
    MESSAGE
 ========================================================= */
 
-function show(message,ok=true){
+function show(
+  message,
+  ok=true
+){
 
-  const b = $("msg");
+  const b =
+    $("msg");
+
 
   b.className =
     message
       ? `msg ${ok ? "ok" : "err"}`
       : "";
 
+
   b.textContent =
     message || "";
+
+}
+
+
+/* =========================================================
+   AUTHENTICATION STATUS
+========================================================= */
+
+function setReviewerStatus(
+  message,
+  ok=true
+){
+
+  const el =
+    $("reviewerStatus");
+
+
+  if(!el){
+    return;
+  }
+
+
+  el.textContent =
+    message;
+
+
+  el.style.color =
+    ok
+      ? "var(--g)"
+      : "var(--danger)";
+
+}
+
+
+/* =========================================================
+   CHECK AUTHENTICATED REVIEWER
+=========================================================
+
+   We deliberately DO NOT ask the reviewer for their name.
+
+   The API is the authority.
+
+   A harmless GET request to the Review API confirms that
+   the current signed session is accepted.
+
+========================================================= */
+
+async function checkReviewerAuthentication(){
+
+  try{
+
+    const r =
+      await fetch(
+        "/api/note-reviews?list=review",
+        {
+          method:"GET",
+          cache:"no-store"
+        }
+      );
+
+
+    const d =
+      await safeJson(r);
+
+
+    if(
+      !r.ok ||
+      d.success !== true
+    ){
+
+      throw new Error(
+        d.error ||
+        "Authentication could not be verified."
+      );
+
+    }
+
+
+    setReviewerStatus(
+      "✓ Authenticated reviewer session verified.",
+      true
+    );
+
+
+    return true;
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    setReviewerStatus(
+      e.message,
+      false
+    );
+
+
+    return false;
+
+  }
+
 }
 
 
@@ -529,7 +701,10 @@ function show(message,ok=true){
    NOTE VALUES
 ========================================================= */
 
-function value(note,...keys){
+function value(
+  note,
+  ...keys
+){
 
   for(
     const k of keys
@@ -540,12 +715,16 @@ function value(note,...keys){
       note?.[k] !== null &&
       txt(note[k])
     ){
+
       return note[k];
+
     }
 
   }
 
+
   return "";
+
 }
 
 
@@ -553,98 +732,160 @@ function value(note,...keys){
    NOTE SECTIONS
 ========================================================= */
 
-function section(label,v){
+function section(
+  label,
+  v
+){
 
-  v = txt(v);
+  v =
+    txt(v);
+
 
   return v
+
     ? `
+
       <div class="section">
-        <h3>${esc(label)}</h3>
-        <div class="content">${esc(v)}</div>
+
+        <h3>
+          ${esc(label)}
+        </h3>
+
+        <div class="content">
+          ${esc(v)}
+        </div>
+
       </div>
+
     `
+
     : "";
+
 }
 
 
 function renderNote(n){
 
   return `
+
     <div class="note-body">
 
       ${section(
         "Learning Objectives",
-        value(n,"Learning Objectives")
+        value(
+          n,
+          "Learning Objectives"
+        )
       )}
 
       ${section(
         "Key Terms",
-        value(n,"Key Terms")
+        value(
+          n,
+          "Key Terms"
+        )
       )}
 
       ${section(
         "Main Content",
-        value(n,"Content")
+        value(
+          n,
+          "Content"
+        )
       )}
 
       ${section(
         "Examples",
-        value(n,"Examples")
+        value(
+          n,
+          "Examples"
+        )
       )}
 
       ${section(
         "Worked Examples",
-        value(n,"Worked Examples")
+        value(
+          n,
+          "Worked Examples"
+        )
       )}
 
       ${section(
         "Formulae",
-        value(n,"Formulae")
+        value(
+          n,
+          "Formulae"
+        )
       )}
 
       ${section(
         "Applications",
-        value(n,"Applications")
+        value(
+          n,
+          "Applications"
+        )
       )}
 
       ${section(
         "Common Misconceptions",
-        value(n,"Common Misconceptions")
+        value(
+          n,
+          "Common Misconceptions"
+        )
       )}
 
       ${section(
         "Summary",
-        value(n,"Summary")
+        value(
+          n,
+          "Summary"
+        )
       )}
 
       ${section(
         "Examination Tips",
-        value(n,"Exam Tips")
+        value(
+          n,
+          "Exam Tips"
+        )
       )}
 
       ${section(
         "WAEC Focus",
-        value(n,"WAEC Focus")
+        value(
+          n,
+          "WAEC Focus"
+        )
       )}
 
       ${section(
         "NECO Focus",
-        value(n,"NECO Focus")
+        value(
+          n,
+          "NECO Focus"
+        )
       )}
 
       ${section(
         "UTME Focus",
-        value(n,"UTME Focus")
+        value(
+          n,
+          "UTME Focus"
+        )
       )}
 
       ${section(
         "Diagrams",
-        value(n,"Diagrams")
+        value(
+          n,
+          "Diagrams"
+        )
       )}
 
     </div>
+
   `;
+
 }
 
 
@@ -661,14 +902,17 @@ function classId(c){
       c.recordId
     );
 
+
   const m =
     raw.match(
       /(?:^|\|)(rec[A-Za-z0-9]{14})$/
     );
 
+
   return m
     ? m[1]
     : raw;
+
 }
 
 
@@ -679,32 +923,19 @@ function classId(c){
 function className(c){
 
   return txt(
+
     c.name ||
+
     c.className ||
+
     c["Class Name"] ||
+
     c.Name ||
+
     c.Level ||
+
     c.Class
-  );
 
-}
-
-
-/* =========================================================
-   CLASS PROGRAMME
-=========================================================
-
-   Retained for data compatibility only.
-
-   IMPORTANT:
-   We DO NOT use this to filter classes.
-========================================================= */
-
-function classProgramme(c){
-
-  return txt(
-    c.programme ||
-    c.Programme
   );
 
 }
@@ -717,9 +948,13 @@ function classProgramme(c){
 function programmeName(p){
 
   return txt(
+
     p.name ||
+
     p.programme ||
+
     p.code
+
   );
 
 }
@@ -734,34 +969,49 @@ function programmeOptions(
 ){
 
   const selected =
-    txt(selectedProgramme)
+    txt(
+      selectedProgramme
+    )
       .toLowerCase();
 
+
   return `
+
     <option value="">
       Select target programme
     </option>
+
   ` +
 
   programmes
-    .map(p=>{
 
-      const name =
-        programmeName(p);
+    .map(
+      p => {
 
-      return `
-        <option
-          value="${esc(name)}"
-          ${
-            name.toLowerCase() === selected
-              ? "selected"
-              : ""
-          }>
-          ${esc(name)}
-        </option>
-      `;
+        const name =
+          programmeName(p);
 
-    })
+
+        return `
+
+          <option
+            value="${esc(name)}"
+            ${
+              name.toLowerCase()
+              === selected
+                ? "selected"
+                : ""
+            }>
+
+            ${esc(name)}
+
+          </option>
+
+        `;
+
+      }
+    )
+
     .join("");
 
 }
@@ -769,23 +1019,6 @@ function programmeOptions(
 
 /* =========================================================
    CLASS OPTIONS
-=========================================================
-
-   IMPORTANT ARCHITECTURE RULE:
-
-   Programme controls WHEN the class selector becomes
-   available.
-
-   Programme DOES NOT determine which academic classes
-   are available.
-
-   Therefore:
-
-      WAEC → SS1, SS2, SS3
-      NECO → SS1, SS2, SS3
-      UTME → SS1, SS2, SS3
-
-   assuming those classes exist in the Classes table.
 ========================================================= */
 
 function classOptions(
@@ -794,66 +1027,84 @@ function classOptions(
 ){
 
   const p =
-    txt(selectedProgramme);
+    txt(
+      selectedProgramme
+    );
 
-  /*
-    No programme selected.
-  */
+
   if(!p){
 
     return `
+
       <option value="">
         Select target programme first
       </option>
+
     `;
 
   }
 
 
   /*
-    ALL active/loaded classes are candidates.
+   * Classes are shared academic levels.
+   *
+   * Therefore we deliberately DO NOT filter
+   * classes according to programme.
+   */
 
-    Do NOT filter by programme.
-  */
   const filtered =
     classes;
 
 
   const options =
     filtered
-      .map(c=>{
 
-        const id =
-          classId(c);
+      .map(
+        c => {
 
-        const name =
-          className(c);
+          const id =
+            classId(c);
 
-        return `
-          <option
-            value="${esc(id)}"
-            ${
-              id === selectedClass
-                ? "selected"
-                : ""
-            }>
-            ${esc(name)}
-          </option>
-        `;
+          const name =
+            className(c);
 
-      })
+
+          return `
+
+            <option
+              value="${esc(id)}"
+              ${
+                id === selectedClass
+                  ? "selected"
+                  : ""
+              }>
+
+              ${esc(name)}
+
+            </option>
+
+          `;
+
+        }
+      )
+
       .join("");
 
 
   return `
+
     <option value="">
+
       ${
         filtered.length
           ? "Select target class"
           : "No classes available"
       }
+
     </option>
+
   ` +
+
   options;
 
 }
@@ -869,35 +1120,40 @@ function setClassState(
   selectedClass=""
 ){
 
-  if(!select) return;
+  if(!select){
+    return;
+  }
+
 
   const p =
     txt(programme);
 
 
-  /*
-    Programme has not been selected.
-  */
   if(!p){
 
-    select.disabled = true;
+    select.disabled =
+      true;
+
 
     select.innerHTML = `
+
       <option value="">
+
         Select target programme first
+
       </option>
+
     `;
 
+
     return;
+
   }
 
 
-  /*
-    Programme selected.
+  select.disabled =
+    false;
 
-    Enable class selector.
-  */
-  select.disabled = false;
 
   select.innerHTML =
     classOptions(
@@ -915,10 +1171,18 @@ function setClassState(
 function refreshClasses(i){
 
   const p =
-    $("programme_" + i);
+    $(
+      "programme_" +
+      i
+    );
+
 
   const c =
-    $("class_" + i);
+    $(
+      "class_" +
+      i
+    );
+
 
   if(
     p &&
@@ -940,22 +1204,38 @@ function refreshClasses(i){
    RENDER REVIEW CARD
 ========================================================= */
 
-function renderCard(n,i){
+function renderCard(
+  n,
+  i
+){
 
   const id =
     n.airtableId ||
     n["Note ID"];
 
+
   const title =
-    value(n,"Title") ||
+    value(
+      n,
+      "Title"
+    ) ||
     "Untitled Note";
 
+
   const subject =
-    value(n,"Subject");
+    value(
+      n,
+      "Subject"
+    );
+
 
   const version =
-    value(n,"Version") ||
+    value(
+      n,
+      "Version"
+    ) ||
     "1";
+
 
   const updated =
     value(
@@ -964,17 +1244,21 @@ function renderCard(n,i){
       "Created Date"
     );
 
+
   const cid =
     `comment_${i}`;
 
+
   const pid =
     `programme_${i}`;
+
 
   const clid =
     `class_${i}`;
 
 
   return `
+
     <article
       class="card"
       id="note_${i}">
@@ -989,16 +1273,20 @@ function renderCard(n,i){
         ${
           subject
             ? `
+
               <span class="badge">
                 ${esc(subject)}
               </span>
+
             `
             : ""
         }
 
+
         <span class="badge">
           Under Review
         </span>
+
 
         <span class="badge">
           Version ${esc(version)}
@@ -1010,10 +1298,14 @@ function renderCard(n,i){
       ${
         updated
           ? `
+
             <div class="small">
+
               Last updated:
               ${esc(updated)}
+
             </div>
+
           `
           : ""
       }
@@ -1025,20 +1317,22 @@ function renderCard(n,i){
           📖 Read Full Note
         </summary>
 
+
         ${renderNote(n)}
 
       </details>
 
 
-      <!-- ============================================
+      <!-- ================================================
            PUBLICATION TARGET
-      ============================================= -->
+      ================================================= -->
 
       <div class="target-box">
 
         <b>
           Publication Target
         </b>
+
 
         <div
           class="small"
@@ -1072,6 +1366,7 @@ function renderCard(n,i){
 
             </label>
 
+
             <select
               id="${pid}"
               onchange="refreshClasses(${i})">
@@ -1094,12 +1389,15 @@ function renderCard(n,i){
 
             </label>
 
+
             <select
               id="${clid}"
               disabled>
 
               <option value="">
+
                 Select target programme first
+
               </option>
 
             </select>
@@ -1112,9 +1410,9 @@ function renderCard(n,i){
       </div>
 
 
-      <!-- ============================================
+      <!-- ================================================
            REVIEW COMMENT
-      ============================================= -->
+      ================================================= -->
 
       <div class="comment">
 
@@ -1127,6 +1425,7 @@ function renderCard(n,i){
 
         </label>
 
+
         <textarea
           id="${cid}"
           placeholder="Add a review comment. Required when requesting changes."
@@ -1135,11 +1434,12 @@ function renderCard(n,i){
       </div>
 
 
-      <!-- ============================================
+      <!-- ================================================
            ACTIONS
-      ============================================= -->
+      ================================================= -->
 
       <div class="actions">
+
 
         <button
           class="secondary"
@@ -1168,10 +1468,12 @@ function renderCard(n,i){
 
         </button>
 
+
       </div>
 
 
     </article>
+
   `;
 
 }
@@ -1207,7 +1509,9 @@ async function loadAcademicTargets(){
 
 
   const records =
-    Array.isArray(d.records)
+    Array.isArray(
+      d.records
+    )
       ? d.records
       : [];
 
@@ -1219,7 +1523,9 @@ async function loadAcademicTargets(){
   const seen =
     new Set();
 
-  programmes = [];
+
+  programmes =
+    [];
 
 
   for(
@@ -1227,16 +1533,27 @@ async function loadAcademicTargets(){
   ){
 
     if(
-      String(x.type || "")
+
+      String(
+        x.type ||
+        ""
+      )
         .toLowerCase()
-      !== "programme"
+
+      !==
+
+      "programme"
+
     ){
+
       continue;
+
     }
 
 
     const name =
       programmeName(x);
+
 
     const key =
       name.toLowerCase();
@@ -1246,29 +1563,33 @@ async function loadAcademicTargets(){
       !name ||
       seen.has(key)
     ){
+
       continue;
+
     }
 
 
     seen.add(key);
 
+
     programmes.push({
+
       ...x,
+
       name
+
     });
 
   }
 
 
   /*
-    Safety fallback.
+   * Fallback programmes.
+   */
 
-    The API already supplies these, but this protects the
-    page if the backend temporarily returns no programme
-    records.
-  */
-
-  if(!programmes.length){
+  if(
+    !programmes.length
+  ){
 
     for(
       const name of [
@@ -1279,9 +1600,13 @@ async function loadAcademicTargets(){
     ){
 
       programmes.push({
+
         name,
+
         programme:name,
+
         type:"Programme"
+
       });
 
     }
@@ -1291,28 +1616,26 @@ async function loadAcademicTargets(){
 
   /* =======================================================
      CLASSES
-  =======================================================
-
-     IMPORTANT:
-
-     Only TYPE and NAME matter here.
-
-     We deliberately DO NOT require:
-
-        classProgramme(x)
-
-     because classes may have a blank Programme field.
-
-     SS1/SS2/SS3 are shared academic levels.
   ======================================================= */
 
   classes =
-    records.filter(x=>
-      String(x.type || "")
-        .toLowerCase()
-      === "class"
-      &&
-      className(x)
+    records.filter(
+      x =>
+
+        String(
+          x.type ||
+          ""
+        )
+          .toLowerCase()
+
+        ===
+
+        "class"
+
+        &&
+
+        className(x)
+
     );
 
 }
@@ -1324,15 +1647,21 @@ async function loadAcademicTargets(){
 
 async function loadQueue(){
 
-  $("queue").innerHTML =
-    `
-      <div class="empty">
-        Loading programmes and classes...
-      </div>
-    `;
+  $("queue").innerHTML = `
 
-  $("queueCount").textContent =
-    "0";
+    <div class="empty">
+
+      Loading programmes and classes...
+
+    </div>
+
+  `;
+
+
+  $("queueCount")
+    .textContent =
+      "0";
+
 
   show("");
 
@@ -1340,12 +1669,45 @@ async function loadQueue(){
   try{
 
     /*
-      Academic data MUST be ready before review cards
-      are rendered.
-    */
+     * Confirm authenticated session.
+     */
+
+    const authenticated =
+      await checkReviewerAuthentication();
+
+
+    if(!authenticated){
+
+      $("queue").innerHTML = `
+
+        <div class="empty">
+
+          🔒 Your authenticated reviewer session
+          could not be verified.
+
+          <br><br>
+
+          Please sign in again.
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    /*
+     * Load academic target information.
+     */
 
     await loadAcademicTargets();
 
+
+    /*
+     * Load review queue.
+     */
 
     const r =
       await fetch(
@@ -1374,40 +1736,40 @@ async function loadQueue(){
 
 
     const notes =
-      Array.isArray(d.notes)
+      Array.isArray(
+        d.notes
+      )
         ? d.notes
         : [];
 
 
-    $("queueCount").textContent =
-      notes.length;
+    $("queueCount")
+      .textContent =
+        notes.length;
 
-
-    /*
-      No notes waiting for approval.
-    */
 
     if(!notes.length){
 
-      $("queue").innerHTML =
-        `
-          <div class="empty">
-            🎉 No notes are currently awaiting approval.
-          </div>
-        `;
+      $("queue").innerHTML = `
+
+        <div class="empty">
+
+          🎉 No notes are currently awaiting approval.
+
+        </div>
+
+      `;
 
       return;
 
     }
 
 
-    /*
-      Render every note card.
-    */
-
     $("queue").innerHTML =
       notes
-        .map(renderCard)
+        .map(
+          renderCard
+        )
         .join("");
 
 
@@ -1415,12 +1777,17 @@ async function loadQueue(){
 
     console.error(e);
 
-    $("queue").innerHTML =
-      `
-        <div class="empty">
-          ❌ ${esc(e.message)}
-        </div>
-      `;
+
+    $("queue").innerHTML = `
+
+      <div class="empty">
+
+        ❌ ${esc(e.message)}
+
+      </div>
+
+    `;
+
 
     show(
       e.message,
@@ -1444,33 +1811,19 @@ async function reviewAction(
   classId
 ){
 
-  const reviewer =
-    txt(
-      $("reviewerName").value
-    );
-
   const comment =
     txt(
       $(commentId)?.value
     );
 
 
-  /* =======================================================
-     REVIEWER REQUIRED
-  ======================================================= */
-
-  if(!reviewer){
-
-    show(
-      "Enter the reviewer name first.",
-      false
-    );
-
-    $("reviewerName").focus();
-
-    return;
-
-  }
+  /*
+   * Reviewer identity is intentionally NOT collected
+   * from the browser.
+   *
+   * It is derived by api/note-reviews.js from the
+   * authenticated signed session.
+   */
 
 
   /* =======================================================
@@ -1487,19 +1840,24 @@ async function reviewAction(
       false
     );
 
+
     $(commentId).focus();
+
 
     return;
 
   }
 
 
-  let targetProgramme = "";
-  let targetClass = "";
+  let targetProgramme =
+    "";
+
+  let targetClass =
+    "";
 
 
   /* =======================================================
-     APPROVAL REQUIRES TARGET
+     APPROVAL REQUIRES PUBLICATION TARGET
   ======================================================= */
 
   if(
@@ -1510,6 +1868,7 @@ async function reviewAction(
       txt(
         $(programmeId)?.value
       );
+
 
     targetClass =
       txt(
@@ -1543,8 +1902,14 @@ async function reviewAction(
   }
 
 
+  /*
+   * Disable the clicked button while request
+   * is being processed.
+   */
+
   const button =
     document.activeElement;
+
 
   if(button){
 
@@ -1560,6 +1925,7 @@ async function reviewAction(
       await fetch(
         "/api/note-reviews",
         {
+
           method:"POST",
 
           headers:{
@@ -1570,14 +1936,29 @@ async function reviewAction(
           body:
             JSON.stringify({
 
+              /*
+               * Note identity is needed.
+               */
+
               noteId,
+
+              /*
+               * Requested operation.
+               */
 
               action,
 
-              reviewer,
+              /*
+               * Reviewer identity is deliberately
+               * NOT sent.
+               */
 
               reviewerComment:
                 comment,
+
+              /*
+               * Publication target.
+               */
 
               targetProgramme,
 
@@ -1613,12 +1994,17 @@ async function reviewAction(
     );
 
 
+    /*
+     * Refresh queue after successful operation.
+     */
+
     await loadQueue();
 
 
   }catch(e){
 
     console.error(e);
+
 
     show(
       e.message,
@@ -1656,16 +2042,24 @@ function approveNote(
       "Approve this note and publish it to the selected programme and class?"
     )
   ){
+
     return;
+
   }
 
 
   reviewAction(
+
     noteId,
+
     commentId,
+
     "approve",
+
     programmeId,
+
     classId
+
   );
 
 }
@@ -1681,9 +2075,13 @@ function requestChanges(
 ){
 
   reviewAction(
+
     noteId,
+
     commentId,
+
     "request_changes"
+
   );
 
 }
@@ -1699,3 +2097,4 @@ loadQueue();
 
 </body>
 </html>
+```
